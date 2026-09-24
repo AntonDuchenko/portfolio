@@ -550,5 +550,12 @@
     0.472
    ]
   }
+ },
+ "narrator": {
+  "src": "Character/glTF/Viking_Male.gltf",
+  "tris": 6264,
+  "clips": [
+   "Idle"
+  ]
  }
 }

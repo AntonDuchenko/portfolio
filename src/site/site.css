@@ -266,12 +266,14 @@ a.wax:hover::after{transform:translateX(120%)}
   display:flex;align-items:flex-end;gap:12px;pointer-events:none}
 .narrator[hidden]{display:none}
 .keeper{pointer-events:auto;flex:none;padding:0;border:0;background:none;cursor:pointer;border-radius:50%}
-.portrait{display:grid;place-items:center;width:clamp(64px,7vw,92px);aspect-ratio:1;border-radius:50%;overflow:hidden;
+.portrait{display:grid;place-items:center;width:clamp(76px,8.5vw,116px);aspect-ratio:1;border-radius:50%;overflow:hidden;
   background:radial-gradient(circle at 50% 35%,#6a4a26,#2a1c0e 70%);
   border:3px solid #6b4a1e;box-shadow:0 0 0 2px #1a120b,0 10px 24px rgba(0,0,0,.55),0 0 calc(10px + var(--lvl) * 40px) rgba(255,170,80,calc(.15 + var(--lvl) * .5));
   transform:translateY(calc(var(--lvl) * -4px)) rotate(calc(var(--lvl) * 3deg));transition:transform .08s linear}
 .portrait svg{width:62%;margin-top:22%;fill:#c9a36a;opacity:.7}
 .portrait canvas{width:100%;height:100%;display:block}
+/* the 3D innkeeper moves by himself; the CSS bob is only for the silhouette */
+.narrator.has-avatar .portrait{transform:none}
 .bubble{pointer-events:auto;position:relative;max-width:min(360px,70vw);margin:0 0 18px;padding:12px 16px;border-radius:4px;
   color:var(--ink);font-size:14.5px;line-height:1.55;
   background:linear-gradient(165deg,#f1e2bd,#dcc596);box-shadow:0 12px 26px rgba(0,0,0,.5);

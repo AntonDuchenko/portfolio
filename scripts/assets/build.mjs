@@ -12,7 +12,7 @@
 import { Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import {
-  dedup, getBounds, mergeDocuments, meshopt, prune, textureCompress, weld
+  dedup, getBounds, mergeDocuments, meshopt, prune, resample, textureCompress, weld
 } from '@gltf-transform/functions';
 import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -173,5 +173,22 @@ for (const [name, kit] of Object.entries(KITS)) for (const v of VARIANTS) {
   console.log(`${name}.glb: ${Object.keys(manifest).length} models, ${tris} tris`);
   for (const [k, m] of Object.entries(manifest)) console.log(`  ${k.padEnd(34)} ${String(m.tris).padStart(6)}`);
 }
+// The site narrator: one rigged character from the Ultimate Animated Character Pack
+// (Character/, CC0). Flat colours, no textures, so one file serves both tiers. Only the
+// clips the avatar plays are kept (src/site/avatar.ts).
+const CHARACTER = { src: 'Character/glTF/Viking_Male.gltf', clips: ['Idle'], budget: 7000 };
+{
+  const doc = await io.read(join(ROOT, CHARACTER.src));
+  for (const a of doc.getRoot().listAnimations()) if (!CHARACTER.clips.includes(a.getName())) a.dispose();
+  // resample drops keyframes that linear interpolation reproduces anyway
+  await doc.transform(resample(), prune(), dedup(), meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
+  let tris = 0;
+  for (const m of doc.getRoot().listMeshes()) for (const p of m.listPrimitives()) tris += triCount(p);
+  if (tris > CHARACTER.budget) failures.push(`narrator: ${tris} tris > ${CHARACTER.budget}`);
+  await io.write(join(VARIANTS[0].out, 'narrator.glb'), doc);
+  all.narrator = { src: CHARACTER.src, tris, clips: doc.getRoot().listAnimations().map(a => a.getName()) };
+  console.log(`narrator.glb: ${CHARACTER.src}, ${tris} tris, clips ${all.narrator.clips.join(', ')}`);
+}
+
 writeFileSync(join(dirname(fileURLToPath(import.meta.url)), 'manifest.json'), JSON.stringify(all, null, 1) + '\n');
 if (failures.length) { console.error('\nBudget exceeded:\n  ' + failures.join('\n  ')); process.exit(1); }

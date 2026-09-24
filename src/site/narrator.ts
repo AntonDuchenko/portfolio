@@ -1,5 +1,6 @@
 import { audioStarted, loadNarration, narrate } from '../audio/audio';
 import data from './narration.json';
+import { mountAvatar } from './avatar';
 
 /* The innkeeper: narrates each chapter as it reaches the middle of the screen, once per
    visit. A newer chapter interrupts the current line; clicking him skips it. Without
@@ -16,9 +17,9 @@ const said = new Set<string>();
 
 const root = () => document.querySelector<HTMLElement>('.narrator')!;
 
-/** Avatar hook: a 3D character can register to follow the voice level. */
-let avatar: { talk(level: number): void; idle(): void } | null = null;
-export function setAvatar(a: typeof avatar) { avatar = a; }
+/** The 3D innkeeper (avatar.ts) follows the voice level; until it loads, the portrait
+ *  shows the poster's silhouette and bobs via --lvl. */
+let avatar: { talk(level: number): void; idle(): void; greet(): void } | null = null;
 
 function show(text: string) {
   const r = root();
@@ -39,6 +40,7 @@ function speak(id: string) {
   if (said.has(id) || !LINES[id]) return;
   said.add(id);
   current?.stop();
+  if (id === 'intro') avatar?.greet();
   const text = LINES[id];
   show(text);
   const buf = buffers[id];
@@ -71,6 +73,9 @@ export function startNarrator() {
   if (started) return;
   started = true;
   r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
+  mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
+    .then(a => { avatar = a; r.classList.add('has-avatar'); })
+    .catch(e => console.warn('avatar:', e));             // the silhouette stays
   const ids = Object.keys(LINES);
   const ready = audioStarted() ? loadNarration(ids).then(b => { buffers = b; }) : Promise.resolve();
   ready.then(() => {

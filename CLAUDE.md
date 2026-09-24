@@ -99,15 +99,18 @@ Decisions (keep them unless the look is retuned on purpose):
    Records, Send a Raven. Motion is native CSS scroll timelines with an
    IntersectionObserver fallback (`html.no-sda`); transform/opacity/filter only;
    `prefers-reduced-motion` turns it all off. Section ids are hooks for the narrator.
-6. Avatar narrating site sections — narrator done, 3D model pending.
+6. ~~Avatar narrating site sections~~ (done).
    `src/site/narrator.ts`: the innkeeper (third person, voice `bm_lewis`, lines in
    `src/site/narration.json` → `public/audio/narrator/<chapter>.mp3`) speaks when a chapter
    crosses the middle of the screen, once per visit; a newer chapter interrupts; a click
    on him skips. Beds duck to ⅓ while he talks. Without audio: bubbles only.
-   The portrait (`.narrator .portrait`) is the avatar slot; `setAvatar({ talk(level), idle() })`
-   receives the voice RMS each frame. Next: a Quaternius character pack (CC0, same author
-   as the kits) added to the repo → pack it in `scripts/assets/build.mjs` as a `narrator`
-   kit and mount a small three.js canvas in the portrait, animated by talk/idle.
+   `src/site/avatar.ts`: `Viking_Male` from `Character/` (Ultimate Animated Character Pack,
+   CC0) packed as `public/models/narrator.glb` (Idle only, 6.3k tris). The pack faces +Z
+   and has no facial rig: speech is head nods / torso sway / right-hand gesture driven by
+   the voice RMS, layered on Idle; the neck follows the pointer; a nod greets on the intro.
+   Offsets are removed before each mixer update — Idle does not rewrite every bone, and
+   additive offsets on those bones accumulated until the head left the portrait.
+   Swap the character: `CHARACTER.src` in `scripts/assets/build.mjs`, then `npm run assets`.
 
 ## Open decisions
 
