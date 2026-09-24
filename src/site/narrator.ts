@@ -1,6 +1,6 @@
 import { audioStarted, loadNarration, narrate } from '../audio/audio';
 import data from './narration.json';
-import { mountAvatar } from './avatar';
+import { loadAvatar, mountAvatar } from './avatar';
 
 /* The innkeeper: narrates each chapter as it reaches the middle of the screen, once per
    visit. A newer chapter interrupts the current line; clicking him skips it. Without
@@ -65,19 +65,33 @@ function speak(id: string) {
   }
 }
 
+let lines: Promise<void> | null = null;
+/** Called when the walk starts: fetches and decodes the innkeeper's lines and model while
+ *  the scene plays, so none of it lands on the frames where the page appears. */
+export function preloadNarrator(withAudio: boolean) {
+  if (withAudio) lines ??= loadNarration(Object.keys(LINES)).then(b => { buffers = b; });
+  loadAvatar().catch(() => { /* mountAvatar reports it */ });
+}
+
+// after the page has appeared: a second WebGL context and its shader compile are the
+// heaviest step, so they wait for an idle moment
+const whenIdle = (fn: () => void) =>
+  'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 600);
+
 let started = false;
-/** Called on landing. Loads the lines, then narrates chapters as they come into view. */
+/** Called on landing. Narrates chapters as they come into view. */
 export function startNarrator() {
   const r = root();
   r.hidden = false;
   if (started) return;
   started = true;
   r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
-  mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
+  whenIdle(() => mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
     .then(a => { avatar = a; r.classList.add('has-avatar'); })
-    .catch(e => console.warn('avatar:', e));             // the silhouette stays
+    .catch(e => console.warn('avatar:', e)));             // the silhouette stays
   const ids = Object.keys(LINES);
-  const ready = audioStarted() ? loadNarration(ids).then(b => { buffers = b; }) : Promise.resolve();
+  if (audioStarted()) preloadNarrator(true);            // skipped early, or entered straight
+  const ready = lines ?? Promise.resolve();
   ready.then(() => {
     // a chapter "arrives" when it crosses the middle band of the screen
     const io = new IntersectionObserver(entries => {

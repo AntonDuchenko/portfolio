@@ -14,8 +14,15 @@ export interface Avatar { talk(level: number): void; idle(): void; greet(): void
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
+let model: ReturnType<typeof loadGLTF> | null = null;
+/** Fetches and decodes the character; called early (during the walk) so landing only has
+ *  to create the renderer. */
+export function loadAvatar() {
+  return model ??= loadGLTF(`${import.meta.env.BASE_URL}models/narrator.glb`);
+}
+
 export async function mountAvatar(slot: HTMLElement): Promise<Avatar> {
-  const gltf = await loadGLTF(`${import.meta.env.BASE_URL}models/narrator.glb`);
+  const gltf = await loadAvatar();
   const model = gltf.scene;
   const bone = (n: string) => model.getObjectByName(n) as Bone | undefined;
   const head = bone('Head'), neck = bone('Neck'), torso = bone('Torso'), armR = bone('UpperArm.R'), foreR = bone('LowerArm.R');

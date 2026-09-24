@@ -39,8 +39,11 @@ Repository:
 - `scripts/voice/` — synthesises the narration placeholder (Kokoro, offline) into
   `public/audio/voice/line<i>.mp3` from `src/ui/voice-lines.json`. Own `package.json`, so
   CI never installs the native addon or the model: `cd scripts/voice && npm i && npm run generate`.
-- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds and publishes
-  `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a branch → gh-pages).
+- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds, runs the smoke
+  test and publishes `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a
+  branch → gh-pages). A failing test stops the deploy (report uploaded as an artifact).
+- `tests/` — Playwright smoke test (`npm test`, after `npm run build`; runs `vite preview`):
+  gate, scene → page with the virtual clock (`helpers.ts`), no-WebGL fallback, linked files.
 - `main.ts` is a tiny bootstrap: checks WebGL2, then lazy-loads `app.ts` (the scene and
   three.js). Without WebGL2 the site is shown directly (`ui/fallback.ts`).
 - `quality.ts` — tier `low` (touch + small screen, or ≤ 4 GB / ≤ 4 cores) or `high`;
@@ -48,6 +51,9 @@ Repository:
   `public/models/low/` (512 textures, no normal maps — built by `npm run assets`).
 - `scene/merge.ts` — static batching: building and props merged per material after build
   (door leaves, sprites, the sign and mirrored meshes excluded).
+- `scene/spriteBatch.ts` — glow sprites (flames, candles, mist, smoke) drawn as one instanced
+  quad per texture/blending; the `Sprite`s stay as invisible proxies (layer 31) that the
+  rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
@@ -100,8 +106,8 @@ Decisions (keep them unless the look is retuned on purpose):
    (`scene/ground.ts`, 4 draw calls, ~50k tris on the low tier); the ground itself is flat colour.
 3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; placeholder TTS voice).
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
-   and ¼ texture memory; FPS guard; no-WebGL fallback). Not measured on a real phone —
-   check FPS on a device; the rest of the walk's calls are ~50 sprites (could be instanced).
+   and ¼ texture memory; FPS guard; no-WebGL fallback; sprites instanced). Not measured on
+   a real phone — check FPS on a device.
 5. ~~The site behind the poster~~ (done: content from the CV + tavern-themed UI).
    Markup in `index.html` `#site`, styles `src/site/site.css`, behaviour `src/site/site.ts`
    (loaded by the bootstrap, so it also runs without WebGL). The hero is the poster
@@ -122,6 +128,9 @@ Decisions (keep them unless the look is retuned on purpose):
    Offsets are removed before each mixer update — Idle does not rewrite every bone, and
    additive offsets on those bones accumulated until the head left the portrait.
    Swap the character: `CHARACTER.src` in `scripts/assets/build.mjs`, then `npm run assets`.
+   Loading is kept off the landing frames: the glb and the lines are fetched and decoded
+   4 s into the walk (`preloadNarrator`), the avatar's renderer is created on idle after
+   landing. Lines to record for a real voice: `docs/voice-script.md`.
 
 ## Open decisions
 

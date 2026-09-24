@@ -13,13 +13,14 @@ import { addGlobalLights, flame, moonDisc, setMoon, torch, updateFires, warmAmb,
 import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
+import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
 import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/tavern';
 import { buildTerrain } from './scene/terrain';
 import { state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
-import { resetNarrator, startNarrator } from './site/narrator';
+import { preloadNarrator, resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
 
@@ -144,6 +145,7 @@ function frame() {
   updateSmoke(dt);
   updateForest(camZ);
 
+  updateSpriteBatches();
   renderer.render(scene, camera);
 }
 
@@ -166,6 +168,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   // static batching: one draw call per material for the building and its props
   const mf = mergeStatic(front, leaves.map(l => l.pivot)), mh = mergeStatic(hall.tav);
   console.info(`merged meshes: facade ${mf.before} → ${mf.after}, hall ${mh.before} → ${mh.after}`);
+  batchSprites(scene);                                // glow sprites: one draw call per kind
   // dev hook for the numeric checks (hard rules 1–4), stripped from production builds
   if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C, listener } });
   // draw the first frame right away — it shows through the entry gate
@@ -179,6 +182,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);
     if (bufs) initSoundToggle();
+    setTimeout(() => preloadNarrator(!!bufs), 4000);   // a few seconds into the walk
     el.gate.classList.add('off');
     setTimeout(() => el.gate.classList.add('hidden'), 950);
     last = performance.now();
