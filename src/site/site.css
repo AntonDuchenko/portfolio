@@ -112,6 +112,12 @@ a.wax::after{content:"";position:absolute;inset:0;background:linear-gradient(115
   transform:translateX(-120%);transition:transform .7s var(--ease-out)}
 a.wax:hover{box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),inset 0 -3px 6px rgba(0,0,0,.25),0 8px 22px rgba(120,30,10,.45)}
 a.wax:hover::after{transform:translateX(120%)}
+/* the CV: a rolled sheet rather than a seal — parchment and ink, with an arrow */
+a.wax.cv{color:var(--ink);background:linear-gradient(180deg,#f1e2c2,#dcc79e);
+  box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.55),0 3px 10px rgba(40,25,10,.25)}
+a.wax.cv::before{width:10px;height:10px;border-radius:0;background:none;opacity:1;box-shadow:none;
+  border:solid var(--ink);border-width:0 2px 2px 0;transform:translateY(-3px) rotate(45deg)}
+a.wax.cv:hover{box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.7),0 8px 22px rgba(40,25,10,.35)}
 
 /* ── the tavern: boards, lamplight ──────────────────────────────────── */
 .tavern{position:relative;padding:40px clamp(18px,5vw,56px) 60px;

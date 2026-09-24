@@ -15,7 +15,11 @@ body.scene-locked{overflow:hidden;height:100%}
 #gate .card{text-align:center;color:#c8bda7;padding:0 24px}
 #gate h2{font-family:var(--display);font-weight:500;font-size:clamp(34px,6vw,54px);
   margin:0 0 10px;color:#e7dcc6;letter-spacing:.02em}
-#gate p{margin:0 0 26px;color:#7d7466;font-size:14.5px}
+#gate .card{max-width:34em}
+#gate .kicker{margin:0 0 12px;font-family:"IM Fell English SC",var(--display);font-size:13px;letter-spacing:.18em;
+  text-transform:uppercase;color:#a0773f}
+#gate .what{margin:0 auto 28px;max-width:30em;color:#9a8f7c;font-size:15px;line-height:1.6;text-wrap:balance}
+#gate .hint{margin:14px 0 0;color:#5f574a;font-size:12.5px;letter-spacing:.04em}
 #enter{padding:11px 30px;cursor:pointer;font-family:var(--body);font-size:15px;
   color:#e0cda8;background:rgba(201,123,46,.12);
   border:1px solid rgba(201,123,46,.45);border-radius:2px}
