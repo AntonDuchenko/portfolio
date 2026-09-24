@@ -1,6 +1,6 @@
 import { audioStarted, loadNarration, narrate } from '../audio/audio';
 import data from './narration.json';
-import { loadAvatar, mountAvatar } from './avatar';
+import { type Avatar, loadAvatar, mountAvatar } from './avatar';
 
 /* The innkeeper: narrates each chapter as it reaches the middle of the screen, once per
    visit. A newer chapter interrupts the current line; clicking him skips it. Without
@@ -19,7 +19,7 @@ const root = () => document.querySelector<HTMLElement>('.narrator')!;
 
 /** The 3D innkeeper (avatar.ts) follows the voice level; until it loads, the portrait
  *  shows the poster's silhouette and bobs via --lvl. */
-let avatar: { talk(level: number): void; idle(): void; greet(): void } | null = null;
+let avatar: Avatar | null = null;
 
 function show(text: string) {
   const r = root();
@@ -79,30 +79,43 @@ const whenIdle = (fn: () => void) =>
   'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 600);
 
 let started = false;
-/** Called on landing. Narrates chapters as they come into view. */
+/** Called on every landing. Narrates chapters as they come into view. */
 export function startNarrator() {
   const r = root();
   r.hidden = false;
-  if (started) return;
-  started = true;
-  r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
-  whenIdle(() => mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
-    .then(a => { avatar = a; r.classList.add('has-avatar'); })
-    .catch(e => console.warn('avatar:', e)));             // the silhouette stays
-  const ids = Object.keys(LINES);
+  landed = true;
+  avatar?.pause(false);
+  if (!started) {
+    started = true;
+    r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
+    whenIdle(() => mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
+      .then(a => { avatar = a; a.pause(!landed); r.classList.add('has-avatar'); })
+      .catch(e => console.warn('avatar:', e)));           // the silhouette stays
+  }
   if (audioStarted()) preloadNarrator(true);            // skipped early, or entered straight
-  const ready = lines ?? Promise.resolve();
-  ready.then(() => {
-    // a chapter "arrives" when it crosses the middle band of the screen
-    const io = new IntersectionObserver(entries => {
-      for (const e of entries) if (e.isIntersecting) speak(e.target.id);
-    }, { rootMargin: '-35% 0px -45% 0px' });
-    ids.forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
-  });
+  void (lines ?? Promise.resolve()).then(() => { if (landed) watch(Object.keys(LINES)); });
+}
+
+// a chapter "arrives" when it crosses the middle band of the screen. The observer lives
+// only while the page is up: under the scene the page is still laid out (invisible), and
+// a live observer would start the tale again over the walk.
+let io: IntersectionObserver | null = null, landed = false;
+function watch(ids: string[]) {
+  io?.disconnect();
+  io = new IntersectionObserver(entries => {
+    for (const e of entries) if (e.isIntersecting) speak(e.target.id);
+  }, { rootMargin: '-35% 0px -45% 0px' });
+  ids.forEach(id => { const el = document.getElementById(id); if (el) io!.observe(el); });
 }
 
 /** Replaying the scene: stop talking, tell the whole tale again next time. */
 export function resetNarrator() {
+  landed = false;
+  io?.disconnect(); io = null;
   current?.stop(); current = null; said.clear();
-  root().classList.remove('talking', 'open');
+  clearTimeout(hideTimer); cancelAnimationFrame(raf);
+  const r = root();
+  r.classList.remove('talking', 'open');
+  r.hidden = true;
+  avatar?.idle(); avatar?.pause(true);
 }

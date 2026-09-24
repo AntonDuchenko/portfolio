@@ -45,6 +45,34 @@ test('the scene hands over to the page', async ({ page }) => {
   expect(errors()).toEqual([]);
 });
 
+test('replaying the scene silences the innkeeper until the next landing', async ({ page }) => {
+  const errors = collectErrors(page);
+  await virtualClock(page);
+  await page.goto('./?noguard&quality=low');
+  await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
+  await page.locator('#enter').click();
+  await step(page, 20);
+  await page.locator('#skip').click();                // → hold
+  await step(page, 5);
+  await page.locator('#skip').click();                // → straight onto the page
+  await expect(page.locator('.narrator')).toHaveClass(/open/);   // the intro line
+
+  await page.locator('#again').click();               // back to the scene
+  await expect(page.locator('.narrator')).toBeHidden();
+  for (let i = 0; i < 6; i++) {                        // three seconds of the walk
+    await step(page, 10);
+    await expect(page.locator('.narrator')).toBeHidden();
+    await expect(page.locator('.narrator')).not.toHaveClass(/open/);
+  }
+
+  await page.locator('#skip').click();
+  await step(page, 5);
+  await page.locator('#skip').click();
+  await expect(page.locator('.narrator')).toBeVisible();
+  await expect(page.locator('.narrator')).toHaveClass(/open/);   // tells the tale again
+  expect(errors()).toEqual([]);
+});
+
 test('linked files exist', async ({ request }) => {
   for (const [path, type] of [
     ['Anton-Duchenko-CV.pdf', 'application/pdf'], ['og.jpg', 'image/jpeg'],

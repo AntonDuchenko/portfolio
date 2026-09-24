@@ -10,7 +10,7 @@ import { loadGLTF } from '../loaders/gltf';
    head nods, torso sway and a right-hand gesture, layered on top of the Idle clip after
    each mixer update. The head also turns towards the pointer. */
 
-export interface Avatar { talk(level: number): void; idle(): void; greet(): void }
+export interface Avatar { talk(level: number): void; idle(): void; greet(): void; pause(on: boolean): void }
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -104,15 +104,20 @@ export async function mountAvatar(slot: HTMLElement): Promise<Avatar> {
     sway(neck, lookY * .18, lookX * .45, 0);
     renderer.render(scene, camera);
   };
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-    if (running) { last = performance.now(); loop(); }
-  });
+  // renders only while the page is up and the tab is visible (not under a replayed scene)
+  let paused = false;
+  const resume = () => {
+    const run = !paused && !document.hidden;
+    if (run && !running) { running = true; last = performance.now(); loop(); }
+    else if (!run) running = false;
+  };
+  document.addEventListener('visibilitychange', resume);
   loop();
 
   return {
     talk(l) { level = l; },
     idle() { level = 0; },
-    greet() { greetT = 0; }
+    greet() { greetT = 0; },
+    pause(on) { paused = on; resume(); }
   };
 }
