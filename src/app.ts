@@ -5,7 +5,7 @@ import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import * as C from './config';
 import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, SPEED, STOP_AT, T_HOLD } from './config';
-import { crossfade, layoutPane, maskDoor } from './portal/portal';
+import { crossfade, layoutPane, maskDoor, posterCoversScreen } from './portal/portal';
 import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
 import { buildGround } from './scene/ground';
@@ -117,11 +117,12 @@ function frame() {
   updateAudio(dt, camZ);
   placeCamera(camZ, pitch, bob);
 
+  let hidden3d = false;
   if (state.phase === 'open' || state.phase === 'fly') {
     const sc = layoutPane();
     if (crossfade(sc)) { sfxPaperOnce(); inkHero(); }   // entered the paper: the page takes over
     if (camZ > GATE_Z + .3) maskDoor(state.doorAngle);
-    else el.portal.style.clipPath = 'none';
+    else { el.portal.style.clipPath = 'none'; hidden3d = posterCoversScreen(); }
   }
 
   const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * Math.random();
@@ -145,6 +146,9 @@ function frame() {
   updateSmoke(dt);
   updateForest(camZ);
 
+  // the last ~second of the flight is all parchment: skip the 3D frame, it cannot show,
+  // and the GPU is needed for the page fading in on top
+  if (hidden3d) return;
   updateSpriteBatches();
   renderer.render(scene, camera);
 }

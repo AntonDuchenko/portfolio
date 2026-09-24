@@ -21,12 +21,21 @@ const toScreen = (x: number, y: number, z: number) => {
   return { x: (v3.x * .5 + .5) * innerWidth, y: (-v3.y * .5 + .5) * innerHeight };
 };
 
+let paneCovers = false;
+/** True when the last layoutPane() left the parchment over the whole viewport — nothing
+ *  of the 3D scene can show (valid only once the door mask is off). */
+export const posterCoversScreen = () => paneCovers;
+
 /** Fits the pane to the projected sheet; returns the screen-height fraction it covers. */
 export function layoutPane() {
   const top = toScreen(0, SHEET_Y + SHEET_H / 2, POSTER_Z);
   const bot = toScreen(0, SHEET_Y - SHEET_H / 2, POSTER_Z);
   const h = Math.abs(bot.y - top.y), cx = (top.x + bot.x) / 2, cy = (top.y + bot.y) / 2;
   const sc = h / innerHeight;
+  // on-screen sheet (portrait 1:1.9), 2 % in from every side: the torn clip-path edge
+  // bites up to 1.5 % in
+  const hw = h / 1.9 * .48, hh = h * .48;
+  paneCovers = cx - hw <= 0 && cx + hw >= innerWidth && cy - hh <= 0 && cy + hh >= innerHeight;
   el.pane.style.transform =
     `translate(${(cx - innerWidth / 2).toFixed(1)}px, ${(cy - innerHeight / 2).toFixed(1)}px) scale(${sc.toFixed(4)})`;
   return sc;
