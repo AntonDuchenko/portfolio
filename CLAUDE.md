@@ -5,7 +5,7 @@ camera flies to a WANTED poster on a wooden post → poster becomes the resume p
 
 ## Current state
 
-`prototype/tavern-scene.html` is the **behavioural spec**, not the codebase.
+`docs/prototype/tavern-scene.html` is the **behavioural spec**, not the codebase.
 Single file, three.js r128 UMD, all geometry is primitives, audio inlined as base64.
 It works and the direction is approved — timing, camera, audio mix and transitions are final.
 Geometry is placeholder and gets replaced by real assets.
@@ -14,7 +14,15 @@ Detailed numbers and reasoning: `docs/scene-spec.md`. Read it before touching th
 
 The port lives in `src/` (Vite + TypeScript, three 0.186, ES modules): `npm install`,
 `npm run dev`, `npm run build` (typecheck + bundle), `npm run assets` (rebuild models).
-Layout:
+
+Repository:
+
+- `src/` — the app (below). `public/` — only files the page loads (models, audio, CV, icons).
+- `assets-src/` — raw sources, committed but never shipped: `kits/` (Quaternius glTF
+  exports incl. `Character/`), `audio/` (original freesound recordings). See its README.
+- `scripts/` — build tools (`assets/`, `voice/`). `docs/` — spec, prototype, voice script.
+
+`src/` layout:
 
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
@@ -23,7 +31,7 @@ Layout:
 - `portal/` — DOM projection of the poster, door mask, resume crossfade.
 - `audio/` — loading from `public/audio`, beds, positional sources, one-shots.
 - `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
-- `loaders/gltf.ts` — `GLTFLoader` with meshopt and Draco (decoder bundled by Vite).
+- `loaders/gltf.ts` — `GLTFLoader` with meshopt (no Draco: nothing uses it, 1.3 MB of wasm).
 - `scripts/assets/build.mjs` — packs the kits into `public/models/{forest,village,props}.glb`
   (one file per kit, models as named root nodes): simplification to budget, 1K WebP
   textures, meshopt. Fails the build if a budget is exceeded. Writes `manifest.json`
@@ -106,7 +114,7 @@ Decisions (keep them unless the look is retuned on purpose):
    `src/site/narration.json` → `public/audio/narrator/<chapter>.mp3`) speaks when a chapter
    crosses the middle of the screen, once per visit; a newer chapter interrupts; a click
    on him skips. Beds duck to ⅓ while he talks. Without audio: bubbles only.
-   `src/site/avatar.ts`: `Viking_Male` from `Character/` (Ultimate Animated Character Pack,
+   `src/site/avatar.ts`: `Viking_Male` from `assets-src/kits/Character/` (Ultimate Animated Character Pack,
    CC0) packed as `public/models/narrator.glb` (Idle only, 6.3k tris). The pack faces +Z
    and has no facial rig: speech is head nods / torso sway / right-hand gesture driven by
    the voice RMS, layered on Idle; the neck follows the pointer; a nod greets on the intro.

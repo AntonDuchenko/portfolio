@@ -1,6 +1,6 @@
 # Scene spec
 
-Timing, camera, audio and transitions are from `prototype/tavern-scene.html` and are
+Timing, camera, audio and transitions are from `docs/prototype/tavern-scene.html` and are
 approved. The world layout below is the **asset version**: the building was rebuilt from
 the Medieval Village kit at real scale (1:1, 2 m grid), so it is smaller than the
 prototype's. Units are metres and seconds. The camera travels along −Z; `d` = metres

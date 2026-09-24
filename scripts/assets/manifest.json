@@ -552,7 +552,7 @@
   }
  },
  "narrator": {
-  "src": "Character/glTF/Viking_Male.gltf",
+  "src": "assets-src/kits/Character/glTF/Viking_Male.gltf",
   "tris": 6264,
   "clips": [
    "Idle"

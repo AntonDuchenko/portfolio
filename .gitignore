@@ -1,27 +1,28 @@
 node_modules/
 dist/
 .DS_Store
+test-results/
+playwright-report/
 
 # Raw 144 MB field recording; processed version lives in public/audio/forest.mp3
-410357__felixblume__*.wav
+assets-src/audio/410357__felixblume__*.wav
 
 # Asset kits: keep only glTF exports (FBX/OBJ/engine textures are duplicates)
-/Stylized Nature MegaKit[[]Standard]/*
-!/Stylized Nature MegaKit[[]Standard]/glTF/
-/Fantasy Props MegaKit[[]Standard]/*
-!/Fantasy Props MegaKit[[]Standard]/Exports/
-/Fantasy Props MegaKit[[]Standard]/Exports/*
-!/Fantasy Props MegaKit[[]Standard]/Exports/glTF/
-/Medieval Village MegaKit[[]Standard]/*
-!/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/
-/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/*
-!/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/glTF/
-
+/assets-src/kits/Stylized Nature MegaKit[[]Standard]/*
+!/assets-src/kits/Stylized Nature MegaKit[[]Standard]/glTF/
+/assets-src/kits/Fantasy Props MegaKit[[]Standard]/*
+!/assets-src/kits/Fantasy Props MegaKit[[]Standard]/Exports/
+/assets-src/kits/Fantasy Props MegaKit[[]Standard]/Exports/*
+!/assets-src/kits/Fantasy Props MegaKit[[]Standard]/Exports/glTF/
+/assets-src/kits/Medieval Village MegaKit[[]Standard]/*
+!/assets-src/kits/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/
+/assets-src/kits/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/*
+!/assets-src/kits/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/glTF/
+/assets-src/kits/Character/*
+!/assets-src/kits/Character/glTF/
+!/assets-src/kits/Character/License.txt
+!/assets-src/kits/Character/Preview.png
 
 # voice generator (scripts/voice): its own deps and the cached TTS model
 scripts/voice/node_modules/
 scripts/voice/.cache/
-/Character/*
-!/Character/glTF/
-!/Character/License.txt
-!/Character/Preview.png

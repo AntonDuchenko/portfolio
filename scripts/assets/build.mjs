@@ -28,9 +28,9 @@ const VARIANTS = [
   { out: join(ROOT, 'public/models/low'), tex: 512, normalMaps: false }
 ];
 
-const NATURE = 'Stylized Nature MegaKit[Standard]/glTF';
-const VILLAGE = 'Medieval Village MegaKit[Standard]/Medieval Village MegaKit[Standard]/glTF';
-const PROPS = 'Fantasy Props MegaKit[Standard]/Exports/glTF';
+const NATURE = 'assets-src/kits/Stylized Nature MegaKit[Standard]/glTF';
+const VILLAGE = 'assets-src/kits/Medieval Village MegaKit[Standard]/Medieval Village MegaKit[Standard]/glTF';
+const PROPS = 'assets-src/kits/Fantasy Props MegaKit[Standard]/Exports/glTF';
 
 /* key: { src, tris: {material: target triangles}, budget } */
 const KITS = {
@@ -174,9 +174,9 @@ for (const [name, kit] of Object.entries(KITS)) for (const v of VARIANTS) {
   for (const [k, m] of Object.entries(manifest)) console.log(`  ${k.padEnd(34)} ${String(m.tris).padStart(6)}`);
 }
 // The site narrator: one rigged character from the Ultimate Animated Character Pack
-// (Character/, CC0). Flat colours, no textures, so one file serves both tiers. Only the
+// (assets-src/kits/Character, CC0). Flat colours, no textures, so one file serves both tiers. Only the
 // clips the avatar plays are kept (src/site/avatar.ts).
-const CHARACTER = { src: 'Character/glTF/Viking_Male.gltf', clips: ['Idle'], budget: 7000 };
+const CHARACTER = { src: 'assets-src/kits/Character/glTF/Viking_Male.gltf', clips: ['Idle'], budget: 7000 };
 {
   const doc = await io.read(join(ROOT, CHARACTER.src));
   for (const a of doc.getRoot().listAnimations()) if (!CHARACTER.clips.includes(a.getName())) a.dispose();

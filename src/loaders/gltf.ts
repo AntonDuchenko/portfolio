@@ -1,16 +1,11 @@
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
-/* Loader for the kit models (meshopt-compressed, see scripts/assets/build.mjs); Draco is
-   supported too. DRACOLoader resolves its decoder with new URL(…, import.meta.url), so
-   Vite bundles it; it is only fetched when a Draco mesh shows up. */
-
-let draco: DRACOLoader | null = null;
+/* Loader for the models built by scripts/assets/build.mjs: meshopt-compressed only.
+   No Draco — its decoder added ~1.3 MB of wasm to the build and nothing used it. */
 
 export function createGLTFLoader() {
-  draco ??= new DRACOLoader();
-  return new GLTFLoader().setDRACOLoader(draco).setMeshoptDecoder(MeshoptDecoder);
+  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 }
 
 export async function loadGLTF(url: string) {

@@ -1,6 +1,6 @@
 import { Color } from 'three';
 
-// All numbers are from prototype/tavern-scene.html (see docs/scene-spec.md). Metres, seconds.
+// All numbers are from docs/prototype/tavern-scene.html (see docs/scene-spec.md). Metres, seconds.
 // The camera travels along −Z; `d` = metres inside the tavern past the facade.
 
 // The building follows the Medieval Village kit grid (1:1): wall modules 2 m wide,
