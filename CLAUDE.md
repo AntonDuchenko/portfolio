@@ -57,6 +57,12 @@ Repository:
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
+- `?perf` (`ui/perf.ts`): frame times per phase (walk/hold/open/fly/fade/site), shown 4 s after
+  landing — for real devices; the container has no GPU and cannot reproduce phone jank.
+- Transition cost, measured in Chromium traces: `#site` is its own layer during the scene
+  (`will-change: opacity`), the hero name inks without blur, 3D frames are skipped while the
+  poster covers the screen. Rejected: `will-change: transform` on `#pane` (−20 % raster but
+  the poster turns visibly soft when scaled up) and dropping the poster shadow (−11 %).
 - All user-facing content is in English (any audience).
 - Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
   `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the
