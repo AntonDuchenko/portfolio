@@ -1,8 +1,9 @@
 import { ACESFilmicToneMapping, FogExp2, Scene, WebGLRenderer } from 'three';
 import { FOG_OUT, cfg } from '../config';
+import { Q } from '../quality';
 
-export const renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+export const renderer = new WebGLRenderer({ antialias: Q.antialias, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, Q.pixelRatio));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1;

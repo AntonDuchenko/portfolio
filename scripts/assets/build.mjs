@@ -21,8 +21,12 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const OUT = join(ROOT, 'public/models');
-const TEX_MAX = 1024;
+// Two variants: the full one, and a low tier for phones and weak GPUs (src/quality.ts):
+// half-size textures and no normal maps, ~¼ of the texture memory. Same geometry.
+const VARIANTS = [
+  { out: join(ROOT, 'public/models'), tex: 1024, normalMaps: true },
+  { out: join(ROOT, 'public/models/low'), tex: 512, normalMaps: false }
+];
 
 const NATURE = 'Stylized Nature MegaKit[Standard]/glTF';
 const VILLAGE = 'Medieval Village MegaKit[Standard]/Medieval Village MegaKit[Standard]/glTF';
@@ -108,7 +112,7 @@ async function loadItem(dir, key, item) {
   return doc;
 }
 
-async function buildKit(name, kit) {
+async function buildKit(name, kit, v) {
   const target = new Document();
   target.createBuffer();
   const main = target.createScene(name);
@@ -129,13 +133,13 @@ async function buildKit(name, kit) {
     for (const a of target.getRoot().listAccessors()) if (a.getBuffer() === b) a.setBuffer(buffer);
     b.dispose();
   }
-  if (kit.dropNormalMaps) {
+  if (kit.dropNormalMaps || !v.normalMaps) {
     for (const m of target.getRoot().listMaterials()) m.setNormalTexture(null);
   }
   await target.transform(
     dedup(),
     prune(),
-    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [TEX_MAX, TEX_MAX], quality: 85 }),
+    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [v.tex, v.tex], quality: 85 }),
     meshopt({ encoder: MeshoptEncoder, level: 'medium' })
   );
 
@@ -152,17 +156,19 @@ async function buildKit(name, kit) {
   }
   for (const t of target.getRoot().listTextures()) {
     const s = t.getSize();
-    if (s && Math.max(...s) > TEX_MAX) errors.push(`${name}: texture ${t.getName()} ${s.join('x')} > ${TEX_MAX}`);
+    if (s && Math.max(...s) > v.tex) errors.push(`${name}: texture ${t.getName()} ${s.join('x')} > ${v.tex}`);
   }
-  mkdirSync(OUT, { recursive: true });
-  await io.write(join(OUT, `${name}.glb`), target);
+  mkdirSync(v.out, { recursive: true });
+  await io.write(join(v.out, `${name}.glb`), target);
   return { manifest, errors };
 }
 
 const all = {}, failures = [];
-for (const [name, kit] of Object.entries(KITS)) {
-  const { manifest, errors } = await buildKit(name, kit);
-  all[name] = manifest; failures.push(...errors);
+for (const [name, kit] of Object.entries(KITS)) for (const v of VARIANTS) {
+  const { manifest, errors } = await buildKit(name, kit, v);
+  failures.push(...errors);
+  if (v !== VARIANTS[0]) continue;
+  all[name] = manifest;
   const tris = Object.values(manifest).reduce((s, m) => s + m.tris, 0);
   console.log(`${name}.glb: ${Object.keys(manifest).length} models, ${tris} tris`);
   for (const [k, m] of Object.entries(manifest)) console.log(`  ${k.padEnd(34)} ${String(m.tris).padStart(6)}`);

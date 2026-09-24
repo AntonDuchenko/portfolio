@@ -2,6 +2,7 @@ import {
   Box3, BufferAttribute, BufferGeometry, InstancedMesh, type Material, Matrix4, Mesh, type Object3D
 } from 'three';
 import { loadGLTF } from '../loaders/gltf';
+import { Q } from '../quality';
 
 /* Kit models, built by scripts/assets/build.mjs: one .glb per kit, each model is a root
    node named by its key (see scripts/assets/manifest.json for tris and bounds). */
@@ -12,7 +13,7 @@ type Kit = typeof KITS[number];
 const roots = {} as Record<Kit, Object3D>;
 
 export async function loadKits() {
-  const loaded = await Promise.all(KITS.map(k => loadGLTF(`${import.meta.env.BASE_URL}models/${k}.glb`)));
+  const loaded = await Promise.all(KITS.map(k => loadGLTF(`${import.meta.env.BASE_URL}${Q.models}${k}.glb`)));
   KITS.forEach((k, i) => { roots[k] = loaded[i].scene; roots[k].updateMatrixWorld(true); });
 }
 

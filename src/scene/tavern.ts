@@ -148,6 +148,7 @@ export function buildFacade() {
     p.add(leaf);
     leaves.push({ pivot: p, dir: s });
   }
+  return front;
 }
 
 export function updateSmoke(dt: number) {
