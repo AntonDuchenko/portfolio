@@ -1,8 +1,10 @@
 import './styles.css';
+import * as THREE from 'three';
 import { Color, Vector3 } from 'three';
 import { loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio } from './audio/audio';
 import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
+import * as C from './config';
 import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, STOP_AT, T_HOLD } from './config';
 import { crossfade, layoutPane, maskDoor } from './portal/portal';
 import { loadKits } from './scene/assets';
@@ -117,6 +119,8 @@ loadKits().then(() => {
   buildForest();
   buildFacade();
   buildPost(buildHall());
+  // dev hook for the numeric checks (hard rules 1–4), stripped from production builds
+  if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C } });
   // draw the first frame right away — it shows through the entry gate
   camera.position.set(0, EYE, 0); camera.updateMatrixWorld();
   renderer.render(scene, camera);

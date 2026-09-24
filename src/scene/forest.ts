@@ -1,4 +1,6 @@
-import { DynamicDrawUsage, type InstancedMesh, NormalBlending, Object3D } from 'three';
+import {
+  Color, DynamicDrawUsage, type InstancedMesh, type Material, MeshStandardMaterial, NormalBlending, Object3D
+} from 'three';
 import { GATE_Z } from '../config';
 import { rand, side } from '../random';
 import { bounds, instanced, parts } from './assets';
@@ -23,8 +25,21 @@ function write(f: Field, i: number) {
   dummy.scale.set(d.w, d.h, d.w); dummy.updateMatrix();
   for (const m of f.meshes) m.setMatrixAt(i, dummy.matrix);
 }
+// The Nature kit is painted for daylight; the prototype's forest was near-black
+// (bark 0x1d1f26). Multiply the kit colours down into a cold night tone.
+const NIGHT_TINT: Record<string, number> = {
+  Leaves_Pine: 0x4f6166, Bark_NormalTree: 0x5d5a66, Bark_DeadTree: 0x6e6e78, Rocks: 0x565c66
+};
+const tinted = new Set<Material>();
+function night(m: Material) {
+  const tint = NIGHT_TINT[m.name];
+  if (tint === undefined || tinted.has(m) || !(m instanceof MeshStandardMaterial)) return;
+  m.color.multiply(new Color(tint)); tinted.add(m);
+}
+
 function field(name: string, count: number, place: (z: number, size: Size) => Placement) {
   const ps = parts('forest', name), b = bounds(ps);
+  ps.forEach(p => night(p.material));
   // horizontal reach from the trunk and height of the unscaled model
   const size = { reach: Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z), height: b.max.y };
   const meshes = instanced(ps, count);

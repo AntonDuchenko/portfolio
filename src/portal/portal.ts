@@ -1,7 +1,7 @@
 import { MathUtils, Vector3 } from 'three';
 import { camera } from '../camera/camera';
 import { easeInOut } from '../camera/easing';
-import { DOOR_H, DOOR_W, GATE_Z, POSTER_Z, SHEET_H, SHEET_Y } from '../config';
+import { DOOR_H, DOOR_HINGE_Z, DOOR_W, GATE_Z, POSTER_Z, SHEET_H, SHEET_Y } from '../config';
 import { el } from '../ui/dom';
 
 /* The poster and the resume are DOM, not textures. A world-space rectangle (poster
@@ -37,7 +37,7 @@ export function layoutPane() {
    leaves (hard rule 4). Project the real free-edge coordinates instead. */
 export function maskDoor(angle: number) {
   const half = DOOR_W / 2;
-  const ez = GATE_Z - half * Math.sin(angle);          // free edge, moved inward
+  const ez = GATE_Z + DOOR_HINGE_Z - half * Math.sin(angle);   // free edge, moved inward
   const L = toScreen(-half * (1 - Math.cos(angle)), SHEET_Y, ez);
   const R = toScreen(half * (1 - Math.cos(angle)), SHEET_Y, ez);
   const T = toScreen(0, DOOR_H - .3, GATE_Z);

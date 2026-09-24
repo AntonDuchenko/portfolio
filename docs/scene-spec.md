@@ -1,33 +1,41 @@
 # Scene spec
 
-All values below are taken from `prototype/tavern-scene.html` and are approved.
-Units are metres and seconds. The camera travels along −Z; `d` = metres inside the tavern
-past the facade, `D(d) = GATE_Z − d`.
+Timing, camera, audio and transitions are from `prototype/tavern-scene.html` and are
+approved. The world layout below is the **asset version**: the building was rebuilt from
+the Medieval Village kit at real scale (1:1, 2 m grid), so it is smaller than the
+prototype's. Units are metres and seconds. The camera travels along −Z; `d` = metres
+inside the tavern past the facade, `D(d) = GATE_Z − d`.
 
 ## World layout
 
-| What | Value |
-|---|---|
-| Facade plane | `GATE_Z = −132` |
-| Door opening | 3.6 wide × 4.6 high, two leaves, open **inward** |
-| Facade | 18.8 wide, 9 high, stone plinth 1.3 (cut around the door), timber frame above |
-| Tavern hall | 16 wide × 20 deep × 5.6 high, whole group offset `y = −0.24` |
-| Hall floor top | y = 0.06 (flush with outside ground at the threshold) |
-| Threshold sill | dark wood, top at 0.06 |
-| Ceiling beams | every 2.5 m (`TAV_LEN / 8`) |
-| Post | at `d = 13`, 1.35 × 1.35, floor to ceiling |
-| Poster | on the post's front face, centre y = 1.81, height 1.95, aspect 1 : 1.9 |
-| Bar | back wall, counter at `d ≈ 17.4` |
-| Hearth | left wall at `d = 7` |
-| Hanging lanterns | `d = 5, 10, 15`, exactly on beams |
-| Tables | 6 round tables along the walls, centre aisle kept clear |
+| What | Value | Prototype |
+|---|---|---|
+| Facade plane | `GATE_Z = −132` (outside face of the wall) | same |
+| Wall modules | 2 m wide, 3.12 per storey, solid from z 0 (outside) to −0.2 (inside) | — |
+| Door opening | 1.79 wide × 2.4 high between kit posts, two leaves, open **inward**, hinges mid-wall (−0.1) | 3.6 × 4.6 |
+| Facade | 3 modules = 6 wide, 2 storeys + gable; stone ground floor, plaster above | 18.8 × 9 |
+| Tavern hall | 6 wide × 14 deep × 6.24 high (open to the roof), one `Roof_RoundTiles_6x14` | 16 × 20 × 5.6 |
+| Hall floor top | y = 0.06 (flush with the sill); floor starts at the inside face | same |
+| Threshold sill | dark wood, top at 0.06 | same |
+| Tie beams | every 2 m (`d = 2 … 12`) at y 4.6, ends 0.2 m inside the side walls | ceiling beams every 2.5 |
+| Post | at `d = 10`, 1.1 × 1.1, floor to the tie beam | `d = 13`, 1.35 |
+| Poster | on the post's front face, centre y = 1.81, height 1.95, aspect 1 : 1.9 | same |
+| Bar | cabinets across the back at `d = 12.2`, bottle shelves on the back wall | `d ≈ 17.4` |
+| Hearth | left wall at `d = 6`, under the chimney | `d = 7` |
+| Chandeliers | `d = 4, 8`, chain end 1 cm into the tie beam | lanterns `d = 5, 10, 15` |
+| Tables | 4 long tables along the walls with benches, aisle `|x| < 0.83` clear | 6 round |
+
+Kit placement numbers (bounds, tris) are in `scripts/assets/manifest.json`.
+The chosen models and their budgets are listed in `scripts/assets/build.mjs`.
 
 Terrain: `terrainY(x, z)` is one global function. Flat for |x| < 2.2 (the path),
 hills beyond (amplitude 1.1), flattens to 0 within 20 m of the facade and sinks up to
 −1.8 m under the building. Trees and rocks sample the same function.
 
 Forest is finite (route is 0 → GATE_Z), terrain is 3 static segments of 80 m.
-No trees past `GATE_Z + 4`.
+No trees past `GATE_Z + 4`. Nature kit: `Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2`,
+simplified to ≤ 1200 / ≤ 250 tris, 6 instanced draw calls in total. Pines stand at least
+their crown reach + 1.2 m from the camera line, so branches never cross the path.
 
 ## Camera timeline
 
@@ -75,9 +83,12 @@ The poster and the resume are DOM, not textures.
   street lanterns and mist out.
 - Torch is carried at camera-space `(−0.34, +0.34, −1.15)`. On `fly` it detaches and
   stays at the threshold.
-- Prototype light values are r128 legacy units. The port keeps them as written and converts
-  at the light (`src/scene/lights.ts`): ×π for ambient/hemisphere/directional, a fitted
-  factor + decay per point light so the falloff follows the legacy `(1 − d/R)²` curve.
+- Prototype light values are r128 legacy units. The code keeps them as written and converts
+  at the light (`src/scene/lights.ts`): ×π for ambient/hemisphere/directional; point lights
+  are physical (1/d²) and match the prototype's brightness at a reference distance `dRef`
+  (lanterns 1.5 m, hearth 2, chandeliers 1.6, torch 2).
+- Checked against prototype frames (mean luminance, 0–255): forest 43 vs 42, ground 58 vs
+  55, path 108 vs 104, at the door 76 vs 81; the hall reads ~87–101 vs ~70–80.
 
 ## Audio
 
@@ -101,7 +112,9 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
 
 ## Known placeholders
 
-- All geometry.
+- Ground and path are still procedural flat-colour meshes (no kit ground tiles).
+- Custom boxes wearing kit materials (`src/scene/kitbox.ts`): door lintel filler, sill,
+  notice post, hearth, bar top. The kits have no fireplace or notice board.
 - Poster copy and the resume content.
 - The tavern sign is a canvas texture with the word «ТАВЕРНА».
 - Voice lines are timed to walked distance; must become driven by audio duration.

@@ -17,5 +17,3 @@ dist/
 /Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/*
 !/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/glTF/
 
-# Draco decoder, copied from node_modules on install
-public/draco/

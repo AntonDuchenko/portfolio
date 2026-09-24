@@ -212,32 +212,18 @@
     0.277
    ]
   },
-  "Roof_RoundTiles_6x10": {
-   "src": "Roof_RoundTiles_6x10",
-   "tris": 4300,
+  "Roof_RoundTiles_6x14": {
+   "src": "Roof_RoundTiles_6x14",
+   "tris": 5372,
    "min": [
     -4.125,
     -0.782,
-    -5.898
+    -7.877
    ],
    "max": [
     4.125,
     4.89,
-    5.955
-   ]
-  },
-  "Roof_RoundTiles_6x8": {
-   "src": "Roof_RoundTiles_6x8",
-   "tris": 3796,
-   "min": [
-    -4.125,
-    -0.782,
-    -4.829
-   ],
-   "max": [
-    4.125,
-    4.89,
-    4.854
+    7.829
    ]
   },
   "Roof_Front_Brick6": {

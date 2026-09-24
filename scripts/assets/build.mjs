@@ -47,7 +47,7 @@ const KITS = {
       'Wall_Plaster_Straight', 'Wall_Plaster_Window_Wide_Flat', 'Wall_Plaster_Window_Wide_Round',
       'Wall_Plaster_WoodGrid', 'Corner_Exterior_Wood', 'Wall_BottomCover', 'Door_8_Flat',
       'Window_Wide_Flat1', 'Window_Wide_Round1',
-      'Roof_RoundTiles_6x10', 'Roof_RoundTiles_6x8', 'Roof_Front_Brick6',
+      'Roof_RoundTiles_6x14', 'Roof_Front_Brick6',
       'Prop_Chimney', 'Floor_WoodDark', 'HoleCover_Straight'
     ].map(n => [n, { src: n }]))
   },

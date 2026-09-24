@@ -1,52 +1,46 @@
-import { AmbientLight, type ColorRepresentation, DirectionalLight, HemisphereLight, PointLight } from 'three';
+import { AmbientLight, Color, DirectionalLight, HemisphereLight, LinearSRGBColorSpace, PointLight } from 'three';
 import { cfg } from '../config';
 import { fireTex, type GlowSprite, sprite } from './sprites';
 import { scene } from './stage';
 
 /* ── light units ─────────────────────────────────────────────────────
-   Every intensity in this codebase is written in the prototype's r128 "legacy" units
-   and converted here. three ≥ 0.155 dropped the legacy mode:
+   Intensities in this codebase are written in the prototype's r128 "legacy" units and
+   converted here (three ≥ 0.155 has physical units only):
 
    - ambient / hemisphere / directional: legacy multiplied by π in the shader → ×π, exact.
-   - point: legacy irradiance was π·I·(1 − d/R)², physical is I·d^−decay·(1 − (d/R)⁴)².
-     A single ×k at decay 2 cannot match: vs. the prototype it gives ×14 at 1 m and
-     ×0.45 at 8 m for the torch. So each light gets k and decay from a least-squares
-     fit in log space, weighted by the legacy brightness, over 0.5 m … 0.97·R.
-     Result: decay ≈ 0.55–0.85, k ≈ 2.8–4.1, within about ±30 % of the prototype
-     between 1 m and 8 m. Retune in real units once the real assets are in.
+   - point: legacy irradiance was π·I·(1 − d/R)², nearly flat; physical is I/d²·window.
+     With the textured kit assets the flat legacy falloff lit whole walls evenly and read
+     as daylight, so point lights are physical (decay 2) and match the prototype at a
+     reference distance dRef: brightness at dRef is the approved one, falloff is real.
+   - colours: the prototype used hex values as linear numbers (no colour management).
+     Light colours keep those linear values (legacyColor) so the light energy matches;
+     surfaces use the kits' sRGB textures.
    ──────────────────────────────────────────────────────────────────── */
 export const LEGACY = Math.PI;
 
-export function fitLegacyFalloff(range: number) {
-  const N = 200, d0 = .5, d1 = range * .97;
-  let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
-  for (let i = 0; i < N; i++) {
-    const d = d0 + (d1 - d0) * i / (N - 1), q = d / range;
-    const legacy = Math.PI * (1 - q) ** 2, window = (1 - q ** 4) ** 2;
-    const x = Math.log(d), y = Math.log(legacy / window), w = legacy;
-    sw += w; sx += w * x; sy += w * y; sxx += w * x * x; sxy += w * x * y;
-  }
-  const slope = (sw * sxy - sx * sy) / (sw * sxx - sx * sx);
-  return { decay: -slope, k: Math.exp((sy - slope * sx) / sw) };
-}
+export const legacyColor = (hex: number) =>
+  new Color().setRGB((hex >> 16 & 255) / 255, (hex >> 8 & 255) / 255, (hex & 255) / 255, LinearSRGBColorSpace);
 
 export class RescaledPointLight extends PointLight {
   readonly k: number;
-  constructor(color: ColorRepresentation, range: number) {
-    const { k, decay } = fitLegacyFalloff(range);
-    super(color, 0, range, decay);
-    this.k = k;
+  constructor(hex: number, range: number, dRef = 1.5) {
+    super(legacyColor(hex), 0, range, 2);
+    const q = dRef / range;
+    this.k = Math.PI * dRef * dRef * (1 - q) ** 2 / (1 - q ** 4) ** 2;
   }
   /** intensity in prototype (r128 legacy) units */
-  setLegacy(v: number) { this.intensity = v * this.k; }
+  setLegacy(v: number) { this.intensity = v * this.k * LOOK.points; }
 }
 
+/** global look knobs, tuned against the prototype frames */
+export const LOOK = { points: 1, ambient: 1 };
+
 /* ── global lights ───────────────────────────────────────────────── */
-export const moon = new DirectionalLight(0x8aa4e0, 1.5 * LEGACY); moon.position.set(-6, 14, 5);
-export const sky = new HemisphereLight(0x33477a, 0x0b0d10, .55 * LEGACY);
-export const ambient = new AmbientLight(0x18233d, .5 * LEGACY);
-export const warmAmb = new AmbientLight(0x4a2e18, 0);          // inside the tavern
-export const torch = new RescaledPointLight(0xff8c33, 24); torch.setLegacy(2.8);
+export const moon = new DirectionalLight(legacyColor(0x8aa4e0), 1.5 * LEGACY); moon.position.set(-6, 14, 5);
+export const sky = new HemisphereLight(legacyColor(0x33477a), legacyColor(0x0b0d10), .55 * LEGACY);
+export const ambient = new AmbientLight(legacyColor(0x18233d), .5 * LEGACY);
+export const warmAmb = new AmbientLight(legacyColor(0x4a2e18), 0);          // inside the tavern
+export const torch = new RescaledPointLight(0xff8c33, 24, 2); torch.setLegacy(2.8);
 
 export const flame = sprite(fireTex, .78, .8, false);
 export const moonDisc = sprite(fireTex, 24, .55, false);

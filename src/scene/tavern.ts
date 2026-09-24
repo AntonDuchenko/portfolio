@@ -1,24 +1,57 @@
-import { BoxGeometry, CanvasTexture, Group, Mesh, MeshStandardMaterial, NormalBlending } from 'three';
-import { D, DOOR_H, DOOR_W, GATE_Z, TAV_END, TAV_H, TAV_HW, TAV_LEN } from '../config';
+import {
+  Box3, BoxGeometry, CanvasTexture, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  NormalBlending, type Object3D
+} from 'three';
+import {
+  D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, MOD, STOREY, TAV_END, TAV_H, TAV_HW, TAV_LEN, WALL_IN
+} from '../config';
 import { rand } from '../random';
+import { kitMaterial, model } from './assets';
+import { kitBox } from './kitbox';
 import { fires, RescaledPointLight } from './lights';
-import { box, cyl, M } from './materials';
+import { box, M } from './materials';
 import { fireTex, type GlowSprite, smokeTex, sprite } from './sprites';
 import { scene } from './stage';
 
-const FW = 9.4, FH = 9;                                   // facade half-width and height
-const SIGN_X = -DOOR_W / 2 - 2.6;
+/* The tavern, built from Medieval Village kit modules on its 2 m grid (see config.ts).
+   Module facts (measured, scripts/assets/manifest.json):
+   - walls: x −1…1, y 0…3.12; outside face z = 0, inside face z = −0.2, beams to +0.09/−0.31
+   - Corner_Exterior_Wood: 0.21 × 3 × 0.24, centred
+   - Wall_BottomCover (used as lintel and tie beam): x −1…1, y ±0.12, z −0.31…0.12
+   - Door_8_Flat: hinge edge at x ≈ 0, 1.12 × 2.1 (y 0.04…2.14), z ±0.05
+   - Roof_RoundTiles_6x14: ridge ≈ +4.9 above the wall top, eaves −0.78 at x ±4.12 */
+
+const SIGN_X = -2, SIGN_Y = 2.8, SIGN_Z = 1.1;
+const CHIMNEY = { x: -2.2, d: 6 };                       // above the hearth
+const HEARTH_D = 6;
+const LANTERN_HEAD = { y: .34, z: .8 };                   // Lantern_Wall head centre, model space
 
 /** world positions that audio attaches to */
-export const HEARTH_POS = { x: -TAV_HW + 2, y: 1.1, z: D(7) };
-export const SIGN_POS = { x: SIGN_X, y: 4.5, z: GATE_Z + 2.1 };
-export const DOOR_POS = { x: 0, y: 2.3, z: GATE_Z };
+export const HEARTH_POS = { x: -1.75, y: 1.1, z: D(HEARTH_D) };
+export const SIGN_POS = { x: SIGN_X, y: SIGN_Y, z: GATE_Z + SIGN_Z };
+export const DOOR_POS = { x: 0, y: 1.2, z: GATE_Z };
 
 /** door leaves; they open inward */
 export const leaves: { pivot: Group; dir: number }[] = [];
 export const setDoor = (angle: number) => leaves.forEach(l => l.pivot.rotation.y = -l.dir * angle);
 
 const smokes: { sp: GlowSprite; base: number; phase: number; speed: number; y: number }[] = [];
+
+// warm lit windows; front side only, so from inside the hall they show the night
+let glass: Material | null = null;
+function village(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
+  const o = model('village', name);
+  o.position.set(x, y, z); o.rotation.y = ry;
+  glass ??= new MeshBasicMaterial({ color: 0xffb45e, side: FrontSide });
+  o.traverse(c => {
+    if (c instanceof Mesh && (c.material as Material).name === 'MI_WindowGlass') c.material = glass;
+  });
+  parent.add(o); return o;
+}
+function prop(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
+  const o = model('props', name);
+  o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o;
+}
 
 function signTexture() {
   const c = document.createElement('canvas'); c.width = 512; c.height = 256;
@@ -27,80 +60,92 @@ function signTexture() {
   x.fillStyle = '#d8b877'; x.font = 'bold 92px Georgia'; x.textAlign = 'center';
   x.fillText('ТАВЕРНА', 256, 150);
   x.strokeStyle = '#8a6a34'; x.lineWidth = 6; x.strokeRect(16, 16, 480, 224);
-  return new CanvasTexture(c);
+  const t = new CanvasTexture(c); t.colorSpace = 'srgb'; return t;
+}
+
+/** street lantern / post lantern: Lantern_Wall with its light and flame at the head */
+export function lantern(parent: Object3D, x: number, y: number, z: number, ry: number,
+  light: { color: number; range: number; power: number; outside?: boolean }, worldOffset = { x: 0, y: 0, z: 0 }) {
+  prop('Lantern_Wall', x, y, z, ry, parent);
+  const hx = x + Math.sin(ry) * LANTERN_HEAD.z, hz = z + Math.cos(ry) * LANTERN_HEAD.z, hy = y + LANTERN_HEAD.y;
+  const l = new RescaledPointLight(light.color, light.range);
+  l.position.set(hx + worldOffset.x, hy + worldOffset.y, hz + worldOffset.z); scene.add(l);
+  const sp = sprite(fireTex, .45, .85); sp.position.set(hx, hy, hz); parent.add(sp);
+  fires.push({ light: l, sp, phase: rand(0, 10), power: light.power, outside: light.outside });
 }
 
 /* ── facade ──────────────────────────────────────────────────────── */
 export function buildFacade() {
   const front = new Group(); front.position.z = GATE_Z; scene.add(front);
-  // stone plinth, timber frame above.
-  // The plinth has the door cut out too: a solid one blocked the door with stone (hard rule 2).
+  const half = DOOR_W / 2;
+
+  // ground floor: stone with windows either side of the door module
   for (const s of [-1, 1]) {
-    const w = FW - DOOR_W / 2, cx = s * (DOOR_W / 2 + w / 2);
-    front.add(box(w, 1.3, 1, M.stone, cx, .65, 0));
-    front.add(box(w, FH - 1.3, 1, M.plaster, cx, 1.3 + (FH - 1.3) / 2, 0));
+    village('Wall_UnevenBrick_Window_Wide_Flat', s * MOD, 0, 0, 0, front);
+    village('Window_Wide_Flat1', s * MOD, 0, 0, 0, front);
   }
-  front.add(box(DOOR_W + .6, FH - DOOR_H - 1.3 + 1.3, 1, M.plaster, 0, DOOR_H + (FH - DOOR_H) / 2, 0));
-  // timber frame
-  for (const x of [-7.6, -4.8, 4.8, 7.6]) front.add(box(.3, FH - 1.3, .14, M.beam, x, 1.3 + (FH - 1.3) / 2, .56));
-  for (const y of [4.9, FH - .25]) front.add(box(FW * 2, .34, .14, M.beam, 0, y, .56));
-  for (const s of [-1, 1]) front.add(box(.34, 4, .14, M.beam, s * (DOOR_W / 2 + .35), DOOR_H / 2 + .4, .56));
-  // diagonal braces
+  // door module (x −1…1): posts on the module seams, front and inside, cut to the lintel
+  // so the lintel rests on them instead of overlapping (hard rule 1)
+  for (const s of [-1, 1]) for (const z of [0, -WALL_IN]) {
+    const p = village('Corner_Exterior_Wood', s * 1, 0, z, 0, front); p.scale.y = DOOR_H / 3;
+  }
+  const lintel = village('Wall_BottomCover', 0, DOOR_H + .12, 0, 0, front); lintel.scale.x = 1.105;
+  front.add(kitBox(MOD, .24, WALL_IN, { mat: 'MI_Plaster', tile: 2 }, 0, DOOR_H + .24 + .12, -WALL_IN / 2));
+  village('Wall_BottomCover', 0, STOREY - .12, 0, 0, front);                      // top beam
+  // sill: dark wood under the leaves, top exactly at the floor (0.06); the floor starts
+  // at the inside face, so the two top faces touch without overlapping
+  front.add(kitBox(DOOR_W, .5, .5, { mat: 'MI_WoodTrim', strip: 'dark' }, 0, FLOOR_Y - .25, .05));
+
+  // upper floor and gable
   for (const s of [-1, 1]) {
-    const b = box(.26, 3.2, .13, M.beam, s * 6.2, 3, .57); b.rotation.z = s * .55; front.add(b);
-    const b2 = box(.26, 2.4, .13, M.beam, s * 6.2, 7, .57); b2.rotation.z = -s * .5; front.add(b2);
+    village('Wall_Plaster_Window_Wide_Round', s * MOD, STOREY, 0, 0, front);
+    village('Window_Wide_Round1', s * MOD, STOREY, 0, 0, front);
   }
-  // warm windows
-  for (const [x, y, w, h] of [[-6.4, 3.2, 1.5, 1.7], [6.4, 3.2, 1.5, 1.7],
-    [-6.4, 6.9, 1.3, 1.4], [0, 6.9, 1.3, 1.4], [6.4, 6.9, 1.3, 1.4]]) {
-    front.add(box(w + .3, h + .3, .2, M.beam, x, y, .5));
-    front.add(box(w, h, .1, M.glass, x, y, .62));
-    front.add(box(.1, h, .14, M.beam, x, y, .66));
+  village('Wall_Plaster_WoodGrid', 0, STOREY, 0, 0, front);
+  village('Roof_Front_Brick6', 0, TAV_H, 0, 0, front);
+  // corner posts cover the wall ends; 10–12 cm proud of both faces (hard rule 1)
+  for (const s of [-1, 1]) for (const y of [0, STOREY]) {
+    const p = village('Corner_Exterior_Wood', s * TAV_HW, y, 0, 0, front); p.scale.y = STOREY / 3;
   }
-  // roof
-  for (const s of [-1, 1]) {
-    const r = box(FW + 1.4, .5, 20, M.roof, s * (FW / 2 + .2), FH + 2.1, -9);
-    r.rotation.z = -s * .62; front.add(r);
-  }
-  front.add(box(.8, .7, 20, M.roof, 0, 14.1, -9));
-  front.add(box(FW * 2 + 1.6, .45, 1, M.beam, 0, FH + .35, .3));
-  // chimney and smoke
-  front.add(box(1.4, 4.2, 1.4, M.stone, -5.6, FH + 3.2, -4));
+
+  // chimney over the hearth: its base sits below the roof surface at its low edge
+  const ridge = TAV_H + 4.89, slope = 5.67 / 4.12;
+  const cx = CHIMNEY.x, lowEdge = Math.abs(cx) + .475, base = ridge - lowEdge * slope - .1;
+  village('Prop_Chimney', cx, base, -CHIMNEY.d, 0, front);
+  const smokeY = base + 3.3;
   for (let i = 0; i < 7; i++) {
-    const sp = sprite(smokeTex, rand(2, 4), rand(.16, .3));
+    const sp = sprite(smokeTex, rand(1.2, 2.4), rand(.16, .3));
     sp.material.blending = NormalBlending;
-    sp.position.set(-5.6 + rand(-.6, .6), FH + 5.5 + i * 2.4, GATE_Z - 4);
-    scene.add(sp); smokes.push({ sp, base: FH + 5.5, phase: rand(0, 10), speed: rand(.35, .7), y: i * 2.4 });
-  }
-  // threshold: a dark wooden sill right under the door, no light steps
-  front.add(box(DOOR_W + .5, .5, 1.2, M.wood, 0, -.19, .1));   // top exactly at 0.06, like the floor
-  // street lanterns: bracket → link → body touch each other (hard rule 3)
-  for (const s of [-1, 1]) {
-    const x = s * (DOOR_W / 2 + .9), y = 3.3;
-    front.add(box(.1, .1, 1.05, M.iron, x, y + .6, .62));    // bracket from the wall
-    front.add(box(.05, .4, .05, M.iron, x, y + .4, 1.1));     // link down to the body
-    front.add(box(.42, .5, .42, M.iron, x, y, 1.1));
-    const l = new RescaledPointLight(0xffa348, 14); l.position.set(x, y, GATE_Z + 1.1); scene.add(l);
-    const sp = sprite(fireTex, .9, .85); sp.position.set(x, y, 1.1); front.add(sp);
-    fires.push({ light: l, sp, phase: rand(0, 10), power: 1.5, outside: true });
+    sp.position.set(cx + rand(-.3, .3), smokeY + i * 1.6, GATE_Z - CHIMNEY.d);
+    scene.add(sp); smokes.push({ sp, base: smokeY, phase: rand(0, 10), speed: rand(.3, .6), y: i * 1.6 });
   }
 
-  // sign on a bracket
-  front.add(box(.14, .14, 2.2, M.iron, SIGN_X, 6.2, 1.1));
-  front.add(box(.14, 1.1, .14, M.iron, SIGN_X, 5.7, 2.1));
-  const sign = new Mesh(new BoxGeometry(2.4, 1.2, .12),
-    [M.beam, M.beam, M.beam, M.beam,
-      new MeshStandardMaterial({ map: signTexture(), roughness: 1 }), M.beam]);
-  sign.position.set(SIGN_X, 4.5, 2.1); front.add(sign);
+  // street lanterns on the door posts: back plate 5 cm inside the post face (hard rule 3)
+  for (const s of [-1, 1])
+    lantern(front, s * 1, 1.55, .07, 0, { color: 0xffa348, range: 14, power: 1.5, outside: true }, { x: 0, y: 0, z: GATE_Z });
 
-  // door leaves, opening inward
+  // sign: bar out of the wall → crossbar resting on it → two hangers → sign
+  const barY = 3.35, signW = 1.1, signH = .55;
+  front.add(box(.06, .06, SIGN_Z + .35, M.iron, SIGN_X, barY, (SIGN_Z + .35) / 2 - .05));
+  front.add(box(signW - .1, .05, .05, M.iron, SIGN_X, barY - .05, SIGN_Z));
+  const hangTop = barY - .075, signTop = SIGN_Y + signH / 2;
+  for (const s of [-1, 1]) front.add(box(.03, hangTop - signTop + .02, .03, M.iron,
+    SIGN_X + s * (signW / 2 - .1), (hangTop + signTop) / 2, SIGN_Z));
+  const wood = kitMaterial('village', 'MI_WoodTrim');
+  const sign = new Mesh(new BoxGeometry(signW, signH, .06),
+    [wood, wood, wood, wood, new MeshStandardMaterial({ map: signTexture(), roughness: 1 }), wood]);
+  sign.position.set(SIGN_X, SIGN_Y, SIGN_Z); front.add(sign);
+
+  // door leaves: Door_8_Flat squeezed to half the opening, hinges mid-wall. The model
+  // spans x −0.05…1.07 from its hinge, so the far edge (1.07) is what must reach the
+  // centre — scaling by the full 1.12 left an 8 cm gap. The right leaf is mirrored
+  // (scale.x = −1) so the ring handle stays on the outside.
+  const leafH = (DOOR_H - .03 - FLOOR_Y) / 2.1;
   for (const s of [-1, 1]) {
-    const LH = DOOR_H - .08;
-    const p = new Group(); p.position.set(s * DOOR_W / 2, .08, 0); front.add(p);
-    p.add(box(DOOR_W / 2, LH, .3, M.wood, -s * DOOR_W / 4, LH / 2, 0));
-    for (let i = 0; i < 3; i++) p.add(box(.08, LH - .25, .36, M.beam, -s * (.32 + i * .56), LH / 2, 0));
-    p.add(box(DOOR_W / 2 - .15, .26, .4, M.iron, -s * DOOR_W / 4, 1.1, 0));
-    p.add(box(DOOR_W / 2 - .15, .26, .4, M.iron, -s * DOOR_W / 4, 3.3, 0));
+    const p = new Group(); p.position.set(s * half, FLOOR_Y - .04 * leafH, DOOR_HINGE_Z); front.add(p);
+    const leaf = model('village', 'Door_8_Flat');
+    leaf.scale.set(-s * half / 1.07, leafH, 1);
+    p.add(leaf);
     leaves.push({ pivot: p, dir: s });
   }
 }
@@ -108,112 +153,105 @@ export function buildFacade() {
 export function updateSmoke(dt: number) {
   for (const s of smokes) {
     s.y += s.speed * dt;
-    if (s.y > 18) { s.y = 0; s.sp.position.x = -5.6 + rand(-.6, .6); }
+    if (s.y > 12) { s.y = 0; s.sp.position.x = CHIMNEY.x + rand(-.3, .3); }
     s.sp.position.y = s.base + s.y;
-    s.sp.material.opacity = Math.max(0, .26 * (1 - s.y / 18));
+    s.sp.material.opacity = Math.max(0, .26 * (1 - s.y / 12));
   }
 }
 
 /* ── hall ────────────────────────────────────────────────────────── */
-/** Returns the hall group (offset y −0.24 so the floor is flush with the ground). */
+/** Returns the hall group; its floor top is at FLOOR_Y, flush with the sill. */
 export function buildHall() {
   const tav = new Group(); scene.add(tav);
-  tav.position.y = -.24;
-  const midZ = (GATE_Z + TAV_END) / 2;
-  tav.add(box(TAV_HW * 2, .7, TAV_LEN, M.floor, 0, -.05, midZ));          // floor top at 0.3
-  for (let i = 0; i < 14; i++) tav.add(box(TAV_HW * 2, .02, .05, M.wood, 0, .31, GATE_Z - 1 - i * 1.35));
-  for (const s of [-1, 1]) tav.add(box(.9, TAV_H, TAV_LEN, M.plaster, s * TAV_HW, TAV_H / 2, midZ));
-  tav.add(box(TAV_HW * 2, .9, TAV_LEN, M.beam, 0, TAV_H, midZ));
-  tav.add(box(TAV_HW * 2, TAV_H, .9, M.plaster, 0, TAV_H / 2, TAV_END));
-  // ceiling beams and wall posts
-  for (let i = 1; i <= 7; i++) {
-    const z = D(i * (TAV_LEN / 8));
-    tav.add(box(TAV_HW * 2, .36, .32, M.beam, 0, TAV_H - .5, z));
-    for (const s of [-1, 1]) tav.add(box(.3, TAV_H, .3, M.beam, s * (TAV_HW - .4), TAV_H / 2, z));
-  }
+  const n = TAV_LEN / MOD;
 
-  // hearth on the left wall
-  tav.add(box(.8, 3.4, 4, M.stone, -TAV_HW + .9, 1.7, D(7)));
-  tav.add(box(.5, 2, 2.6, M.beam, -TAV_HW + 1.5, 1.3, D(7)));
-  const hearth = new RescaledPointLight(0xff8a3c, 18);
-  hearth.position.set(-TAV_HW + 2, 1.5, D(7)); tav.add(hearth);
-  const hearthFire = sprite(fireTex, 2.2, .9);
-  hearthFire.position.set(-TAV_HW + 2, 1.3, D(7)); tav.add(hearthFire);
+  // side walls: stone ground floor, plaster upper floor, windows in every other module
+  // except where the hearth stands
+  for (let k = 0; k < n; k++) {
+    const z = GATE_Z - MOD / 2 - k * MOD, d = MOD / 2 + k * MOD;
+    for (const s of [-1, 1]) {
+      const ry = s * Math.PI / 2, x = s * TAV_HW;
+      const hearthHere = s < 0 && Math.abs(d - HEARTH_D) < MOD;
+      const win = k % 2 === 1 && !hearthHere;
+      village(win ? 'Wall_UnevenBrick_Window_Wide_Flat' : 'Wall_UnevenBrick_Straight', x, 0, z, ry, tav);
+      if (win) village('Window_Wide_Flat1', x, 0, z, ry, tav);
+      village(k % 2 === 1 ? 'Wall_Plaster_Window_Wide_Flat' : 'Wall_Plaster_Straight', x, STOREY, z, ry, tav);
+    }
+  }
+  // back wall, back gable, back corner posts
+  for (const x of [-MOD, 0, MOD]) {
+    village('Wall_UnevenBrick_Straight', x, 0, TAV_END, Math.PI, tav);
+    village('Wall_Plaster_Straight', x, STOREY, TAV_END, Math.PI, tav);
+  }
+  village('Roof_Front_Brick6', 0, TAV_H, TAV_END, Math.PI, tav);
+  for (const s of [-1, 1]) for (const y of [0, STOREY]) {
+    const p = village('Corner_Exterior_Wood', s * TAV_HW, y, TAV_END, 0, tav); p.scale.y = STOREY / 3;
+  }
+  village('Roof_RoundTiles_6x14', 0, TAV_H, GATE_Z - TAV_LEN / 2, 0, tav);
+
+  // floor: 2×2 planks starting at the inside face of the facade (the sill covers the rest)
+  for (let k = 0; k < n; k++) for (const x of [-MOD, 0, MOD])
+    village('Floor_WoodDark', x, FLOOR_Y - .01, GATE_Z - WALL_IN - MOD / 2 - k * MOD, 0, tav);
+
+  // tie beams every 2 m; their ends go 0.2 m into the side walls (hard rule 3)
+  const BEAM_Y = 4.6;
+  for (let d = 2; d < TAV_LEN; d += MOD) for (const x of [-MOD, 0, MOD])
+    village('Wall_BottomCover', x, BEAM_Y, D(d), 0, tav);
+  const beamBottom = BEAM_Y - .12;
+
+  // hearth on the left wall: the stone mass goes 0.1 m into the wall
+  tav.add(kitBox(.9, 3.4, 2.4, { mat: 'MI_UnevenBrick', tile: 1.6 }, -TAV_HW + WALL_IN + .35, FLOOR_Y + 1.7, D(HEARTH_D)));
+  const firebox = new Mesh(new BoxGeometry(.2, 1.1, 1.4), new MeshStandardMaterial({ color: 0x0b0806, roughness: 1 }));
+  firebox.position.set(-TAV_HW + WALL_IN + .9, FLOOR_Y + .55, D(HEARTH_D)); tav.add(firebox);
+  const hearth = new RescaledPointLight(0xff8a3c, 18, 2);
+  // light just in front of the firebox (its face is at x −1.8): the stone front face
+  // (x −2.0) then only gets grazing light instead of a blown-out 1/d² hot spot
+  hearth.position.set(-1.7, .8, D(HEARTH_D)); tav.add(hearth);
+  const hearthFire = sprite(fireTex, .7, .9);
+  hearthFire.position.set(-1.72, .5, D(HEARTH_D)); tav.add(hearthFire);
   fires.push({ light: hearth, sp: hearthFire, phase: rand(0, 10), power: 2.4 });
 
-  // bar at the back wall
-  const BAR_Z = TAV_END + 2.6;
-  tav.add(box(13, 1.15, .9, M.plank, 0, .88, BAR_Z));
-  tav.add(box(13.4, .12, 1.1, M.beam, 0, 1.5, BAR_Z));
-  for (let i = 0; i < 5; i++) tav.add(box(.24, 1.1, .24, M.wood, -5.4 + i * 2.7, .85, BAR_Z + .3));
-  // shelves with bottles
-  for (let i = 0; i < 3; i++) {
-    tav.add(box(11, .12, .5, M.plank, 0, 2.1 + i * .9, TAV_END + .75));
-    for (let j = 0; j < 14; j++)
-      tav.add(cyl(.07, .09, rand(.3, .5), M.wood, -5 + j * .77, 2.4 + i * .9, TAV_END + .75, 6));
-  }
-  // barrels behind the bar and along the walls
-  function barrel(x: number, y: number, z: number, lying?: boolean) {
-    const b = cyl(.44, .5, 1.1, M.wood, x, y + .55, z, 10);
-    if (lying) { b.rotation.z = Math.PI / 2; b.position.set(x, y + .5, z); }
-    tav.add(b);
-    for (const dy of [.18, .92]) {
-      const r = cyl(.51, .51, .07, M.iron, x, y + dy, z, 10);
-      if (lying) { r.rotation.z = Math.PI / 2; r.position.set(x + (dy - .55) * 1.05, y + .5, z); }
-      tav.add(r);
-    }
-  }
-  barrel(-6.2, .3, BAR_Z - 1.4, true); barrel(-6.2, 1.3, BAR_Z - 1.4, true);
-  barrel(6.2, .3, BAR_Z - 1.4, true);
-  for (const s of [-1, 1]) { barrel(s * (TAV_HW - 1.3), .3, D(3.4)); barrel(s * (TAV_HW - 1.3), .3, D(4.8)); }
-  // bar stools
-  for (let i = 0; i < 6; i++) {
-    const x = -5 + i * 2;
-    tav.add(cyl(.26, .24, .1, M.plank, x, 1.05, BAR_Z + 1.5, 8));
-    for (let j = 0; j < 3; j++) {
-      const a = j / 3 * Math.PI * 2;
-      tav.add(cyl(.05, .06, .75, M.wood, x + Math.cos(a) * .17, .68, BAR_Z + 1.5 + Math.sin(a) * .17, 6));
-    }
-  }
+  // bar at the back: cabinets as the counter, a plank top resting on them,
+  // bottle shelves on the back wall (1 cm into the wall), barrels in a holder
+  const BAR_D = 12.2;
+  for (const x of [-1.36, 0, 1.36]) prop('Cabinet', x, FLOOR_Y, D(BAR_D), 0, tav);
+  tav.add(kitBox(4.3, .06, .5, { mat: 'MI_WoodTrim', strip: 'dark' }, 0, FLOOR_Y + 1.03, D(BAR_D)));
+  const backIn = TAV_END + WALL_IN;
+  for (const x of [-1.2, 1.2]) for (const y of [1.5, 2.3]) prop('Shelf_Small_Bottles', x, y, backIn - .02, 0, tav);
+  prop('Barrel_Holder', -2.1, FLOOR_Y, D(13.2), 0, tav);
+  for (const x of [-1.5, -.5, .5, 1.5]) prop('Stool', x, FLOOR_Y, D(BAR_D - .7), rand(0, 6.28), tav);
 
-  // tables along the sides, the centre aisle stays clear
-  function tavTable(x: number, z: number, r: number) {
-    tav.add(cyl(r, r, .12, M.plank, x, 1.05, z, 12));
-    tav.add(cyl(.16, .22, .75, M.wood, x, .68, z, 8));
-    tav.add(cyl(.5, .5, .1, M.wood, x, .35, z, 8));
-    for (let i = 0; i < 4; i++) {
-      const a = i / 4 * Math.PI * 2 + rand(-.2, .2), d = r + .62;
-      const sx = x + Math.cos(a) * d, sz = z + Math.sin(a) * d;
-      tav.add(cyl(.24, .22, .09, M.plank, sx, .78, sz, 8));
-      for (let j = 0; j < 3; j++) {
-        const b = j / 3 * Math.PI * 2;
-        tav.add(cyl(.045, .055, .48, M.wood, sx + Math.cos(b) * .15, .54, sz + Math.sin(b) * .15, 6));
-      }
-    }
-    // candle and mugs
-    tav.add(cyl(.07, .09, .12, M.iron, x, 1.17, z, 8));
-    tav.add(cyl(.045, .045, .26, M.paper, x, 1.36, z, 6));
-    const f = sprite(fireTex, .26, .8); f.position.set(x, 1.54, z); tav.add(f);
+  // barrels and a crate by the door, clear of the opening leaves (free edge |x| ≤ 1.06)
+  for (const s of [-1, 1]) prop('Barrel', s * 2.3, FLOOR_Y, D(1), rand(0, 6.28), tav);
+  prop('Crate_Wooden', 2.2, FLOOR_Y, D(1.9), .3, tav);
+
+  // long tables along the walls, benches on the aisle side; the aisle stays clear
+  for (const [s, d] of [[-1, 2.9], [-1, 9.4], [1, 3.2], [1, 7.6]]) {
+    const x = s * 2.0, z = D(d);
+    prop('Table_Large', x, FLOOR_Y, z, Math.PI / 2, tav);
+    prop('Bench', s * 1.15, FLOOR_Y, z, Math.PI / 2, tav);
+    const top = FLOOR_Y + .81;
+    prop('CandleStick', x, top, z, rand(0, 6.28), tav);
+    prop('Candle_1', x, top + .1, z, 0, tav);
+    const f = sprite(fireTex, .16, .8); f.position.set(x, top + .27, z); tav.add(f);
     fires.push({ light: null, sp: f, phase: rand(0, 10) });
-    for (let i = 0; i < 3; i++) {
-      const a = rand(0, 6.28);
-      tav.add(cyl(.07, .08, .16, M.plank, x + Math.cos(a) * r * .6, 1.19, z + Math.sin(a) * r * .6, 7));
+    for (let i = 0; i < 3; i++) prop('Mug', x + rand(-.3, .3), top, z + rand(-1.1, 1.1), rand(0, 6.28), tav);
+  }
+
+  // chandeliers over the aisle, hanging from the tie beams: top of the chain at the
+  // beam's underside (hard rule 3); candles ring at −1.1 below it
+  for (const d of [4, 8]) {
+    const c = prop('Chandelier', 0, 0, D(d), 0, tav);
+    const top = beamBottom + .01;                   // chain end 1 cm into the beam
+    c.position.y = top - new Box3().setFromObject(c).max.y;
+    const ringY = top - 1.1;
+    // dRef 1.6: at 2 the plaster walls read brighter than the prototype hall (94 vs ~70)
+    const l = new RescaledPointLight(0xffa348, 16, 1.6); l.position.set(0, ringY, D(d)); tav.add(l);
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * Math.PI * 2;
+      const sp = sprite(fireTex, .18, .85); sp.position.set(Math.cos(a) * .55, ringY + .2, D(d) + Math.sin(a) * .55); tav.add(sp);
+      fires.push({ light: i === 0 ? l : null, sp, phase: rand(0, 10), power: 1.8 });
     }
   }
-  for (const [x, z, r] of [[-5.4, D(4), .95], [5.4, D(4.6), .85], [-5.8, D(9), .9],
-    [5.7, D(9.4), .95], [-5.3, D(14), .85], [5.4, D(14.3), .9]]) tavTable(x, z, r);
-
-  // hanging lanterns over the aisle, exactly on the ceiling beams: d is a multiple of
-  // TAV_LEN/8. The chain reaches into the beam (hard rule 3).
-  for (const [d, withLight] of [[5, true], [10, false], [15, true]] as const) {
-    const g = new Group(); g.position.set(0, 0, D(d)); tav.add(g);
-    g.add(box(.06, 1.35, .06, M.iron, 0, TAV_H - .92, 0));      // chain into the beam
-    g.add(box(.46, .55, .46, M.iron, 0, TAV_H - 1.8, 0));
-    g.add(box(.56, .08, .56, M.beam, 0, TAV_H - 1.48, 0));
-    const sp = sprite(fireTex, .9, .85); sp.position.set(0, TAV_H - 1.85, 0); g.add(sp);
-    let l: RescaledPointLight | null = null;
-    if (withLight) { l = new RescaledPointLight(0xffa348, 16); l.position.set(0, TAV_H - 1.85, D(d)); tav.add(l); }
-    fires.push({ light: l, sp, phase: rand(0, 10), power: 1.8 });
-  }
-  return tav;
+  return { tav, beamBottom };
 }

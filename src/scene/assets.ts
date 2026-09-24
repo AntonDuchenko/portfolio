@@ -68,3 +68,15 @@ export function bounds(ps: Part[]) {
 export function instanced(ps: Part[], count: number) {
   return ps.map(p => new InstancedMesh(p.geometry, p.material, count));
 }
+
+/** A kit material by name (shared, not a copy). */
+export function kitMaterial(kit: Kit, name: string): Material {
+  let found: Material | undefined;
+  roots[kit].traverse(o => {
+    if (found || !(o instanceof Mesh)) return;
+    const ms = (Array.isArray(o.material) ? o.material : [o.material]) as Material[];
+    found = ms.find(m => m.name === name);
+  });
+  if (!found) throw new Error(`material ${kit}/${name} not found`);
+  return found;
+}

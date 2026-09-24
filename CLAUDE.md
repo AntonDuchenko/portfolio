@@ -13,28 +13,38 @@ Geometry is placeholder and gets replaced by real assets.
 Detailed numbers and reasoning: `docs/scene-spec.md`. Read it before touching the scene.
 
 The port lives in `src/` (Vite + TypeScript, three 0.186, ES modules): `npm install`,
-`npm run dev`, `npm run build` (typecheck + bundle). Layout:
+`npm run dev`, `npm run build` (typecheck + bundle), `npm run assets` (rebuild models).
+Layout:
 
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
-  legacy → physical conversion), `terrain`, `forest`, `tavern` (facade + hall), `post`.
+  legacy → physical conversion), `assets` (kit loading, cloning, instancing),
+  `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `tavern` (facade + hall), `post`.
 - `camera/` — `timeline` (walk → hold → open → fly → done), `easing`.
 - `portal/` — DOM projection of the poster, door mask, resume crossfade.
 - `audio/` — loading from `public/audio`, beds, positional sources, one-shots.
 - `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
-- `loaders/gltf.ts` — `GLTFLoader` with Draco (decoder in `public/draco`, copied on
-  install) and meshopt. Not used by the scene yet.
-- `color.ts` — disables colour management; must be imported before any `Color` exists.
+- `loaders/gltf.ts` — `GLTFLoader` with meshopt and Draco (decoder bundled by Vite).
+- `scripts/assets/build.mjs` — packs the kits into `public/models/{forest,village,props}.glb`
+  (one file per kit, models as named root nodes): simplification to budget, 1K WebP
+  textures, meshopt. Fails the build if a budget is exceeded. Writes `manifest.json`
+  (tris + bounds per model) — use it for placement numbers.
+- Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
 
-Porting decisions (keep them unless the look is retuned on purpose):
+Decisions (keep them unless the look is retuned on purpose):
 
-- **Colour:** r128 had no colour management and linear output, so hex colours were raw.
-  The port sets `ColorManagement.enabled = false` and `outputColorSpace = Linear`.
-  Real textured assets will need the sRGB pipeline — retune the palette then.
-- **Light units:** all intensities in the code are written in prototype (legacy) units.
-  Ambient/hemisphere/directional are ×π (exact). Point lights use `RescaledPointLight`:
-  per-light factor and decay fitted to the legacy `(1 − d/R)²` falloff
-  (decay ≈ 0.6, factor ≈ 3–4). Plain ×10 at decay 2 was ×14 too bright at 1 m and
-  half as bright at 8 m.
+- **Scale:** the building follows the Village kit grid 1:1 (chosen over scaling the kit
+  up to the prototype's 3.6 × 4.6 door). Door 1.79 × 2.4, hall 6 × 14 × 6.24, post at
+  `d = 10`. Timeline durations are unchanged; the flight is simply shorter in metres.
+- **Colour:** sRGB pipeline (three defaults) — the kit textures need it. The prototype's
+  hex values were linear numbers; light colours keep those linear values (`legacyColor`),
+  ground/path are ×3, forest materials get a cold night tint (the kit is painted for day).
+- **Light units:** intensities are written in prototype (legacy) units. Ambient/hemisphere/
+  directional ×π (exact). Point lights (`RescaledPointLight`) are physical 1/d² and match
+  the prototype at a reference distance `dRef`. The prototype's nearly flat falloff lit
+  the textured walls evenly and read as daylight.
+- **Tests:** swiftshader in the cloud container needs ~1–3 s per frame; drive the timeline
+  with a virtual clock (replace `performance.now`/`requestAnimationFrame`, 50 ms steps —
+  the `dt` clamp) rather than Playwright's clock, which can run `performance.now` backwards.
 
 ## Hard rules (each one cost a debugging round)
 
@@ -58,12 +68,12 @@ Porting decisions (keep them unless the look is retuned on purpose):
 ## Next, in order
 
 1. ~~Port (above).~~
-2. Assets — Quaternius CC0 kits, one author for consistent style:
-   Stylized Nature MegaKit (forest), Medieval Village MegaKit (building),
-   Fantasy Props MegaKit (interior). Building dimensions follow the kit grid.
-   Forest budget: ≤ 6 instanced draw calls, tree ≤ 1200 tris, rock ≤ 250, textures 1K.
+2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
+   textures 1K; building on the kit grid). Open: ground/path are still flat colour.
 3. Voiceover + timeline inversion: audio duration drives walk length, not the reverse.
 4. Mobile/perf: FPS check, reduced instances, fallback straight to the site.
+   Now: ~356 draw calls / 466k tris on the walk, 167 in the hall. Easy win: merge the
+   static village modules and props per material.
 5. The site behind the poster (currently a stub).
 6. Avatar narrating site sections (last, most expensive).
 
