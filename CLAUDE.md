@@ -89,7 +89,9 @@ Decisions (keep them unless the look is retuned on purpose):
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
    and ¼ texture memory; FPS guard; no-WebGL fallback). Not measured on a real phone —
    check FPS on a device; the rest of the walk's calls are ~50 sprites (could be instanced).
-5. The site behind the poster (currently a stub).
+5. The site behind the poster — content done (from the CV, static HTML in `index.html`
+   `#site`, sections with ids for the future narrator: intro, about, work, experience,
+   skills, education, contact). Next: the UI/UX pass for this content.
 6. Avatar narrating site sections (last, most expensive).
 
 ## Open decisions

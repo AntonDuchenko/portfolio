@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>The Tavern — Anton Duchenko</title>
+<title>Anton Duchenko — Full-stack developer</title>
+<meta name="description" content="Full-stack developer building web products end to end with TypeScript, React and Node.js. Selected work: Releaf, The Levels, Phone Catalog.">
+<meta property="og:title" content="Anton Duchenko — Full-stack developer">
+<meta property="og:description" content="Web products end to end — from the database schema to the interface. Enter through the tavern.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Literata:opsz,wght@7..72,300;7..72,400;7..72,600&display=swap" rel="stylesheet">
@@ -89,25 +93,140 @@
 </div>
 
 <main id="site">
-      <div class="wrap">
-        <header class="keep">
-          <h1 class="name">Anton Duchenko</h1>
-          <p class="standfirst">Full-stack developer. I build products with TypeScript, Node.js and React — from the database schema to the interface.</p>
-        </header>
-        <section>
-          <h2>Experience</h2>
-          <p class="said">The narrator will walk you through this section</p>
-          <div class="entry"><div class="when">2024 — now</div>
-            <p class="what"><strong>Binary Studio</strong><span>NestJS, React, PostgreSQL.</span></p></div>
-          <div class="entry"><div class="when">Integrations</div>
-            <p class="what"><strong>Third-party services in production</strong><span>OpenAI API, Azure Speech, GraphQL, TON Connect.</span></p></div>
-        </section>
-        <section style="border-bottom:0">
-          <h2>Tools</h2>
-          <p class="said">The armoury</p>
-          <ul class="arms"><li>TypeScript</li><li>Node.js</li><li>NestJS</li><li>React</li><li>PostgreSQL</li><li>Three.js</li></ul>
-        </section>
+  <div class="wrap">
+
+    <header class="keep" id="intro">
+      <h1 class="name">Anton Duchenko</h1>
+      <p class="role">Full-stack developer</p>
+      <p class="standfirst">I build web products end to end — from the database schema and the API
+        to the interface people actually touch. Two years of shipping TypeScript, React and Node.js
+        in product teams, most recently on a content-heavy platform with a 10,000-item admin
+        and on an AI-powered language-learning app.</p>
+      <p class="meta">Ukraine · works remotely · English: upper-intermediate</p>
+      <ul class="links">
+        <li><a href="mailto:anton.duchenko2@gmail.com">anton.duchenko2@gmail.com</a></li>
+        <li><a href="https://www.linkedin.com/in/anton-duchenko-471369252/" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="https://github.com/AntonDuchenko" rel="noopener" target="_blank">GitHub</a></li>
+        <li><a href="https://t.me/Anton_Duchenko" rel="noopener" target="_blank">Telegram</a></li>
+      </ul>
+    </header>
+
+    <section id="about">
+      <h2>About</h2>
+      <div class="prose">
+        <p>I like owning the whole path of a feature: working out the problem with designers and
+          product managers, shaping the data model, writing the API and polishing the interface
+          until it feels effortless. I care about speed you can measure — faster queries, lighter
+          pages, fewer steps for the user — and about code the next person can pick up without a tour.</p>
+        <p>My first degree is in something else entirely: I trained as an electro-technical officer
+          at the Kherson State Maritime Academy. I moved into software through Mate Academy in
+          2022–2023 and have been building products ever since.</p>
       </div>
+    </section>
+
+    <section id="work">
+      <h2>Selected work</h2>
+
+      <article class="project">
+        <header>
+          <h3><a href="https://releaf.com/de" rel="noopener" target="_blank">Releaf</a></h3>
+          <p class="where">Binary Studio · 2025 — now</p>
+        </header>
+        <p>Customer-facing site and internal admin for Releaf’s German market. I work across the
+          stack: a data layer on Drizzle ORM with caching that cut page load times by 30%; a Sanity
+          CMS setup that lets non-technical colleagues publish product information, blog posts and
+          compliance documents on their own; and an inventory admin on TanStack Table and Router
+          that filters, sorts and pages through 10,000+ records.</p>
+        <ul class="tags"><li>TypeScript</li><li>React</li><li>TanStack</li><li>Drizzle ORM</li><li>Sanity</li><li>Tailwind CSS</li><li>shadcn/ui</li></ul>
+      </article>
+
+      <article class="project">
+        <header>
+          <h3><a href="https://thelevels.me/ua" rel="noopener" target="_blank">The Levels</a></h3>
+          <p class="where">Nitrix Soft · 2025</p>
+        </header>
+        <p>An AI-powered language-learning platform. I built backend APIs and the React front end for
+          its major releases, and integrated OpenAI and Azure Speech into the learning experience —
+          features that raised average session time by 45% and retention by 25%. On the data side,
+          new indexes and reworked queries made lookups over 1M+ records 60% faster.</p>
+        <ul class="tags"><li>React</li><li>Node.js</li><li>OpenAI API</li><li>Azure Speech</li><li>SQL</li></ul>
+      </article>
+
+      <article class="project">
+        <header>
+          <h3><a href="https://phone-catalog-xi.vercel.app/#/" rel="noopener" target="_blank">Phone Catalog</a></h3>
+          <p class="where">Team project</p>
+        </header>
+        <p>An online phone store built with a small team: a React and TypeScript single-page app with
+          a product catalogue, product pages, a cart and favourites. A lesson in splitting one
+          codebase between several people — shared components, code review and agreed conventions.</p>
+        <ul class="tags"><li>React</li><li>TypeScript</li><li>Team work</li></ul>
+      </article>
+    </section>
+
+    <section id="experience">
+      <h2>Experience</h2>
+
+      <div class="entry"><div class="when">Aug 2025 — now</div>
+        <div class="what"><strong>Full-stack developer · Binary Studio</strong>
+          <ul>
+            <li>Drizzle ORM queries with smarter fetching and caching — page loads 30% faster.</li>
+            <li>A responsive, mobile-first design system on Tailwind CSS and shadcn/ui.</li>
+            <li>Sanity CMS so the team edits products, blog posts and compliance docs without developers.</li>
+            <li>Admin tables on TanStack Table and Router: filtering, sorting and pagination over 10,000+ entities.</li>
+          </ul></div></div>
+
+      <div class="entry"><div class="when">Mar — Aug 2025</div>
+        <div class="what"><strong>Full-stack developer · Nitrix Soft</strong>
+          <ul>
+            <li>Backend APIs built for performance, uptime and fast responses.</li>
+            <li>OpenAI and Azure Speech in a language-learning platform — session time +45%, retention +25%.</li>
+            <li>Indexes and query tuning on 1M+ record datasets — 60% faster queries.</li>
+            <li>React front ends for major, AI-driven product releases.</li>
+          </ul></div></div>
+
+      <div class="entry"><div class="when">Jan 2024 — Mar 2025</div>
+        <div class="what"><strong>React developer · Maxopen Studio</strong>
+          <ul>
+            <li>Launched a peer-to-peer marketplace on the TON blockchain — 200+ active users in its first month.</li>
+            <li>TON Connect payments: 500+ secure transactions a day at 99.9% uptime.</li>
+            <li>Leaner API integration and data flow — 20% faster loads, +15% conversion, lower bounce rate.</li>
+            <li>A library of reusable React components — features delivered 30% faster.</li>
+          </ul></div></div>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <dl class="skills">
+        <dt>Languages</dt><dd>TypeScript, JavaScript, SQL</dd>
+        <dt>Front end</dt><dd>React, Astro, TanStack Start · Router · Table, Redux, Tailwind CSS, shadcn/ui, Sass, Bulma, BEM</dd>
+        <dt>Back end &amp; data</dt><dd>Node.js, NestJS, Express, REST, GraphQL, tRPC / oRPC, PostgreSQL, MySQL, Drizzle ORM</dd>
+        <dt>AI &amp; integrations</dt><dd>OpenAI API, Azure AI Speech, prompt engineering, Sanity CMS, TON Connect</dd>
+        <dt>Tools</dt><dd>Git, GitHub</dd>
+      </dl>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <div class="entry"><div class="when">2022 — 2023</div>
+        <div class="what"><strong>Full-stack development · Mate Academy</strong>
+          <span>JavaScript, TypeScript, React and Redux, with a focus on responsive, pixel-perfect interfaces.</span></div></div>
+      <div class="entry"><div class="when">2013 — 2019</div>
+        <div class="what"><strong>Master’s degree, electro-technical officer · Kherson State Maritime Academy</strong></div></div>
+    </section>
+
+    <section id="contact" class="last">
+      <h2>Let’s talk</h2>
+      <p class="prose">The quickest way to reach me is email or Telegram.</p>
+      <ul class="links">
+        <li><a href="mailto:anton.duchenko2@gmail.com">anton.duchenko2@gmail.com</a></li>
+        <li><a href="https://t.me/Anton_Duchenko" rel="noopener" target="_blank">Telegram</a></li>
+        <li><a href="https://www.linkedin.com/in/anton-duchenko-471369252/" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="https://github.com/AntonDuchenko" rel="noopener" target="_blank">GitHub</a></li>
+      </ul>
+    </section>
+
+  </div>
 </main>
 
 <button id="again" type="button">Watch again</button>

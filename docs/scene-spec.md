@@ -120,7 +120,7 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
 - Ground and path are still procedural flat-colour meshes (no kit ground tiles).
 - Custom boxes wearing kit materials (`src/scene/kitbox.ts`): door lintel filler, sill,
   notice post, hearth, bar top. The kits have no fireplace or notice board.
-- Poster copy and the resume content.
+- Poster copy. (The resume content behind it is real, from the CV.)
 - The tavern sign is a canvas texture with the word «ТАВЕРНА».
 - Narration is a synthesised placeholder (Kokoro `bm_george`); copy and voice are placeholders.
 - Owls: first at 9 s, then every 13–22 s — with the ~32 s walk only two of the three play.
