@@ -12,17 +12,29 @@ Geometry is placeholder and gets replaced by real assets.
 
 Detailed numbers and reasoning: `docs/scene-spec.md`. Read it before touching the scene.
 
-## First task
+The port lives in `src/` (Vite + TypeScript, three 0.186, ES modules): `npm install`,
+`npm run dev`, `npm run build` (typecheck + bundle). Layout:
 
-Port the prototype to a Vite + TypeScript project with modern three (ES modules)
-**without changing behaviour**. Compare against the prototype side by side.
+- `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
+  legacy → physical conversion), `terrain`, `forest`, `tavern` (facade + hall), `post`.
+- `camera/` — `timeline` (walk → hold → open → fly → done), `easing`.
+- `portal/` — DOM projection of the poster, door mask, resume crossfade.
+- `audio/` — loading from `public/audio`, beds, positional sources, one-shots.
+- `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
+- `loaders/gltf.ts` — `GLTFLoader` with Draco (decoder in `public/draco`, copied on
+  install) and meshopt. Not used by the scene yet.
+- `color.ts` — disables colour management; must be imported before any `Color` exists.
 
-- Split by concern: `scene/` (terrain, forest, tavern, post), `camera/` (timeline, easing),
-  `portal/` (DOM projection, door mask, crossfade), `audio/`, `ui/`.
-- Audio comes from `public/audio/*.mp3`, not base64.
-- three ≥ 0.155 uses physical light units: point-light intensities must be rescaled
-  (roughly ×10 for our values). Verify visually against the prototype.
-- Add `GLTFLoader` + Draco + Meshopt decoders — needed for the asset step.
+Porting decisions (keep them unless the look is retuned on purpose):
+
+- **Colour:** r128 had no colour management and linear output, so hex colours were raw.
+  The port sets `ColorManagement.enabled = false` and `outputColorSpace = Linear`.
+  Real textured assets will need the sRGB pipeline — retune the palette then.
+- **Light units:** all intensities in the code are written in prototype (legacy) units.
+  Ambient/hemisphere/directional are ×π (exact). Point lights use `RescaledPointLight`:
+  per-light factor and decay fitted to the legacy `(1 − d/R)²` falloff
+  (decay ≈ 0.6, factor ≈ 3–4). Plain ×10 at decay 2 was ×14 too bright at 1 m and
+  half as bright at 8 m.
 
 ## Hard rules (each one cost a debugging round)
 
@@ -45,7 +57,7 @@ Port the prototype to a Vite + TypeScript project with modern three (ES modules)
 
 ## Next, in order
 
-1. Port (above).
+1. ~~Port (above).~~
 2. Assets — Quaternius CC0 kits, one author for consistent style:
    Stylized Nature MegaKit (forest), Medieval Village MegaKit (building),
    Fantasy Props MegaKit (interior). Building dimensions follow the kit grid.
@@ -59,4 +71,4 @@ Port the prototype to a Vite + TypeScript project with modern three (ES modules)
 
 - Tone of copy: poster text is a placeholder.
 - Scene in vanilla three vs React Three Fiber; site framework.
-- Debug panel (sliders, layer toggles) must be hidden in production.
+- Debug panel (sliders, layer toggles) must be hidden in production — done: dev only or `?debug`.

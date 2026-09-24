@@ -75,7 +75,9 @@ The poster and the resume are DOM, not textures.
   street lanterns and mist out.
 - Torch is carried at camera-space `(−0.34, +0.34, −1.15)`. On `fly` it detaches and
   stays at the threshold.
-- Prototype light values are r128 legacy units — rescale after migration.
+- Prototype light values are r128 legacy units. The port keeps them as written and converts
+  at the light (`src/scene/lights.ts`): ×π for ambient/hemisphere/directional, a fitted
+  factor + decay per point light so the falloff follows the legacy `(1 − d/R)²` curve.
 
 ## Audio
 

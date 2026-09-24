@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Таверна — вход в резюме</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Literata:opsz,wght@7..72,300;7..72,400;7..72,600&display=swap" rel="stylesheet">
+<script>
+// Classic script, runs before the module graph: any init error (including a failed
+// import) must show up on the enter button instead of hanging silently. Hard rule 8.
+(function () {
+  function show(msg) {
+    var b = document.getElementById('enter');
+    if (b && b.disabled) b.textContent = 'ошибка: ' + (msg || 'см. консоль');
+  }
+  addEventListener('error', function (e) { show(e.message); });
+  addEventListener('unhandledrejection', function (e) {
+    show(e.reason && e.reason.message ? e.reason.message : String(e.reason));
+  });
+})();
+</script>
+</head>
+<body class="scene-locked">
+
+<div id="gate">
+  <div class="card">
+    <h2>Таверна</h2>
+    <p>Сцена со звуком — лучше в наушниках.</p>
+    <button id="enter" type="button" disabled>загрузка…</button>
+  </div>
+</div>
+
+<div id="scene"></div>
+<div id="vignette"></div>
+<div id="line"><p></p></div>
+<button id="skip" type="button">Пропустить →</button>
+
+<details id="tune" open>
+  <summary>Подстройка</summary>
+  <div class="rows">
+    <div class="row"><div><span>Луна снаружи</span><span id="v-moon">—</span></div>
+      <input id="s-moon" type="range" min="0" max="300" value="150"></div>
+    <div class="row"><div><span>Туман снаружи</span><span id="v-fog">—</span></div>
+      <input id="s-fog" type="range" min="10" max="70" value="28"></div>
+    <div class="row"><div><span>Свет в таверне</span><span id="v-hall">—</span></div>
+      <input id="s-hall" type="range" min="20" max="300" value="130"></div>
+    <div class="row"><div><span>Наезд, сек</span><span id="v-fly">—</span></div>
+      <input id="s-fly" type="range" min="20" max="110" value="42"></div>
+    <div class="row"><div><span>Громкость</span><span id="v-vol">—</span></div>
+      <input id="s-vol" type="range" min="0" max="100" value="70"></div>
+    <div class="row"><div><span>Лес: срез верхов</span><span id="v-cut">—</span></div>
+      <input id="s-cut" type="range" min="1200" max="14000" step="100" value="3500"></div>
+    <div class="mutes">
+      <span>слои:</span>
+      <label><input type="checkbox" data-l="torch" checked>факел</label>
+      <label><input type="checkbox" data-l="wind" checked>ветер</label>
+      <label><input type="checkbox" data-l="forest" checked>лес</label>
+      <label><input type="checkbox" data-l="music" checked>музыка</label>
+    </div>
+  </div>
+</details>
+
+<div id="portal">
+  <div id="pane">
+    <div id="posterWrap">
+      <div id="poster">
+        <div class="top">разыскивается</div>
+        <h1>WANTED</h1>
+        <div class="face">
+          <svg viewBox="0 0 64 64" fill="#3a2a14" aria-hidden="true">
+            <circle cx="32" cy="21" r="13"/>
+            <path d="M6 64c0-14 12-23 26-23s26 9 26 23z"/>
+          </svg>
+        </div>
+        <p class="name">Антон Дученко</p>
+        <p class="role">full-stack developer</p>
+        <div class="rule"></div>
+        <p class="bounty">замечен за систематическим доведением задач до прода</p>
+        <span class="tack" style="left:8%;top:2.5%"></span>
+        <span class="tack" style="right:8%;top:2.5%"></span>
+        <span class="tack" style="left:8%;bottom:2.5%"></span>
+        <span class="tack" style="right:8%;bottom:2.5%"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<main id="site">
+      <div class="wrap">
+        <header class="keep">
+          <h1 class="name">Антон Дученко</h1>
+          <p class="standfirst">Full-stack разработчик. Строю продукты на TypeScript, Node.js и React — от схемы базы до интерфейса.</p>
+        </header>
+        <section>
+          <h2>Опыт</h2>
+          <p class="said">Персонаж расскажет об этом разделе голосом</p>
+          <div class="entry"><div class="when">2024 — сейчас</div>
+            <p class="what"><strong>Binary Studio</strong><span>NestJS, React, PostgreSQL.</span></p></div>
+          <div class="entry"><div class="when">Интеграции</div>
+            <p class="what"><strong>Внешние сервисы в проде</strong><span>OpenAI API, Azure Speech, GraphQL, TON Connect.</span></p></div>
+        </section>
+        <section style="border-bottom:0">
+          <h2>Инструменты</h2>
+          <p class="said">Оружейная</p>
+          <ul class="arms"><li>TypeScript</li><li>Node.js</li><li>NestJS</li><li>React</li><li>PostgreSQL</li><li>Three.js</li></ul>
+        </section>
+      </div>
+</main>
+
+<button id="again" type="button">Смотреть заново</button>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
