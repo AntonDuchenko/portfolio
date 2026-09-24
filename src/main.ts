@@ -1,4 +1,3 @@
-import './color';
 import './styles.css';
 import { Color, Vector3 } from 'three';
 import { loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio } from './audio/audio';
@@ -6,6 +5,7 @@ import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, STOP_AT, T_HOLD } from './config';
 import { crossfade, layoutPane, maskDoor } from './portal/portal';
+import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
 import { addGlobalLights, flame, moonDisc, setMoon, torch, updateFires, warmAmb, LEGACY } from './scene/lights';
 import { buildPost, noticeGlow } from './scene/post';
@@ -17,13 +17,10 @@ import { el } from './ui/dom';
 import { initTune, tuneEnabled } from './ui/tune';
 import { resetLines, setLine } from './ui/voice';
 
-/* ── build, in the prototype's order ─────────────────────────────── */
+/* ── build: procedural parts now, kit models once they are loaded ── */
 el.scene.appendChild(renderer.domElement);
 addGlobalLights();
 buildTerrain();
-buildForest();
-buildFacade();
-buildPost(buildHall());
 initTune();
 setMoon(1);
 
@@ -115,11 +112,16 @@ addEventListener('resize', () => {
   if (state.phase === 'open' || state.phase === 'fly') { camera.updateMatrixWorld(); layoutPane(); }
 });
 
-// draw the first frame right away — it shows through the entry gate
-camera.position.set(0, EYE, 0); camera.updateMatrixWorld();
-renderer.render(scene, camera);
-
-loadAudio().then(bufs => {
+const audio = loadAudio();
+loadKits().then(() => {
+  buildForest();
+  buildFacade();
+  buildPost(buildHall());
+  // draw the first frame right away — it shows through the entry gate
+  camera.position.set(0, EYE, 0); camera.updateMatrixWorld();
+  renderer.render(scene, camera);
+  return audio;
+}).then(bufs => {
   el.enter.disabled = false;
   el.enter.textContent = bufs ? 'Войти' : 'Войти без звука';
   el.enter.addEventListener('click', () => {

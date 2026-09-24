@@ -8,13 +8,19 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "assets": "node scripts/assets/build.mjs"
   },
   "dependencies": {
     "three": "^0.186.0"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
     "@types/three": "^0.186.0",
+    "meshoptimizer": "^1.2.0",
+    "sharp": "^0.35.4",
     "typescript": "^5.9.3",
     "vite": "^8.3.0"
   }

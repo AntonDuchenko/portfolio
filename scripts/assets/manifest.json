@@ -1,0 +1,568 @@
+{
+ "forest": {
+  "pine_a": {
+   "src": "Pine_5",
+   "tris": 1174,
+   "min": [
+    -2.988,
+    -0.235,
+    -3.778
+   ],
+   "max": [
+    3.432,
+    8.489,
+    2.444
+   ]
+  },
+  "pine_b": {
+   "src": "Pine_2",
+   "tris": 1151,
+   "min": [
+    -2.892,
+    -0.235,
+    -2.694
+   ],
+   "max": [
+    2.836,
+    7.141,
+    2.528
+   ]
+  },
+  "snag": {
+   "src": "DeadTree_3",
+   "tris": 1141,
+   "min": [
+    -3.829,
+    -0.336,
+    -3.35
+   ],
+   "max": [
+    2.54,
+    12.942,
+    3.035
+   ]
+  },
+  "rock": {
+   "src": "Rock_Medium_2",
+   "tris": 244,
+   "min": [
+    -1.714,
+    -0.051,
+    -1.159
+   ],
+   "max": [
+    1.335,
+    1.848,
+    1.32
+   ]
+  }
+ },
+ "village": {
+  "Wall_UnevenBrick_Straight": {
+   "src": "Wall_UnevenBrick_Straight",
+   "tris": 56,
+   "min": [
+    -1,
+    0,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.092
+   ]
+  },
+  "Wall_UnevenBrick_Window_Wide_Flat": {
+   "src": "Wall_UnevenBrick_Window_Wide_Flat",
+   "tris": 88,
+   "min": [
+    -1,
+    0,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.092
+   ]
+  },
+  "Wall_Plaster_Straight": {
+   "src": "Wall_Plaster_Straight",
+   "tris": 86,
+   "min": [
+    -1,
+    -0.002,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.093
+   ]
+  },
+  "Wall_Plaster_Window_Wide_Flat": {
+   "src": "Wall_Plaster_Window_Wide_Flat",
+   "tris": 96,
+   "min": [
+    -1,
+    0,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.092
+   ]
+  },
+  "Wall_Plaster_Window_Wide_Round": {
+   "src": "Wall_Plaster_Window_Wide_Round",
+   "tris": 124,
+   "min": [
+    -1,
+    0,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.092
+   ]
+  },
+  "Wall_Plaster_WoodGrid": {
+   "src": "Wall_Plaster_WoodGrid",
+   "tris": 248,
+   "min": [
+    -1,
+    0,
+    -0.314
+   ],
+   "max": [
+    1,
+    3.123,
+    0.092
+   ]
+  },
+  "Corner_Exterior_Wood": {
+   "src": "Corner_Exterior_Wood",
+   "tris": 12,
+   "min": [
+    -0.105,
+    0,
+    -0.12
+   ],
+   "max": [
+    0.105,
+    3,
+    0.12
+   ]
+  },
+  "Wall_BottomCover": {
+   "src": "Wall_BottomCover",
+   "tris": 36,
+   "min": [
+    -1,
+    -0.117,
+    -0.314
+   ],
+   "max": [
+    1,
+    0.121,
+    0.118
+   ]
+  },
+  "Door_8_Flat": {
+   "src": "Door_8_Flat",
+   "tris": 986,
+   "min": [
+    -0.046,
+    0.035,
+    -0.108
+   ],
+   "max": [
+    1.072,
+    2.135,
+    0.092
+   ]
+  },
+  "Window_Wide_Flat1": {
+   "src": "Window_Wide_Flat1",
+   "tris": 160,
+   "min": [
+    -0.804,
+    0.944,
+    -0.267
+   ],
+   "max": [
+    0.804,
+    2.524,
+    0.417
+   ]
+  },
+  "Window_Wide_Round1": {
+   "src": "Window_Wide_Round1",
+   "tris": 354,
+   "min": [
+    -0.682,
+    1.016,
+    -0.252
+   ],
+   "max": [
+    0.682,
+    2.742,
+    0.277
+   ]
+  },
+  "Roof_RoundTiles_6x10": {
+   "src": "Roof_RoundTiles_6x10",
+   "tris": 4300,
+   "min": [
+    -4.125,
+    -0.782,
+    -5.898
+   ],
+   "max": [
+    4.125,
+    4.89,
+    5.955
+   ]
+  },
+  "Roof_RoundTiles_6x8": {
+   "src": "Roof_RoundTiles_6x8",
+   "tris": 3796,
+   "min": [
+    -4.125,
+    -0.782,
+    -4.829
+   ],
+   "max": [
+    4.125,
+    4.89,
+    4.854
+   ]
+  },
+  "Roof_Front_Brick6": {
+   "src": "Roof_Front_Brick6",
+   "tris": 328,
+   "min": [
+    -3.347,
+    -0.132,
+    -0.335
+   ],
+   "max": [
+    3.348,
+    4.384,
+    0.794
+   ]
+  },
+  "Prop_Chimney": {
+   "src": "Prop_Chimney",
+   "tris": 618,
+   "min": [
+    -0.5,
+    0,
+    -0.5
+   ],
+   "max": [
+    0.446,
+    3.178,
+    0.5
+   ]
+  },
+  "Floor_WoodDark": {
+   "src": "Floor_WoodDark",
+   "tris": 32,
+   "min": [
+    -1,
+    -0.01,
+    -1
+   ],
+   "max": [
+    1,
+    0.01,
+    1
+   ]
+  },
+  "HoleCover_Straight": {
+   "src": "HoleCover_Straight",
+   "tris": 12,
+   "min": [
+    -1,
+    -0.105,
+    -1.12
+   ],
+   "max": [
+    1,
+    0.105,
+    -0.88
+   ]
+  }
+ },
+ "props": {
+  "Table_Large": {
+   "src": "Table_Large",
+   "tris": 986,
+   "min": [
+    -1.424,
+    0.001,
+    -0.542
+   ],
+   "max": [
+    1.424,
+    0.815,
+    0.555
+   ]
+  },
+  "Bench": {
+   "src": "Bench",
+   "tris": 404,
+   "min": [
+    -1.388,
+    -0.007,
+    -0.262
+   ],
+   "max": [
+    1.388,
+    0.526,
+    0.272
+   ]
+  },
+  "Stool": {
+   "src": "Stool",
+   "tris": 152,
+   "min": [
+    -0.238,
+    -0.006,
+    -0.238
+   ],
+   "max": [
+    0.237,
+    0.582,
+    0.237
+   ]
+  },
+  "Chair_1": {
+   "src": "Chair_1",
+   "tris": 496,
+   "min": [
+    -0.29,
+    -0.003,
+    -0.292
+   ],
+   "max": [
+    0.29,
+    1.121,
+    0.257
+   ]
+  },
+  "Barrel": {
+   "src": "Barrel",
+   "tris": 824,
+   "min": [
+    -0.349,
+    0.003,
+    -0.349
+   ],
+   "max": [
+    0.349,
+    0.901,
+    0.349
+   ]
+  },
+  "Barrel_Holder": {
+   "src": "Barrel_Holder",
+   "tris": 2676,
+   "min": [
+    -0.68,
+    -0.006,
+    -0.352
+   ],
+   "max": [
+    0.68,
+    1.251,
+    0.389
+   ]
+  },
+  "Cabinet": {
+   "src": "Cabinet",
+   "tris": 2388,
+   "min": [
+    -0.681,
+    0,
+    -0.181
+   ],
+   "max": [
+    0.681,
+    0.998,
+    0.177
+   ]
+  },
+  "Shelf_Small_Bottles": {
+   "src": "Shelf_Small_Bottles",
+   "tris": 5234,
+   "min": [
+    -0.569,
+    -0.019,
+    0.01
+   ],
+   "max": [
+    0.568,
+    0.628,
+    0.295
+   ]
+  },
+  "Shelf_Simple": {
+   "src": "Shelf_Simple",
+   "tris": 480,
+   "min": [
+    -0.593,
+    -0.201,
+    0.044
+   ],
+   "max": [
+    0.591,
+    0.108,
+    0.336
+   ]
+  },
+  "Mug": {
+   "src": "Mug",
+   "tris": 268,
+   "min": [
+    -0.07,
+    -0.005,
+    -0.075
+   ],
+   "max": [
+    0.122,
+    0.179,
+    0.072
+   ]
+  },
+  "Candle_1": {
+   "src": "Candle_1",
+   "tris": 212,
+   "min": [
+    -0.047,
+    0.001,
+    -0.057
+   ],
+   "max": [
+    0.047,
+    0.133,
+    0.051
+   ]
+  },
+  "CandleStick": {
+   "src": "CandleStick",
+   "tris": 730,
+   "min": [
+    -0.176,
+    0.001,
+    -0.09
+   ],
+   "max": [
+    0.085,
+    0.157,
+    0.09
+   ]
+  },
+  "Chandelier": {
+   "src": "Chandelier",
+   "tris": 5680,
+   "min": [
+    -0.651,
+    -1.422,
+    -0.651
+   ],
+   "max": [
+    0.651,
+    0.036,
+    0.651
+   ]
+  },
+  "Lantern_Wall": {
+   "src": "Lantern_Wall",
+   "tris": 2822,
+   "min": [
+    -0.179,
+    0.082,
+    -0.051
+   ],
+   "max": [
+    0.179,
+    1.419,
+    1.251
+   ]
+  },
+  "Bottle_1": {
+   "src": "Bottle_1",
+   "tris": 312,
+   "min": [
+    -0.056,
+    0.002,
+    -0.056
+   ],
+   "max": [
+    0.057,
+    0.366,
+    0.056
+   ]
+  },
+  "Crate_Wooden": {
+   "src": "Crate_Wooden",
+   "tris": 1576,
+   "min": [
+    -0.426,
+    -0.052,
+    -0.454
+   ],
+   "max": [
+    0.416,
+    0.878,
+    0.454
+   ]
+  },
+  "Table_Plate": {
+   "src": "Table_Plate",
+   "tris": 172,
+   "min": [
+    -0.167,
+    -0.001,
+    -0.168
+   ],
+   "max": [
+    0.167,
+    0.019,
+    0.168
+   ]
+  },
+  "Peg_Rack": {
+   "src": "Peg_Rack",
+   "tris": 712,
+   "min": [
+    -0.592,
+    -0.174,
+    0
+   ],
+   "max": [
+    0.592,
+    0.174,
+    0.096
+   ]
+  },
+  "Cauldron": {
+   "src": "Cauldron",
+   "tris": 2020,
+   "min": [
+    -0.495,
+    -0.003,
+    -0.472
+   ],
+   "max": [
+    0.495,
+    0.813,
+    0.472
+   ]
+  }
+ }
+}

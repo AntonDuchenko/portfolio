@@ -1,4 +1,3 @@
-import './color';
 import { Color } from 'three';
 
 // All numbers are from prototype/tavern-scene.html (see docs/scene-spec.md). Metres, seconds.

@@ -1,20 +1,18 @@
-import {
-  type BufferGeometry, ConeGeometry, CylinderGeometry, DynamicDrawUsage, IcosahedronGeometry,
-  InstancedMesh, type Material, NormalBlending, Object3D
-} from 'three';
+import { DynamicDrawUsage, type InstancedMesh, NormalBlending, Object3D } from 'three';
 import { GATE_Z } from '../config';
 import { rand, side } from '../random';
-import { M } from './materials';
+import { bounds, instanced, parts } from './assets';
 import { type GlowSprite, mistTex, sprite } from './sprites';
 import { scene } from './stage';
 import { terrainY } from './terrain';
 
 // The forest is finite (route 0 → GATE_Z): instances behind the camera are
 // re-placed ahead of it, never past GATE_Z + 4.
+// Draw calls: pine_a and pine_b are bark + leaves (2 each), snag and rock one each → 6.
 const SPREAD = 122, AHEAD = 190, BEHIND = 14;
 
 interface Placement { x: number; y: number; z: number; h: number; w: number; rx?: number; ry?: number; rz?: number }
-interface Field { mesh: InstancedMesh; count: number; place: (z: number) => Placement; data: Placement[] }
+interface Field { meshes: InstancedMesh[]; count: number; place: (z: number) => Placement; data: Placement[] }
 
 const dummy = new Object3D(), fields: Field[] = [];
 const mists: { sp: GlowSprite; drift: number; phase: number }[] = [];
@@ -22,30 +20,40 @@ const mists: { sp: GlowSprite; drift: number; phase: number }[] = [];
 function write(f: Field, i: number) {
   const d = f.data[i];
   dummy.position.set(d.x, d.y, d.z); dummy.rotation.set(d.rx || 0, d.ry || 0, d.rz || 0);
-  dummy.scale.set(d.w, d.h, d.w); dummy.updateMatrix(); f.mesh.setMatrixAt(i, dummy.matrix);
+  dummy.scale.set(d.w, d.h, d.w); dummy.updateMatrix();
+  for (const m of f.meshes) m.setMatrixAt(i, dummy.matrix);
 }
-function field(geo: BufferGeometry, mat: Material, count: number, place: Field['place']) {
-  const mesh = new InstancedMesh(geo, mat, count); mesh.frustumCulled = false;
-  mesh.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(mesh);
-  const f: Field = { mesh, count, place, data: new Array(count) };
-  for (let i = 0; i < count; i++) { f.data[i] = place(-Math.random() * SPREAD); write(f, i); }
-  mesh.instanceMatrix.needsUpdate = true; fields.push(f); return f;
+function field(name: string, count: number, place: (z: number, size: Size) => Placement) {
+  const ps = parts('forest', name), b = bounds(ps);
+  // horizontal reach from the trunk and height of the unscaled model
+  const size = { reach: Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z), height: b.max.y };
+  const meshes = instanced(ps, count);
+  const f: Field = { meshes, count, place: z => place(z, size), data: new Array(count) };
+  for (const m of meshes) { m.frustumCulled = false; m.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(m); }
+  for (let i = 0; i < count; i++) { f.data[i] = f.place(-Math.random() * SPREAD); write(f, i); }
+  for (const m of meshes) m.instanceMatrix.needsUpdate = true;
+  fields.push(f); return f;
 }
+interface Size { reach: number; height: number }
+
+// Kit pines are bushy: at the base the crown reaches ~3.5 m from the trunk. Trunks are
+// pushed out by that reach so branch tips stay CLEAR m from the camera line.
+const CLEAR = 1.2;
 
 export function buildForest() {
-  const pineGeo = new ConeGeometry(1, 1, 7, 1); pineGeo.translate(0, .5, 0);
-  const trunkGeo = new CylinderGeometry(.6, 1, 1, 6, 1); trunkGeo.translate(0, .5, 0);
-  field(pineGeo, M.bark, 210, z => {
-    const x = side() * rand(2.8, 34), h = rand(5, 13);
-    return { x, z, y: terrainY(x, z) - .2, h, w: h * rand(.12, .19), ry: rand(0, 6.28), rz: rand(-.05, .05) };
+  for (const name of ['pine_a', 'pine_b']) field(name, 105, (z, m) => {
+    const h = rand(5, 13), s = h / m.height;
+    const x = side() * (m.reach * s + CLEAR + rand(0, 30));
+    return { x, z, y: terrainY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
   });
-  field(trunkGeo, M.bark, 80, z => {
-    const x = side() * rand(2.3, 18), h = rand(6, 12);
-    return { x, z, y: terrainY(x, z) - .25, h, w: rand(.12, .3), ry: rand(0, 6.28), rz: rand(-.07, .07) };
+  // bare snags: slim trunk, branches only high up, so they may stand close to the path
+  field('snag', 80, (z, m) => {
+    const x = side() * rand(2.3, 18), s = rand(6, 12) / m.height;
+    return { x, z, y: terrainY(x, z) - .1, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.07, .07) };
   });
-  field(new IcosahedronGeometry(1, 0), M.rock, 170, z => {
-    const x = side() * rand(.3, 7), w = rand(.15, .5);
-    return { x, z, y: terrainY(x, z) - w * .4, h: w * rand(.6, 1), w, rx: rand(0, 6.28), ry: rand(0, 6.28), rz: rand(0, 6.28) };
+  field('rock', 170, (z, m) => {
+    const x = side() * rand(.3, 7), w = rand(.15, .5), s = w / m.reach;
+    return { x, z, y: terrainY(x, z) - w * .4, h: s * rand(.6, 1), w: s, rx: rand(-.3, .3), ry: rand(0, 6.28), rz: rand(-.3, .3) };
   });
 
   for (let i = 0; i < 14; i++) {
@@ -77,6 +85,6 @@ export function updateForest(camZ: number) {
         if (nz > GATE_Z + 4) { f.data[i] = f.place(nz); write(f, i); dirty = true; }
       }
     }
-    if (dirty) f.mesh.instanceMatrix.needsUpdate = true;
+    if (dirty) for (const m of f.meshes) m.instanceMatrix.needsUpdate = true;
   }
 }

@@ -1,4 +1,3 @@
-import '../color';
 import { AmbientLight, type ColorRepresentation, DirectionalLight, HemisphereLight, PointLight } from 'three';
 import { cfg } from '../config';
 import { fireTex, type GlowSprite, sprite } from './sprites';

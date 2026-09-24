@@ -1,4 +1,3 @@
-import '../color';
 import { AdditiveBlending, CanvasTexture, Sprite, SpriteMaterial, type Texture } from 'three';
 
 function glowTexture(a: string, b: string, c0: string) {

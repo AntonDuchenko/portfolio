@@ -1,4 +1,3 @@
-import '../color';
 import {
   BoxGeometry, CylinderGeometry, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial
 } from 'three';
