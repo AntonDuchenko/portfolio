@@ -1,0 +1,46 @@
+# Builds the site and publishes it to GitHub Pages (branch gh-pages).
+#
+# One-time setup in the repository settings:
+#   Settings → Pages → Build and deployment → Source: "Deploy from a branch",
+#   Branch: gh-pages / (root).
+# Pages on a free plan needs a public repository.
+#
+# Every push to main or to a claude/** working branch redeploys the site, so the live
+# page always shows the latest pushed work. Run it by hand from the Actions tab for any
+# other branch.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write          # push the built site to gh-pages
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # full checkout: the deploy action commits through a git worktree of this clone,
+      # and a sparse checkout refuses the dist paths outside its cone
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build          # typecheck + bundle
+
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          single-commit: true       # keep gh-pages to one commit, no history bloat
