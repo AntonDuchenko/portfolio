@@ -45,19 +45,25 @@ const busIn = () => bedBus ??= (() => { const g = actx.createGain(); g.connect(l
 
 export function setMaster(v: number) { master = v; applyVolume(); }
 
-/* Mute: the whole mix (beds, one-shots, narrator) goes through the listener's gain.
-   Ramped over ~0.15 s so toggling never clicks. Remembered between visits. */
+/* Mute: the whole mix (beds, one-shots, narrator) goes through the listener's gain,
+   ramped over ~0.15 s so toggling never clicks. It is a preference for the SITE only:
+   the scene always plays with sound (the intro is the point, and Skip is there for
+   anyone who wants out), so the stored choice applies from landing on (setOnSite). */
 const MUTE_KEY = 'tavern:muted';
 let muted = (() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; } })();
+let onSite = false;
 export const isMuted = () => muted;
 export function setMuted(m: boolean) {
   muted = m;
   try { localStorage.setItem(MUTE_KEY, m ? '1' : '0'); } catch { /* private mode */ }
   applyVolume();
 }
+/** true on landing, false when the scene replays */
+export function setOnSite(v: boolean) { onSite = v; applyVolume(); }
+const silent = () => muted && onSite;
 function applyVolume() {
   if (!audioReady) return;
-  listener.gain.gain.setTargetAtTime(muted ? 0 : master, actx.currentTime, .05);
+  listener.gain.gain.setTargetAtTime(silent() ? 0 : master, actx.currentTime, .05);
 }
 export function setForestCut(v: number) { forestCut = v; }
 
@@ -147,7 +153,7 @@ function startAudio(bufs: Buffers | null) {
   hearthSnd.setPlaybackRate(.72); hearthSnd.play();
   signSnd = placed(B.sign0, SIGN_POS, 3, 1.3, .9, false);
   doorSnd = placed(B.door, DOOR_POS, 4, 1, 1.1, false);
-  listener.setMasterVolume(muted ? 0 : master);
+  listener.setMasterVolume(silent() ? 0 : master);
   audioReady = true;
 }
 

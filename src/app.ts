@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Color, Vector3 } from 'three';
-import { listener, loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
+import { listener, loadAudio, resetAudio, resumeAndStart, setOnSite, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
 import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import * as C from './config';
@@ -39,6 +39,7 @@ function land() {
   setLine(null); document.body.classList.remove('scene-locked');
   el.again.classList.add('on'); scrollTo(0, 0);
   inkHero();                              // skip lands without the crossfade
+  setOnSite(true);                        // the visitor's mute choice applies from here
   startNarrator();
 }
 el.skip.addEventListener('click', () => {
@@ -54,6 +55,7 @@ el.again.addEventListener('click', () => {
   resetLines();
   resetAudio();
   resetNarrator();
+  setOnSite(false);                       // the scene always plays with sound
   noticeGlow.intensity = 0; el.poster.style.opacity = '1'; el.site.style.opacity = '0';
   setDoor(0); scrollTo(0, 0);
 });

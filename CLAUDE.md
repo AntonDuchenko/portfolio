@@ -45,7 +45,9 @@ Layout:
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
 - All user-facing content is in English (any audience).
 - Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
-  `M` toggles; remembered in localStorage. Mutes the whole mix via the listener gain.
+  `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the
+  listener gain — but only on the site (`setOnSite`): the scene always plays with sound,
+  also after a reload or "Back to the tavern" (Skip is the way out of the scene).
 
 Decisions (keep them unless the look is retuned on purpose):
 
