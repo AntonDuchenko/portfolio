@@ -21,3 +21,7 @@ dist/
 # voice generator (scripts/voice): its own deps and the cached TTS model
 scripts/voice/node_modules/
 scripts/voice/.cache/
+/Character/*
+!/Character/glTF/
+!/Character/License.txt
+!/Character/Preview.png
