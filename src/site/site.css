@@ -1,0 +1,299 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   The site behind the poster.
+
+   The poster "unfolds" into the page: the hero is the same parchment the camera
+   lands on, so the crossfade is nearly seamless. Below its torn edge is the tavern —
+   dark boards, candlelight, a quest board, an armoury.
+
+   Motion: native CSS scroll-driven animations (animation-timeline: view()/scroll())
+   with an IntersectionObserver fallback (html.no-sda, see site.ts). Only transform,
+   opacity and filter animate. prefers-reduced-motion switches every effect off.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --wood-0:#0c0906;--wood-1:#140f0a;--wood-2:#1e160e;--wood-3:#2a1f14;
+  --parch-0:#f1e4c4;--parch-1:#e4d0a4;--parch-2:#c8ab76;
+  --ink:#2a1b0c;--ink-soft:#5b4427;--ink-faint:#8a714b;
+  --text:#ece1cb;--muted:#a79a86;--dim:#877b68;
+  --gold:#d9a84e;--moss:#8bb07a;--arcane:#a48be0;--wax:#8e2b1f;
+  --fell:"IM Fell English SC",var(--display);
+  --ease-out:cubic-bezier(.2,.75,.2,1);
+}
+
+/* ── layer behaviour during the scene (hard rule 5: a separate fixed layer) ── */
+#site{position:fixed;inset:0;z-index:8;overflow:hidden;opacity:0;pointer-events:none;
+  color:var(--text);background:var(--wood-0)}
+body.landed #site{position:relative;inset:auto;z-index:1;overflow:visible;min-height:100vh;
+  opacity:1;pointer-events:auto}
+body.landed #portal{display:none}
+html:has(body.landed){scroll-behavior:smooth}
+.defs{position:absolute;width:0;height:0}
+
+/* ── nav: slides in once the hero is behind you ─────────────────────── */
+.bar{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:22px;
+  padding:10px clamp(16px,4vw,40px);background:linear-gradient(rgba(12,9,6,.92),rgba(12,9,6,.72));
+  backdrop-filter:blur(8px);border-bottom:1px solid rgba(217,168,78,.14);
+  transform:translateY(-110%);transition:transform .5s var(--ease-out)}
+body.landed .bar.on{transform:none}
+.bar ul{display:flex;gap:clamp(12px,2.4vw,30px);margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
+.bar a{color:var(--muted);text-decoration:none;font-family:var(--fell);font-size:16px;letter-spacing:.04em;
+  position:relative;padding:4px 0;white-space:nowrap;transition:color .25s}
+.bar ul a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--gold);
+  transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease-out)}
+.bar ul a:hover,.bar ul a[aria-current]{color:var(--text)}
+.bar ul a:hover::after,.bar ul a[aria-current]::after{transform:scaleX(1)}
+.seal{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#b8452f,var(--wax) 55%,#5a1a12);
+  color:#f5d9bf!important;font-family:var(--display)!important;font-weight:700;font-size:15px!important;
+  box-shadow:inset 0 0 0 3px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.5)}
+
+/* the reading candle: burns down as you scroll (scroll(root) timeline) */
+.candle{margin-left:auto;position:relative;width:12px;height:34px;flex:none}
+.candle .wax{position:absolute;bottom:0;left:0;right:0;height:26px;border-radius:2px 2px 1px 1px;
+  background:linear-gradient(90deg,#d8c9a4,#f3e8cc 45%,#bfae88);transform-origin:bottom}
+.candle .flame{position:absolute;left:50%;bottom:26px;width:8px;height:12px;margin-left:-4px;
+  border-radius:50% 50% 40% 40%/60% 60% 40% 40%;
+  background:radial-gradient(circle at 50% 70%,#fff4c8,#ffb347 45%,rgba(255,120,30,0) 72%);
+  transform-origin:50% 100%;animation:flicker 1.6s ease-in-out infinite alternate}
+
+/* ── candlelight following the cursor ───────────────────────────────── */
+.candlelight{position:fixed;inset:0;z-index:25;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,50%),rgba(255,166,77,.13),rgba(255,140,50,.04) 45%,transparent 70%);
+  transition:opacity .6s}
+body.landed .candlelight.on{opacity:1;animation:glow 3.2s ease-in-out infinite alternate}
+
+/* ── hero: the poster, unfolded ─────────────────────────────────────── */
+.sheet{position:relative;min-height:100svh;display:grid;align-items:center;color:var(--ink);
+  padding:clamp(80px,12vh,140px) clamp(20px,6vw,72px) clamp(110px,16vh,170px);
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 22%,#f4e7c6 0%,#ead9b0 45%,transparent 70%),
+    radial-gradient(ellipse 70% 60% at 75% 82%,#ecdcb3 0%,#dcc596 55%,transparent 75%),
+    linear-gradient(170deg,#eddcb4,#d8c292 60%,#c5ab7c)}
+/* paper grain and burnt-edge vignette */
+.sheet::before{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+  background:
+    radial-gradient(ellipse at center,transparent 55%,rgba(110,70,30,.45) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .32 0 0 0 0 .18 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sheet-inner{position:relative;max-width:74rem;margin:0 auto;width:100%;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(30px,5vw,80px);align-items:center}
+/* the poster's portrait, carried over from the scene */
+.mugshot{margin:0;width:clamp(220px,22vw,320px);transform:rotate(1.6deg)}
+.mugshot .frame{aspect-ratio:1/1.12;display:grid;place-items:center;border:6px double rgba(91,68,39,.75);
+  background:linear-gradient(160deg,#cdb68a,#a89067);box-shadow:inset 0 0 40px rgba(70,45,15,.55),0 18px 30px rgba(70,45,15,.25)}
+.mugshot svg{width:60%;fill:#3a2a14;opacity:.55}
+.mugshot figcaption{margin-top:12px;text-align:center;font-family:var(--fell);font-size:15px;letter-spacing:.08em;color:var(--ink-soft)}
+.sheet .kicker{font-family:var(--fell);font-size:clamp(15px,1.8vw,20px);letter-spacing:.2em;color:var(--ink-soft);margin:0 0 10px}
+h1.name{font-family:var(--display);font-weight:700;font-size:clamp(54px,8.6vw,132px);line-height:.9;
+  letter-spacing:-.01em;margin:0;color:var(--ink);text-shadow:0 1px 0 rgba(255,246,222,.6)}
+.role{margin:18px 0 22px;font-family:var(--fell);font-size:clamp(18px,2.3vw,26px);letter-spacing:.14em;color:#8a3b1c}
+.standfirst{max-width:40em;margin:0;color:var(--ink-soft);font-size:clamp(16px,1.6vw,19px);line-height:1.75}
+.reward{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:34px 0 0;max-width:52rem;
+  border:1px solid rgba(90,60,25,.35);border-radius:2px;background:rgba(255,248,228,.28)}
+.reward div{padding:14px 18px;border-left:1px dashed rgba(90,60,25,.3)}
+.reward div:first-child{border-left:0}
+.reward dt{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.2vw,38px);line-height:1;color:var(--ink)}
+.reward dd{margin:6px 0 0;font-size:13px;line-height:1.35;color:var(--ink-soft)}
+.meta{margin:24px 0 0;color:var(--ink-faint);font-size:14px}
+.down{display:inline-block;margin-top:clamp(34px,6vh,60px);
+  font-family:var(--fell);font-size:15px;letter-spacing:.12em;color:var(--ink-soft);text-decoration:none}
+.down::after{content:"";display:block;width:1px;height:34px;margin:8px 0 0 2.2em;background:var(--ink-soft);
+  transform-origin:top;animation:drip 2.2s var(--ease-out) infinite}
+/* torn bottom edge: the tavern shows through */
+.sheet .tear{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:clamp(34px,5vw,60px);
+  fill:var(--wood-0);filter:url(#rough)}
+
+/* wax-seal buttons (hero and epilogue) */
+.seals{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0 0;padding:0;list-style:none}
+a.wax{--dx:0px;--dy:0px;position:relative;display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px 10px 16px;border-radius:999px;text-decoration:none;
+  color:#f7dfc5;font-family:var(--fell);font-size:16px;letter-spacing:.05em;
+  background:radial-gradient(circle at 30% 25%,#b84a32,var(--wax) 55%,#5c1b12);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),inset 0 -3px 6px rgba(0,0,0,.25),0 3px 10px rgba(40,10,5,.35);
+  transform:translate(var(--dx),var(--dy));transition:transform .25s var(--ease-out),box-shadow .25s;overflow:hidden}
+a.wax::before{content:"";width:9px;height:9px;border-radius:50%;background:#f0c9a8;opacity:.75;
+  box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+a.wax::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,225,190,.35) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .7s var(--ease-out)}
+a.wax:hover{box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),inset 0 -3px 6px rgba(0,0,0,.25),0 8px 22px rgba(120,30,10,.45)}
+a.wax:hover::after{transform:translateX(120%)}
+
+/* ── the tavern: boards, lamplight ──────────────────────────────────── */
+.tavern{position:relative;padding:40px clamp(18px,5vw,56px) 60px;
+  background:
+    radial-gradient(ellipse 70% 30% at 50% 0%,rgba(217,140,60,.10),transparent 70%),
+    repeating-linear-gradient(90deg,transparent 0 158px,rgba(0,0,0,.35) 158px 160px),
+    linear-gradient(var(--wood-0),var(--wood-1) 40%,var(--wood-0))}
+.tavern::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .35' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .35 0 0 0 0 .2 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E")}
+.chapter{position:relative;max-width:72rem;margin:0 auto;padding:clamp(70px,11vh,120px) 0 0}
+
+/* chapter headings: kicker, inked title, plain label, a flourish that draws itself */
+.chapter-head{margin-bottom:clamp(30px,5vh,52px)}
+.chapter-head .kicker{margin:0 0 4px;font-family:var(--fell);font-size:17px;letter-spacing:.24em;color:var(--gold)}
+.chapter-head h2{margin:0;font-family:var(--display);font-weight:600;font-size:clamp(40px,6.4vw,78px);line-height:1;color:var(--text)}
+.chapter-head .plain{margin:10px 0 0;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.chapter-head::after{content:"";display:block;width:min(340px,70%);height:14px;margin-top:18px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 14'%3E%3Cpath d='M0 7h140M200 7h140' stroke='%23d9a84e' stroke-opacity='.45'/%3E%3Cpath d='M150 7c6-6 14-6 20 0s14 6 20 0' fill='none' stroke='%23d9a84e' stroke-opacity='.8'/%3E%3Ccircle cx='170' cy='7' r='2.2' fill='%23d9a84e'/%3E%3C/svg%3E") left/contain no-repeat;
+  transform-origin:left;transform:scaleX(0);transition:transform 1.1s var(--ease-out) .25s}
+.chapter-head.is-in::after{transform:scaleX(1)}
+
+/* inked letters (split by site.ts) */
+[data-ink] .word{display:inline-block;white-space:nowrap}
+[data-ink] .ch{display:inline-block;white-space:pre;opacity:0;filter:blur(8px);transform:translateY(.25em)}
+[data-ink].is-in .ch{animation:ink .9s var(--ease-out) forwards;animation-delay:calc(var(--i) * 38ms)}
+
+/* ── I. the tale ────────────────────────────────────────────────────── */
+.prose{max-width:44rem}
+.prose p{margin:0 0 18px;color:var(--muted);font-size:clamp(16px,1.5vw,18.5px);line-height:1.85}
+.dropcap::first-letter{float:left;font-family:var(--display);font-weight:700;font-size:4.6em;line-height:.8;
+  margin:.06em .12em 0 0;color:var(--gold);
+  background:linear-gradient(160deg,#f6d690,#c98b35 60%,#8a5520);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+/* ── II. the quest board ────────────────────────────────────────────── */
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(24px,3vw,40px);
+  padding:clamp(24px,3.5vw,44px);border-radius:4px;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(217,140,60,.08),transparent 60%),
+    repeating-linear-gradient(0deg,#1d150d 0 38px,#1a120b 38px 40px);
+  box-shadow:inset 0 0 0 10px #2b2015,inset 0 0 0 12px #120d08,inset 0 0 60px rgba(0,0,0,.6),0 30px 60px rgba(0,0,0,.35)}
+.notice{--tx:0deg;--ty:0deg;--lift:0px;--x:50%;--y:30%;position:relative;padding:34px 26px 24px;color:var(--ink);
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 20%,#f4e6c3,transparent 70%),
+    linear-gradient(165deg,#ecdcb6,#d9c294 70%,#c9ae7f);
+  box-shadow:0 14px 28px rgba(0,0,0,.45),0 2px 4px rgba(0,0,0,.4);
+  transform:perspective(900px) translateY(var(--lift)) rotate(var(--r,0deg)) rotateX(var(--ty)) rotateY(var(--tx));
+  transition:transform .35s var(--ease-out),box-shadow .35s;will-change:transform}
+/* candle held close to the paper: warm light follows the pointer */
+.notice::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:soft-light;
+  background:radial-gradient(300px circle at var(--x) var(--y),rgba(255,214,150,.9),transparent 65%);transition:opacity .35s}
+.notice:hover{--lift:-8px;box-shadow:0 28px 48px rgba(0,0,0,.55),0 0 60px rgba(217,140,60,.12)}
+.notice:hover{transform:perspective(900px) translateY(var(--lift)) rotate(0deg) rotateX(var(--ty)) rotateY(var(--tx))}
+.notice:hover::after{opacity:1}
+.pin{position:absolute;top:10px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e6c27a,#9b6a22 60%,#4a3010);box-shadow:0 3px 4px rgba(0,0,0,.45)}
+.notice:hover .pin{animation:wobble .6s var(--ease-out)}
+.notice .where{margin:0 0 6px;font-family:var(--fell);font-size:14px;letter-spacing:.1em;color:#8a3b1c}
+.notice h3{margin:0 0 12px;font-family:var(--display);font-weight:700;font-size:clamp(30px,3vw,38px);line-height:1;color:var(--ink)}
+.notice > p{margin:0 0 16px;color:var(--ink-soft);font-size:15px;line-height:1.7}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;padding:0;list-style:none}
+.tags li{padding:3px 10px;border:1px solid rgba(90,60,25,.35);border-radius:999px;color:var(--ink-soft);font-size:12.5px;background:rgba(255,248,228,.3)}
+.go{position:relative;z-index:1;color:var(--ink);font-family:var(--fell);font-size:16px;letter-spacing:.05em;text-decoration:none;
+  background:linear-gradient(currentColor,currentColor) left bottom/0% 1px no-repeat;padding-bottom:2px;transition:background-size .4s var(--ease-out)}
+.go span{display:inline-block;transition:transform .3s var(--ease-out)}
+.go:hover{background-size:100% 1px}
+.go:hover span{transform:translate(3px,-3px)}
+
+/* ── III. journeys: a road that draws itself ────────────────────────── */
+.road{position:relative;margin:0;padding:0 0 0 clamp(44px,6vw,72px);list-style:none;max-width:56rem}
+.road::before{content:"";position:absolute;left:clamp(14px,2vw,22px);top:8px;bottom:8px;width:2px;
+  background:repeating-linear-gradient(to bottom,var(--gold) 0 9px,transparent 9px 17px);opacity:.7;transform-origin:top}
+.stop{position:relative;padding:0 0 clamp(40px,6vh,64px)}
+.stop::before{content:"";position:absolute;left:calc(-1 * clamp(44px,6vw,72px) + clamp(14px,2vw,22px) - 8px);top:6px;
+  width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#ffd98a,#d9a84e 45%,#6b4414 75%);
+  box-shadow:0 0 0 4px var(--wood-1),0 0 18px rgba(217,168,78,.6)}
+.stop .when{margin:0 0 4px;font-family:var(--fell);font-size:15px;letter-spacing:.1em;color:var(--gold)}
+.stop h3{margin:0 0 12px;font-family:var(--display);font-weight:600;font-size:clamp(24px,2.6vw,32px);color:var(--text)}
+.stop h3 span{color:var(--muted);font-weight:500}
+.stop ul{margin:0;padding:0;list-style:none}
+.stop li{position:relative;padding:0 0 8px 22px;color:var(--muted);font-size:15.5px;line-height:1.7}
+.stop li::before{content:"";position:absolute;left:2px;top:.72em;width:7px;height:7px;background:var(--ember);transform:rotate(45deg)}
+
+/* ── IV. the armoury: inventory slots ───────────────────────────────── */
+.armoury{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(20px,3vw,34px)}
+.shelf{padding:20px 22px 24px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.15));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 -20px 40px rgba(0,0,0,.25)}
+.shelf h3{margin:0 0 14px;font-family:var(--fell);font-size:18px;letter-spacing:.12em;font-weight:400;color:var(--tier)}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.slots li{position:relative;padding:9px 14px;border-radius:3px;font-size:14.5px;color:var(--text);cursor:default;overflow:hidden;
+  background:linear-gradient(180deg,#1b140d,#120d08);
+  border:1px solid color-mix(in srgb,var(--tier) 35%,transparent);
+  box-shadow:inset 0 0 12px color-mix(in srgb,var(--tier) 10%,transparent);
+  transition:transform .25s var(--ease-out),box-shadow .25s,border-color .25s}
+.slots li::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,color-mix(in srgb,var(--tier) 30%,transparent) 50%,transparent 70%);
+  transform:translateX(-120%);transition:transform .8s var(--ease-out)}
+.slots li:hover{transform:translateY(-3px);border-color:var(--tier);
+  box-shadow:inset 0 0 14px color-mix(in srgb,var(--tier) 25%,transparent),0 8px 22px color-mix(in srgb,var(--tier) 25%,transparent)}
+.slots li:hover::after{transform:translateX(120%)}
+
+/* ── V. guild records ───────────────────────────────────────────────── */
+.records{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px;max-width:60rem}
+.record{position:relative;padding:22px 24px;background:rgba(255,255,255,.02)}
+.record::before,.record::after{content:"";position:absolute;width:22px;height:22px;border:1px solid var(--gold);opacity:.6}
+.record::before{top:0;left:0;border-right:0;border-bottom:0}
+.record::after{bottom:0;right:0;border-left:0;border-top:0}
+.record .when{margin:0 0 4px;font-family:var(--fell);font-size:15px;letter-spacing:.1em;color:var(--gold)}
+.record h3{margin:0 0 8px;font-family:var(--display);font-weight:600;font-size:25px;color:var(--text)}
+.record p{margin:0;color:var(--muted);font-size:15px;line-height:1.7}
+
+/* ── epilogue: send a raven ─────────────────────────────────────────── */
+.epilogue{padding-bottom:40px}
+.lede{max-width:34rem;margin:0 0 28px;color:var(--muted);font-size:clamp(17px,1.8vw,21px);line-height:1.7}
+.send{position:relative;display:inline-grid;gap:4px;padding:22px 30px;border:0;border-radius:3px;cursor:pointer;text-align:left;
+  color:var(--ink);background:linear-gradient(165deg,#f1e2bd,#d9c294 70%,#c9ae7f);
+  box-shadow:0 14px 30px rgba(0,0,0,.45);transition:transform .3s var(--ease-out),box-shadow .3s}
+.send .label{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,38px);line-height:1.05}
+.send .hint{font-family:var(--fell);font-size:14px;letter-spacing:.12em;color:#8a3b1c}
+.send:hover{transform:translateY(-4px) rotate(-.6deg);box-shadow:0 22px 44px rgba(0,0,0,.55),0 0 50px rgba(217,140,60,.15)}
+.send .bird{position:absolute;right:18px;top:-10px;width:44px;fill:#1a120b;opacity:0;pointer-events:none}
+.send.sent .bird{animation:fly 1.4s var(--ease-out) forwards}
+.toast{min-height:1.5em;margin:12px 0 0;color:var(--gold);font-family:var(--fell);font-size:16px;letter-spacing:.06em}
+
+.colophon{max-width:72rem;margin:80px auto 0;padding-top:24px;border-top:1px solid rgba(217,168,78,.12)}
+.colophon p{margin:0;color:var(--dim);font-size:13px;letter-spacing:.04em}
+
+#again{position:fixed;left:18px;bottom:18px;z-index:31;display:none;padding:9px 16px;cursor:pointer;
+  background:rgba(12,9,6,.85);border:1px solid rgba(217,168,78,.3);border-radius:999px;color:var(--muted);
+  font-family:var(--fell);font-size:14px;letter-spacing:.06em;backdrop-filter:blur(6px);transition:color .25s,border-color .25s}
+#again.on{display:block}
+#again:hover{color:var(--text);border-color:var(--gold)}
+
+/* ── reveals ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference){
+  @supports (animation-timeline: view()){
+    [data-reveal]{animation:rise linear both;animation-timeline:view();animation-range:entry 5% entry 95%}
+    .notice[data-reveal]{animation-name:pin-up}
+    .road::before{animation:draw linear both;animation-timeline:view();animation-range:entry 30% cover 60%}
+    .candle .wax{animation:burn linear both;animation-timeline:scroll(root)}
+    .candle .flame{animation:flicker 1.6s ease-in-out infinite alternate,sink linear both;animation-timeline:auto,scroll(root)}
+  }
+  /* fallback without scroll timelines: IntersectionObserver toggles .is-in (site.ts) */
+  html.no-sda [data-reveal]{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
+  html.no-sda [data-reveal].is-in{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  [data-ink] .ch{opacity:1;filter:none;transform:none}
+  [data-ink].is-in .ch{animation:none}
+  .chapter-head::after{transform:none;transition:none}
+  .candle .flame,.down::after,body.landed .candlelight.on{animation:none}
+  .notice,.notice:hover{transition:none}
+}
+
+@keyframes rise{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+@keyframes pin-up{from{opacity:0;translate:0 60px;scale:.94}to{opacity:1;translate:0 0;scale:1}}
+@keyframes draw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes burn{from{transform:scaleY(1)}to{transform:scaleY(.18)}}
+@keyframes sink{from{translate:0 0}to{translate:0 21px}}
+@keyframes ink{to{opacity:1;filter:none;transform:none}}
+@keyframes flicker{0%{transform:scale(1,1) rotate(-2deg);opacity:.95}50%{transform:scale(.92,1.08) rotate(2deg);opacity:1}100%{transform:scale(1.04,.94) rotate(-1deg);opacity:.9}}
+@keyframes glow{from{opacity:.85}to{opacity:1}}
+@keyframes drip{0%{transform:scaleY(0);opacity:1}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+@keyframes wobble{0%{transform:rotate(0)}30%{transform:rotate(-18deg)}60%{transform:rotate(10deg)}100%{transform:rotate(0)}}
+@keyframes fly{0%{opacity:0;transform:translate(0,10px) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(160px,-120px) scale(1.1) rotate(-12deg)}}
+
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+@media (max-width:900px){
+  .sheet-inner{grid-template-columns:1fr}
+  .mugshot{display:none}
+}
+@media (max-width:760px){
+  .reward{grid-template-columns:repeat(2,1fr)}
+  .reward div:nth-child(3){border-left:0}
+  .reward div:nth-child(n+3){border-top:1px dashed rgba(90,60,25,.3)}
+  .bar{gap:14px}
+  .bar ul a{font-size:15px}
+}
+@media (pointer: coarse){
+  .notice,.notice:hover{transform:rotate(var(--r,0deg))}
+  .notice::after{display:none}
+}

@@ -89,9 +89,14 @@ Decisions (keep them unless the look is retuned on purpose):
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
    and ¼ texture memory; FPS guard; no-WebGL fallback). Not measured on a real phone —
    check FPS on a device; the rest of the walk's calls are ~50 sprites (could be instanced).
-5. The site behind the poster — content done (from the CV, static HTML in `index.html`
-   `#site`, sections with ids for the future narrator: intro, about, work, experience,
-   skills, education, contact). Next: the UI/UX pass for this content.
+5. ~~The site behind the poster~~ (done: content from the CV + tavern-themed UI).
+   Markup in `index.html` `#site`, styles `src/site/site.css`, behaviour `src/site/site.ts`
+   (loaded by the bootstrap, so it also runs without WebGL). The hero is the poster
+   unfolded (same parchment → near-seamless crossfade; the name inks in via `inkHero()`
+   when the page takes over). Chapters: Tale, Quest Board, Journeys, Armoury, Guild
+   Records, Send a Raven. Motion is native CSS scroll timelines with an
+   IntersectionObserver fallback (`html.no-sda`); transform/opacity/filter only;
+   `prefers-reduced-motion` turns it all off. Section ids are hooks for the narrator.
 6. Avatar narrating site sections (last, most expensive).
 
 ## Open decisions

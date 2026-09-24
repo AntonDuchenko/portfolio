@@ -16,6 +16,7 @@ import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/ta
 import { buildTerrain } from './scene/terrain';
 import { state } from './state';
 import { el } from './ui/dom';
+import { inkHero } from './site/site';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
 
@@ -35,6 +36,7 @@ function land() {
   chrome.forEach(e => e.classList.add('hidden'));
   setLine(null); document.body.classList.remove('scene-locked');
   el.again.classList.add('on'); scrollTo(0, 0);
+  inkHero();                              // skip lands without the crossfade
 }
 el.skip.addEventListener('click', () => {
   if (state.phase === 'walk') { state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35; resetLines(); setLine(null); }
@@ -106,7 +108,7 @@ function frame() {
 
   if (state.phase === 'open' || state.phase === 'fly') {
     const sc = layoutPane();
-    if (crossfade(sc)) sfxPaperOnce();   // entered the paper
+    if (crossfade(sc)) { sfxPaperOnce(); inkHero(); }   // entered the paper: the page takes over
     if (camZ > GATE_Z + .3) maskDoor(state.doorAngle);
     else el.portal.style.clipPath = 'none';
   }
