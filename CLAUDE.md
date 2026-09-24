@@ -59,10 +59,16 @@ Repository:
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
 - `?perf` (`ui/perf.ts`): frame times per phase (walk/hold/open/fly/fade/site), shown 4 s after
   landing — for real devices; the container has no GPU and cannot reproduce phone jank.
-- Transition cost, measured in Chromium traces: `#site` is its own layer during the scene
-  (`will-change: opacity`), the hero name inks without blur, 3D frames are skipped while the
-  poster covers the screen. Rejected: `will-change: transform` on `#pane` (−20 % raster but
-  the poster turns visibly soft when scaled up) and dropping the poster shadow (−11 %).
+- Transition cost. Measured on a phone with `?perf`: the fade ran at 8 fps (everything else
+  53–60). Reproduced in the container with xvfb + real time + CPU ×4 (screenshot-driven
+  traces mislead: each screenshot repaints the whole document). Bisection: hiding the page
+  changed nothing, hiding the poster 5 → 19 fps — the sheet, scaled past the screen, was
+  re-rastered every frame (no single property: shadow, clip-path, background all equal).
+  Fix: `#pane.settled` (`will-change: transform`) from the moment it covers the screen —
+  rastered once, scaled by the compositor; fade 5 → 14 fps. Only from cover: set during
+  the approach it rasters at a tiny scale and turns visibly soft. Also: `#site` is its own
+  layer during the scene, the hero name inks without blur, 3D frames are skipped while
+  the poster covers the screen.
 - All user-facing content is in English (any audience).
 - Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
   `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the

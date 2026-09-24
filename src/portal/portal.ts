@@ -66,5 +66,10 @@ export function crossfade(sc: number) {
   const c = coverSc();
   const x = easeInOut(Math.min(1, Math.max(0, (sc - c) / (endSc() - c))));
   el.site.style.opacity = x.toFixed(3);
+  // Covered: from here the sheet only grows (×1.42 at most by endSc) under the fading
+  // page. Re-rastering a sheet bigger than the screen every frame ran the fade at 5–8 fps
+  // on a phone; as its own layer it is rastered once and scaled by the compositor. Not
+  // earlier: rastered at the small scale of the approach, it turns visibly soft.
+  el.pane.classList.toggle('settled', sc >= c);
   return sc >= c;                                    // covered
 }

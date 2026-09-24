@@ -64,6 +64,7 @@ input[type=range]{width:100%;height:16px;margin:0;accent-color:#c98a3c;backgroun
 #portal.on{display:block}
 #portal.landed{position:static;clip-path:none !important;pointer-events:auto;z-index:1}
 #pane{position:absolute;inset:0;transform-origin:50% 50%}
+#pane.settled{will-change:transform}             /* see crossfade() in portal.ts */
 #portal.landed #pane{position:static;transform:none !important}
 
 /* the notice: a narrow sheet centred in the frame, not its full width */

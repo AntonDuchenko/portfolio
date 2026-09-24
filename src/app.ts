@@ -63,7 +63,7 @@ el.again.addEventListener('click', () => {
   resetAudio();
   resetNarrator();
   setOnSite(false);                       // the scene always plays with sound
-  noticeGlow.intensity = 0; el.poster.style.opacity = '1'; el.site.style.opacity = '0';
+  noticeGlow.intensity = 0; el.poster.style.opacity = '1'; el.site.style.opacity = '0'; el.pane.classList.remove('settled');
   setDoor(0); scrollTo(0, 0);
 });
 
