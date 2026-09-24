@@ -40,7 +40,22 @@ let voiceSrc: AudioBufferSourceNode | null = null;
 export const mix = { torch: 1, wind: 1, forest: 1, music: 1 };   // layer switches, for listening checks
 const torchObj = new Object3D(); scene.add(torchObj);
 
-export function setMaster(v: number) { master = v; if (audioReady) listener.setMasterVolume(master); }
+export function setMaster(v: number) { master = v; applyVolume(); }
+
+/* Mute: the whole mix (beds, one-shots, narrator) goes through the listener's gain.
+   Ramped over ~0.15 s so toggling never clicks. Remembered between visits. */
+const MUTE_KEY = 'tavern:muted';
+let muted = (() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; } })();
+export const isMuted = () => muted;
+export function setMuted(m: boolean) {
+  muted = m;
+  try { localStorage.setItem(MUTE_KEY, m ? '1' : '0'); } catch { /* private mode */ }
+  applyVolume();
+}
+function applyVolume() {
+  if (!audioReady) return;
+  listener.gain.gain.setTargetAtTime(muted ? 0 : master, actx.currentTime, .05);
+}
 export function setForestCut(v: number) { forestCut = v; }
 
 async function fetchDecode(name: Name) {
@@ -129,7 +144,7 @@ function startAudio(bufs: Buffers | null) {
   hearthSnd.setPlaybackRate(.72); hearthSnd.play();
   signSnd = placed(B.sign0, SIGN_POS, 3, 1.3, .9, false);
   doorSnd = placed(B.door, DOOR_POS, 4, 1, 1.1, false);
-  listener.setMasterVolume(master);
+  listener.setMasterVolume(muted ? 0 : master);
   audioReady = true;
 }
 

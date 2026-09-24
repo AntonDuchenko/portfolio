@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Color, Vector3 } from 'three';
-import { loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
+import { listener, loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
 import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import * as C from './config';
@@ -17,6 +17,7 @@ import { buildTerrain } from './scene/terrain';
 import { state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
+import { initSoundToggle } from './ui/sound';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
 
@@ -156,7 +157,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   const mf = mergeStatic(front, leaves.map(l => l.pivot)), mh = mergeStatic(hall.tav);
   console.info(`merged meshes: facade ${mf.before} → ${mf.after}, hall ${mh.before} → ${mh.after}`);
   // dev hook for the numeric checks (hard rules 1–4), stripped from production builds
-  if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C } });
+  if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C, listener } });
   // draw the first frame right away — it shows through the entry gate
   camera.position.set(0, EYE, state.startZ); camera.updateMatrixWorld();
   renderer.render(scene, camera);
@@ -166,6 +167,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   el.enter.textContent = bufs ? 'Enter' : 'Enter without sound';
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);
+    if (bufs) initSoundToggle();
     el.gate.classList.add('off');
     setTimeout(() => el.gate.classList.add('hidden'), 950);
     last = performance.now();

@@ -247,6 +247,22 @@ a.wax:hover::after{transform:translateX(120%)}
 #again.on{display:block}
 #again:hover{color:var(--text);border-color:var(--gold)}
 
+/* sound toggle: over the scene and the site alike */
+#sound{position:fixed;right:18px;bottom:18px;z-index:31;display:none;align-items:center;gap:8px;padding:8px 14px 8px 10px;cursor:pointer;
+  background:rgba(12,9,6,.85);border:1px solid rgba(217,168,78,.3);border-radius:999px;color:var(--muted);
+  font-family:var(--fell);font-size:14px;letter-spacing:.06em;backdrop-filter:blur(6px);transition:color .25s,border-color .25s}
+#sound.on{display:inline-flex}
+#sound:hover{color:var(--text);border-color:var(--gold)}
+#sound svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#sound .spk{fill:currentColor;stroke:none}
+#sound .cross{display:none}
+#sound.muted .wave{display:none}
+#sound.muted .cross{display:inline}
+#sound:not(.muted) .wave{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion: reduce){#sound .wave{animation:none!important}}
+@media (max-width:760px){#sound .label{display:none}#sound{padding:9px}}
+
 /* ── reveals ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference){
   @supports (animation-timeline: view()){
