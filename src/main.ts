@@ -127,7 +127,7 @@ loadKits().then(() => {
   return audio;
 }).then(bufs => {
   el.enter.disabled = false;
-  el.enter.textContent = bufs ? 'Войти' : 'Войти без звука';
+  el.enter.textContent = bufs ? 'Enter' : 'Enter without sound';
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);
     el.gate.classList.add('off');

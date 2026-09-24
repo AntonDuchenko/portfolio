@@ -55,14 +55,14 @@ input[type=range]{width:100%;height:16px;margin:0;accent-color:#c98a3c;backgroun
 .mutes input{accent-color:#c98a3c;margin:0}
 :focus-visible{outline:2px solid var(--ember);outline-offset:2px}
 
-/* ── портал ──────────────────────────────────────────────────────── */
+/* ── portal ──────────────────────────────────────────────────────── */
 #portal{position:fixed;inset:0;z-index:7;pointer-events:none;display:none}
 #portal.on{display:block}
 #portal.landed{position:static;clip-path:none !important;pointer-events:auto;z-index:1}
 #pane{position:absolute;inset:0;transform-origin:50% 50%}
 #portal.landed #pane{position:static;transform:none !important}
 
-/* объявление: узкий лист по центру рамки, а не во всю её ширину */
+/* the notice: a narrow sheet centred in the frame, not its full width */
 #posterWrap{position:absolute;inset:0;display:grid;place-items:center;container-type:size}
 #poster{height:100%;aspect-ratio:1/1.9;position:relative;
   background:
@@ -91,8 +91,8 @@ input[type=range]{width:100%;height:16px;margin:0;accent-color:#c98a3c;backgroun
 #poster .tack{position:absolute;width:2.2cqh;height:2.2cqh;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#8c7a5c,#3a2f1c)}
 
-/* резюме — отдельный слой поверх сцены: оно не масштабируется вместе
-   с объявлением, поэтому появляется сразу в готовом виде */
+/* the resume is a separate layer above the scene: it does not scale with the
+   notice, so it appears already laid out */
 #site{position:fixed;inset:0;z-index:8;overflow:hidden;opacity:0;pointer-events:none;
   color:var(--parchment);background:
     radial-gradient(ellipse 80% 45% at 50% 0%,rgba(201,123,46,.18),transparent 62%),

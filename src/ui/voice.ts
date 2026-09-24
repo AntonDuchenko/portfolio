@@ -3,10 +3,10 @@ import { el } from './dom';
 // Voice lines are timed to walked distance (fraction of the walk) for now.
 // Next step inverts this: audio duration drives the walk length.
 const script = [
-  { at: .02, text: 'Здесь начинается закадровый голос. Пара фраз о том, кто я.' },
-  { at: .28, text: 'Дальше — как пришёл в разработку и чем занимался до неё.' },
-  { at: .55, text: 'Потом — чем занимаюсь сейчас и что мне в этом интересно.' },
-  { at: .80, text: 'И последняя фраза — прямо перед дверью.' }
+  { at: .02, text: 'Evening, traveller. Mind the roots — the path is longer than it looks.' },
+  { at: .28, text: 'My name is Anton. I build things for the web, from the database up to the last pixel.' },
+  { at: .55, text: 'These days it is TypeScript, Node and React — and a habit of seeing work through to production.' },
+  { at: .80, text: 'The tavern is just ahead. My notice is pinned up inside.' }
 ];
 let lineIdx = -1;
 const lineP = el.line.querySelector('p')!;

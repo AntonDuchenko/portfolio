@@ -47,16 +47,16 @@ export function loadAudio(): Promise<Buffers | null> {
   return new Promise(done => {
     let settled = false;
     const finish = (v: Buffers | null) => { if (settled) return; settled = true; clearTimeout(timer); done(v); };
-    const timer = setTimeout(() => { console.warn('звук: таймаут'); finish(null); }, LOAD_TIMEOUT);
+    const timer = setTimeout(() => { console.warn('audio: timeout'); finish(null); }, LOAD_TIMEOUT);
     Promise.all(NAMES.map(fetchDecode))
       .then(list => { const o = {} as Buffers; NAMES.forEach((k, i) => o[k] = list[i]); finish(o); })
-      .catch(e => { console.warn('звук: не загрузился —', e); finish(null); });
+      .catch(e => { console.warn('audio: failed to load —', e); finish(null); });
   });
 }
 
 /** Resumes the context (needs the click) and starts playback when buffers exist. */
 export function resumeAndStart(bufs: Buffers | null) {
-  const go = () => { try { startAudio(bufs); } catch (e) { console.warn('звук:', e); } };
+  const go = () => { try { startAudio(bufs); } catch (e) { console.warn('audio:', e); } };
   actx.resume().then(go, go);
 }
 

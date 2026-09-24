@@ -58,7 +58,7 @@ function signTexture() {
   const x = c.getContext('2d')!;
   x.fillStyle = '#2b1d10'; x.fillRect(0, 0, 512, 256);
   x.fillStyle = '#d8b877'; x.font = 'bold 92px Georgia'; x.textAlign = 'center';
-  x.fillText('ТАВЕРНА', 256, 150);
+  x.fillText('TAVERN', 256, 150);
   x.strokeStyle = '#8a6a34'; x.lineWidth = 6; x.strokeRect(16, 16, 480, 224);
   const t = new CanvasTexture(c); t.colorSpace = 'srgb'; return t;
 }

@@ -30,7 +30,7 @@ export function initTune() {
   const syncVol = () => { setMaster(+sVol.value / 100); vVol.textContent = sVol.value + '%'; };
   sVol.addEventListener('input', syncVol); syncVol();
   const sCut = $('s-cut'), vCut = $('v-cut');
-  const syncCut = () => { setForestCut(+sCut.value); vCut.textContent = (+sCut.value / 1000).toFixed(1) + ' кГц'; };
+  const syncCut = () => { setForestCut(+sCut.value); vCut.textContent = (+sCut.value / 1000).toFixed(1) + ' kHz'; };
   sCut.addEventListener('input', syncCut); syncCut();
   document.querySelectorAll<HTMLInputElement>('.mutes input').forEach(cb =>
     cb.addEventListener('change', () => { mix[cb.dataset.l as keyof typeof mix] = cb.checked ? 1 : 0; }));
