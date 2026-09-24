@@ -23,6 +23,10 @@
 /* ── layer behaviour during the scene (hard rule 5: a separate fixed layer) ── */
 #site{position:fixed;inset:0;z-index:8;overflow:hidden;opacity:0;pointer-events:none;
   color:var(--text);background:var(--wood-0)}
+/* during the scene the page is its own compositor layer: the crossfade then only changes
+   the layer's opacity instead of repainting the page every frame (and the layer is
+   rastered while still invisible) */
+body:not(.landed) #site{will-change:opacity}
 body.landed #site{position:relative;inset:auto;z-index:1;overflow:visible;min-height:100vh;
   opacity:1;pointer-events:auto}
 body.landed #portal{display:none}
@@ -142,6 +146,9 @@ a.wax.cv:hover{box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.7),0 8px 22px rgba(40
 /* inked letters (split by site.ts) */
 [data-ink] .word{display:inline-block;white-space:nowrap}
 [data-ink] .ch{display:inline-block;white-space:pre;opacity:0;filter:blur(8px);transform:translateY(.25em)}
+/* the hero name inks in during the crossfade: no blur there — a dozen animated blur
+   filters on top of the fade cost ~40 % more raster work on the handover frames */
+#intro [data-ink] .ch{filter:none}
 [data-ink].is-in .ch{animation:ink .9s var(--ease-out) forwards;animation-delay:calc(var(--i) * 38ms)}
 
 /* ── I. the tale ────────────────────────────────────────────────────── */
