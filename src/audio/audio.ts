@@ -5,17 +5,23 @@ import { torch } from '../scene/lights';
 import { scene } from '../scene/stage';
 import { DOOR_POS, HEARTH_POS, SIGN_POS } from '../scene/tavern';
 import { state } from '../state';
+import voiceLines from '../ui/voice-lines.json';
 
 /* Beds:        forest (stereo, highs cut — tropical insects live there),
                 synthesised wind, tavern music behind the closed door.
    Positional:  torch, hearth, sign, door — mono (hard rule 6), placed in the world.
    One-shots:   footsteps (6 variants), owls, fly whoosh, paper rustle. */
 
+// voice/line<i> are the narration (scripts/voice/generate.mjs); their count follows
+// src/ui/voice-lines.json
 const NAMES = ['forest', 'music', 'fire', 'door', 'whoosh', 'paper',
   'step0', 'step1', 'step2', 'step3', 'step4', 'step5',
-  'owl0', 'owl1', 'owl2', 'sign0', 'sign1', 'sign2'] as const;
-type Name = typeof NAMES[number];
+  'owl0', 'owl1', 'owl2', 'sign0', 'sign1', 'sign2',
+  ...voiceLines.lines.map((_, i) => `voice/line${i}`)];
+type Name = string;
 export type Buffers = Record<Name, AudioBuffer>;
+export const voiceName = (i: number) => `voice/line${i}`;
+const VOICE_GAIN = 1.1;
 
 const LOAD_TIMEOUT = 12000;
 
@@ -30,6 +36,7 @@ let torchSnd: PositionalAudio | null = null, hearthSnd: PositionalAudio | null =
 let signSnd: PositionalAudio | null = null, doorSnd: PositionalAudio | null = null;
 let stepLeft = false, lastStepIdx = -1, nextSign = 4, nextOwl = 9, owlsLeft = 3, paperPlayed = false;
 let forestCut = 3500;
+let voiceSrc: AudioBufferSourceNode | null = null;
 export const mix = { torch: 1, wind: 1, forest: 1, music: 1 };   // layer switches, for listening checks
 const torchObj = new Object3D(); scene.add(torchObj);
 
@@ -130,7 +137,7 @@ function startAudio(bufs: Buffers | null) {
 export function sfxStep() {
   // the index is drawn even without audio, like in the prototype
   let i; do { i = Math.floor(Math.random() * 6); } while (i === lastStepIdx); lastStepIdx = i;
-  oneShot(B[`step${i}` as Name], {
+  oneShot(B[`step${i}`], {
     rate: .92 + Math.random() * .16, gain: .5 + Math.random() * .25,
     pan: (stepLeft = !stepLeft) ? -.2 : .2
   });
@@ -140,6 +147,21 @@ export function sfxDoor() { if (audioReady && doorSnd) { if (doorSnd.isPlaying) 
 export function sfxWhoosh() { oneShot(B.whoosh, { gain: .85, delay: .55 }); }
 /** once, when the sheet first covers the viewport */
 export function sfxPaperOnce() { if (!paperPlayed) { paperPlayed = true; oneShot(B.paper, { gain: .9 }); } }
+
+/** Narration: dry, centred, not positional. One line at a time. */
+export function playVoice(i: number) {
+  stopVoice();
+  const buf = B[voiceName(i)];
+  if (!audioReady || !buf) return;
+  const s = actx.createBufferSource(); s.buffer = buf;
+  const g = actx.createGain(); g.gain.value = VOICE_GAIN;
+  s.connect(g).connect(listener.getInput()); s.start();
+  s.onended = () => { if (voiceSrc === s) voiceSrc = null; };
+  voiceSrc = s;
+}
+export function stopVoice() {
+  if (voiceSrc) { try { voiceSrc.stop(); } catch { /* already stopped */ } voiceSrc = null; }
+}
 
 export function updateAudio(dt: number, camZ: number) {
   if (!audioReady || !forestBed || !musicBed || !windGain || !torchSnd || !hearthSnd || !signSnd) return;
@@ -165,7 +187,7 @@ export function updateAudio(dt: number, camZ: number) {
   if (nextSign <= 0 && inside < .5) {
     nextSign = 3.5 + Math.random() * 5;
     if (signSnd.isPlaying) signSnd.stop();
-    signSnd.setBuffer(B[`sign${Math.floor(Math.random() * 3)}` as Name]);
+    signSnd.setBuffer(B[`sign${Math.floor(Math.random() * 3)}`]);
     signSnd.setPlaybackRate(.9 + Math.random() * .2); signSnd.play();
   }
   // distant owls, three per walk
@@ -173,7 +195,7 @@ export function updateAudio(dt: number, camZ: number) {
     nextOwl -= dt;
     if (nextOwl <= 0) {
       owlsLeft--; nextOwl = 13 + Math.random() * 9;
-      oneShot(B[`owl${2 - owlsLeft}` as Name], { gain: .32, pan: (Math.random() * 2 - 1) * .7, lowpass: 2200 });
+      oneShot(B[`owl${2 - owlsLeft}`], { gain: .32, pan: (Math.random() * 2 - 1) * .7, lowpass: 2200 });
     }
   }
 }

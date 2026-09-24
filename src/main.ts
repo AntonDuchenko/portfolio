@@ -1,11 +1,11 @@
 import './styles.css';
 import * as THREE from 'three';
 import { Color, Vector3 } from 'three';
-import { loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio } from './audio/audio';
+import { loadAudio, resetAudio, resumeAndStart, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
 import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import * as C from './config';
-import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, STOP_AT, T_HOLD } from './config';
+import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, SPEED, STOP_AT, T_HOLD } from './config';
 import { crossfade, layoutPane, maskDoor } from './portal/portal';
 import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
@@ -17,7 +17,7 @@ import { buildTerrain } from './scene/terrain';
 import { state } from './state';
 import { el } from './ui/dom';
 import { initTune, tuneEnabled } from './ui/tune';
-import { resetLines, setLine } from './ui/voice';
+import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
 
 /* ── build: procedural parts now, kit models once they are loaded ── */
 el.scene.appendChild(renderer.domElement);
@@ -37,7 +37,7 @@ function land() {
   el.again.classList.add('on'); scrollTo(0, 0);
 }
 el.skip.addEventListener('click', () => {
-  if (state.phase === 'walk') { state.walked = Math.abs(STOP_AT); state.phase = 'hold'; state.pt = T_HOLD - .35; setLine(null); }
+  if (state.phase === 'walk') { state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35; resetLines(); setLine(null); }
   else if (state.phase !== 'done') land();
 });
 el.again.addEventListener('click', () => {
@@ -114,17 +114,20 @@ addEventListener('resize', () => {
   if (state.phase === 'open' || state.phase === 'fly') { camera.updateMatrixWorld(); layoutPane(); }
 });
 
-const audio = loadAudio();
-loadKits().then(() => {
-  buildForest();
+Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
+  // timeline inversion: the narration's length sets the walk's length
+  const walkTime = buildSchedule(LINES.map((_, i) => bufs?.[voiceName(i)]?.duration ?? null));
+  state.walkLen = SPEED * walkTime;
+  state.startZ = STOP_AT + state.walkLen;
+  buildForest(state.startZ);
   buildFacade();
   buildPost(buildHall());
   // dev hook for the numeric checks (hard rules 1–4), stripped from production builds
   if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C } });
   // draw the first frame right away — it shows through the entry gate
-  camera.position.set(0, EYE, 0); camera.updateMatrixWorld();
+  camera.position.set(0, EYE, state.startZ); camera.updateMatrixWorld();
   renderer.render(scene, camera);
-  return audio;
+  return bufs;
 }).then(bufs => {
   el.enter.disabled = false;
   el.enter.textContent = bufs ? 'Enter' : 'Enter without sound';

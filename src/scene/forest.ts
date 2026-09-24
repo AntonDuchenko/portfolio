@@ -37,6 +37,8 @@ function night(m: Material) {
   m.color.multiply(new Color(tint)); tinted.add(m);
 }
 
+let startZ = 0;
+
 function field(name: string, count: number, place: (z: number, size: Size) => Placement) {
   const ps = parts('forest', name), b = bounds(ps);
   ps.forEach(p => night(p.material));
@@ -45,7 +47,14 @@ function field(name: string, count: number, place: (z: number, size: Size) => Pl
   const meshes = instanced(ps, count);
   const f: Field = { meshes, count, place: z => place(z, size), data: new Array(count) };
   for (const m of meshes) { m.frustumCulled = false; m.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(m); }
-  for (let i = 0; i < count; i++) { f.data[i] = f.place(-Math.random() * SPREAD); write(f, i); }
+  for (let i = 0; i < count; i++) {
+    // spread over SPREAD metres from just behind the start; anything that would land
+    // past GATE_Z + 4 (inside the tavern) is kept at scale 0 and never re-placed
+    const z = startZ + 10 - Math.random() * SPREAD;
+    f.data[i] = f.place(z);
+    if (z < GATE_Z + 4) f.data[i].w = f.data[i].h = 0;
+    write(f, i);
+  }
   for (const m of meshes) m.instanceMatrix.needsUpdate = true;
   fields.push(f); return f;
 }
@@ -55,7 +64,9 @@ interface Size { reach: number; height: number }
 // pushed out by that reach so branch tips stay CLEAR m from the camera line.
 const CLEAR = 1.2;
 
-export function buildForest() {
+/** startZ — where the walk begins (it depends on the narration length). */
+export function buildForest(start: number) {
+  startZ = start;
   for (const name of ['pine_a', 'pine_b']) field(name, 105, (z, m) => {
     const h = rand(5, 13), s = h / m.height;
     const x = side() * (m.reach * s + CLEAR + rand(0, 30));
@@ -74,7 +85,9 @@ export function buildForest() {
   for (let i = 0; i < 14; i++) {
     const sp = sprite(mistTex, rand(14, 26), rand(.1, .22));
     sp.material.blending = NormalBlending;
-    sp.position.set(rand(-16, 16), rand(.3, 1.6), -Math.random() * SPREAD);
+    const z = startZ + 10 - Math.random() * SPREAD;
+    sp.position.set(rand(-16, 16), rand(.3, 1.6), z);
+    sp.visible = z > GATE_Z + 4;
     scene.add(sp); mists.push({ sp, drift: rand(-.25, .25), phase: rand(0, 10) });
   }
 }

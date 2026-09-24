@@ -1,0 +1,11 @@
+{
+  "name": "tavern-voice",
+  "private": true,
+  "type": "module",
+  "description": "Synthesises the narration placeholder with Kokoro (offline). Separate from the app so CI never installs the native addon or the 160 MB model.",
+  "scripts": { "generate": "node generate.mjs" },
+  "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "sherpa-onnx-node": "^1.13.8"
+  }
+}

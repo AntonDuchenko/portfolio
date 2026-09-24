@@ -17,3 +17,7 @@ dist/
 /Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/*
 !/Medieval Village MegaKit[[]Standard]/Medieval Village MegaKit[[]Standard]/glTF/
 
+
+# voice generator (scripts/voice): its own deps and the cached TTS model
+scripts/voice/node_modules/
+scripts/voice/.cache/

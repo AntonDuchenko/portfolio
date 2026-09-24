@@ -16,10 +16,12 @@ export function advance(dt: number, land: () => void): { camZ: number; pitch: nu
   const s = state;
   let camZ: number, pitch = 0, bob = 1; s.camY = EYE;
 
+  // The walk is as long as the narration: startZ = STOP_AT + SPEED · narration time.
   if (s.phase === 'walk') {
-    s.walked += SPEED * dt; camZ = -s.walked;
-    updateLines(s.walked / Math.abs(STOP_AT));
-    if (camZ <= STOP_AT) { camZ = STOP_AT; s.walked = Math.abs(STOP_AT); s.phase = 'hold'; s.pt = 0; }
+    s.walked += SPEED * dt;
+    updateLines(s.walked / SPEED);
+    if (s.walked >= s.walkLen) { s.walked = s.walkLen; s.phase = 'hold'; s.pt = 0; }
+    camZ = s.startZ - s.walked;
   } else camZ = STOP_AT;
 
   if (s.phase === 'hold') {

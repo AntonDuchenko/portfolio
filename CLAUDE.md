@@ -28,7 +28,13 @@ Layout:
   (one file per kit, models as named root nodes): simplification to budget, 1K WebP
   textures, meshopt. Fails the build if a budget is exceeded. Writes `manifest.json`
   (tris + bounds per model) — use it for placement numbers.
+- `scripts/voice/` — synthesises the narration placeholder (Kokoro, offline) into
+  `public/audio/voice/line<i>.mp3` from `src/ui/voice-lines.json`. Own `package.json`, so
+  CI never installs the native addon or the model: `cd scripts/voice && npm i && npm run generate`.
+- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds and publishes
+  `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a branch → gh-pages).
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
+- All user-facing content is in English (any audience).
 
 Decisions (keep them unless the look is retuned on purpose):
 
@@ -70,7 +76,7 @@ Decisions (keep them unless the look is retuned on purpose):
 1. ~~Port (above).~~
 2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
    textures 1K; building on the kit grid). Open: ground/path are still flat colour.
-3. Voiceover + timeline inversion: audio duration drives walk length, not the reverse.
+3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; placeholder TTS voice).
 4. Mobile/perf: FPS check, reduced instances, fallback straight to the site.
    Now: ~356 draw calls / 466k tris on the walk, 167 in the hall. Easy win: merge the
    static village modules and props per material.

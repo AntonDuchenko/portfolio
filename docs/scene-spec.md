@@ -41,7 +41,7 @@ their crown reach + 1.2 m from the camera line, so branches never cross the path
 
 | Phase | Behaviour |
 |---|---|
-| `walk` | 2.3 m/s from z = 0 to `GATE_Z + 6` (~55 s). Head bob: vertical at 2× stride freq, lateral at 1×. |
+| `walk` | 2.3 m/s ending at `STOP_AT = GATE_Z + 6`. **Length is set by the narration**: walk time = 2 s lead-in + lines with 1.6 s gaps + 5 s tail (≈ 32 s, ≈ 74 m with the current lines); the start is `STOP_AT + 2.3 · time`. Head bob: vertical at 2× stride freq, lateral at 1×. |
 | `hold` | 1.3 s. Bob fades out in 0.6 s, slight upward look (pitch 0.04). |
 | `open` | Leaves rotate to 1.75 rad over 3.6 s (cubic ease). `fly` starts at 55 %. |
 | `fly` | 4.2 s. Ends at `POSTER_Z + fitDist / endSc`. Camera y rises from eye (1.62) to poster centre. |
@@ -58,7 +58,11 @@ e = 1 − (1 − min(1, s / (1 − RAMP/2)))^DECEL
 Half the distance in the first quarter of the time; the last centimetres (where the
 resume fades in) take roughly the last quarter.
 
-Skip button: during `walk` jumps to the end of `hold`; later jumps straight to `done`.
+Skip button: during `walk` jumps to the end of `hold` (and silences the narrator); later jumps straight to `done`.
+
+Narration (`src/ui/voice.ts`, text in `src/ui/voice-lines.json`): each line starts its
+voice file and subtitle together; the subtitle stays 1.2 s after the line ends. Without
+audio, line lengths are estimated at 2.6 words/s so the pacing still holds.
 
 ## Portal
 
@@ -107,6 +111,7 @@ All files in `public/audio`, MP3. Everything positional is mono.
 | `door.mp3` | Latch + creak | positional at the door, on `open` start |
 | `whoosh.mp3` | Fly accent | on `fly` start, delayed 0.55 s (its peak at 0.48 s meets max camera speed ~1 s in) |
 | `paper.mp3` | Entering the poster | once, when the sheet covers the viewport |
+| `voice/line<i>.mp3` (mono, 24 kHz) | Narration | dry, centred, gain 1.1; one line at a time. Placeholder synthesised with Kokoro (`scripts/voice`) |
 
 Entry requires a click (browser autoplay policy). The gate also hides decoding time.
 
@@ -117,4 +122,5 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
   notice post, hearth, bar top. The kits have no fireplace or notice board.
 - Poster copy and the resume content.
 - The tavern sign is a canvas texture with the word «ТАВЕРНА».
-- Voice lines are timed to walked distance; must become driven by audio duration.
+- Narration is a synthesised placeholder (Kokoro `bm_george`); copy and voice are placeholders.
+- Owls: first at 9 s, then every 13–22 s — with the ~32 s walk only two of the three play.

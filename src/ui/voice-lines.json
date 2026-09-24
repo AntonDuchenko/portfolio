@@ -1,0 +1,10 @@
+{
+  "_comment": "Narration. The app reads this for subtitles; scripts/voice/generate.mjs synthesises public/audio/voice/line<i>.mp3 from it. Placeholder copy — the tone is an open decision.",
+  "voice": { "speaker": 9, "speed": 0.95 },
+  "lines": [
+    "Evening, traveller. Mind the roots — the path is longer than it looks.",
+    "My name is Anton. I build things for the web, from the database up to the last pixel.",
+    "These days it's TypeScript, Node and React — and a habit of seeing work through to production.",
+    "The tavern is just ahead. My notice is pinned up inside."
+  ]
+}

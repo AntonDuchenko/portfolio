@@ -7,6 +7,8 @@ export type Phase = 'walk' | 'hold' | 'open' | 'fly' | 'done';
 export const state = {
   phase: 'walk' as Phase,
   walked: 0,
+  walkLen: 0,                   // metres; set from the narration length (timeline inversion)
+  startZ: 0,                    // where the walk begins: STOP_AT + walkLen
   pt: 0,                        // time inside the current phase
   t: 0,                         // total scene time
   flyFrom: 0,
