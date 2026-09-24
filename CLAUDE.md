@@ -26,7 +26,7 @@ Repository:
 
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
-  `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `tavern` (facade + hall), `post`.
+  `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `ground` (path dressing), `tavern` (facade + hall), `post`.
 - `camera/` — `timeline` (walk → hold → open → fly → done), `easing`.
 - `portal/` — DOM projection of the poster, door mask, resume crossfade.
 - `audio/` — loading from `public/audio`, beds, positional sources, one-shots.
@@ -96,7 +96,8 @@ Decisions (keep them unless the look is retuned on purpose):
 
 1. ~~Port (above).~~
 2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
-   textures 1K; building on the kit grid). Open: ground/path are still flat colour.
+   textures 1K; building on the kit grid). Path dressed with kit stones, pebbles and grass
+   (`scene/ground.ts`, 4 draw calls, ~50k tris on the low tier); the ground itself is flat colour.
 3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; placeholder TTS voice).
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
    and ¼ texture memory; FPS guard; no-WebGL fallback). Not measured on a real phone —

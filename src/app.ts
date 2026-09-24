@@ -8,6 +8,7 @@ import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, SPEED, STOP_AT, T_HOLD } from './con
 import { crossfade, layoutPane, maskDoor } from './portal/portal';
 import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
+import { buildGround } from './scene/ground';
 import { addGlobalLights, flame, moonDisc, setMoon, torch, updateFires, warmAmb, LEGACY } from './scene/lights';
 import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
@@ -28,6 +29,9 @@ addGlobalLights();
 buildTerrain();
 initTune();
 setMoon(1);
+
+// the poster's own light, in legacy units (was 2.2 × the old hall level 1.3)
+const NOTICE_GLOW = 2.86;
 
 /* ── landing, skip, replay ───────────────────────────────────────── */
 const chrome = [el.scene, el.vignette, el.skip, ...(tuneEnabled ? [el.tune] : [])];
@@ -132,7 +136,7 @@ function frame() {
   flame.scale.set(.76 * flick, .98 * flick, 1);
 
   updateFires(t, inside);
-  noticeGlow.setLegacy(inside * cfg.hall * 2.2);
+  noticeGlow.setLegacy(inside * NOTICE_GLOW);          // not tied to the hall: the poster hands over to the page
   warmAmb.intensity = inside * cfg.hall * .5 * LEGACY;
 
   moonDisc.position.set(camera.position.x - 52, 70, camZ - 170);
@@ -155,6 +159,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   state.walkLen = SPEED * walkTime;
   state.startZ = STOP_AT + state.walkLen;
   buildForest(state.startZ);
+  buildGround(state.startZ);
   const front = buildFacade();
   const hall = buildHall();
   buildPost(hall);

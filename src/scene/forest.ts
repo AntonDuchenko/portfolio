@@ -29,10 +29,11 @@ function write(f: Field, i: number) {
 // The Nature kit is painted for daylight; the prototype's forest was near-black
 // (bark 0x1d1f26). Multiply the kit colours down into a cold night tone.
 const NIGHT_TINT: Record<string, number> = {
-  Leaves_Pine: 0x4f6166, Bark_NormalTree: 0x5d5a66, Bark_DeadTree: 0x6e6e78, Rocks: 0x565c66
+  Leaves_Pine: 0x4f6166, Bark_NormalTree: 0x5d5a66, Bark_DeadTree: 0x6e6e78, Rocks: 0x565c66,
+  PathRocks: 0xa4a2a6, Grass: 0x3f4d4a
 };
 const tinted = new Set<Material>();
-function night(m: Material) {
+export function night(m: Material) {
   const tint = NIGHT_TINT[m.name];
   if (tint === undefined || tinted.has(m) || !(m instanceof MeshStandardMaterial)) return;
   m.color.multiply(new Color(tint)); tinted.add(m);

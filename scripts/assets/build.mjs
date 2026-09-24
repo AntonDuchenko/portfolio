@@ -41,7 +41,13 @@ const KITS = {
       pine_a: { src: 'Pine_5', tris: { Bark_NormalTree: 140, Leaves_Pine: 1040 }, budget: 1200 },
       pine_b: { src: 'Pine_2', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
       snag: { src: 'DeadTree_3', tris: { Bark_DeadTree: 1180 }, budget: 1200 },
-      rock: { src: 'Rock_Medium_2', budget: 250 }
+      rock: { src: 'Rock_Medium_2', budget: 250 },
+      // the path (src/scene/ground.ts): flat stepping stones, pebbles and grass along the
+      // edges — many instances each, so they are cut hard; they are seen at walking pace
+      stone_a: { src: 'RockPath_Round_Small_1', tris: { PathRocks: 360 }, budget: 380 },
+      stone_b: { src: 'RockPath_Square_Small_1', tris: { PathRocks: 300 }, budget: 320 },
+      pebble: { src: 'Pebble_Round_1', tris: { PathRocks: 40 }, budget: 50 },
+      grass: { src: 'Grass_Common_Short', tris: { Grass: 90 }, budget: 100 }
     }
   },
   village: {

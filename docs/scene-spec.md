@@ -92,7 +92,9 @@ The poster and the resume are DOM, not textures.
   are physical (1/d²) and match the prototype's brightness at a reference distance `dRef`
   (lanterns 1.5 m, hearth 2, chandeliers 1.6, torch 2).
 - Checked against prototype frames (mean luminance, 0–255): forest 43 vs 42, ground 58 vs
-  55, path 108 vs 104, at the door 76 vs 81; the hall reads ~87–101 vs ~70–80.
+  55, path 108 vs 104, at the door 76 vs 81. The hall read ~87–101 vs ~70–80, so the hall
+  level `cfg.hall` went 1.3 → 0.75: hall frame 93 → 78. The poster's own light keeps the
+  old level (`NOTICE_GLOW` in `app.ts`), so the handover to the page is unchanged.
 
 ## Audio
 

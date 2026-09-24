@@ -27,6 +27,7 @@ export const SPEED = 2.3, STOP_AT = GATE_Z + 6, T_HOLD = 1.3, T_OPEN = 3.6, MAX_
 export const FOG_OUT = new Color(0x0d1626), FOG_IN = new Color(0x1a1209);
 
 // values driven by the tune panel; lights are in prototype (r128 legacy) units here
-export const cfg = { moon: 1.5, fog: .028, hall: 1.3, fly: 4.2 };
+// hall .75 (was 1.3): with the kit's textured walls the hall read ~25 % brighter than the prototype
+export const cfg = { moon: 1.5, fog: .028, hall: .75, fly: 4.2 };
 
 export const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
