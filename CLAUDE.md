@@ -33,6 +33,15 @@ Layout:
   CI never installs the native addon or the model: `cd scripts/voice && npm i && npm run generate`.
 - `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds and publishes
   `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a branch → gh-pages).
+- `main.ts` is a tiny bootstrap: checks WebGL2, then lazy-loads `app.ts` (the scene and
+  three.js). Without WebGL2 the site is shown directly (`ui/fallback.ts`).
+- `quality.ts` — tier `low` (touch + small screen, or ≤ 4 GB / ≤ 4 cores) or `high`;
+  override `?quality=low|high`. Low: pixel ratio 1, no MSAA, half forest and mist,
+  `public/models/low/` (512 textures, no normal maps — built by `npm run assets`).
+- `scene/merge.ts` — static batching: building and props merged per material after build
+  (door leaves, sprites, the sign and mirrored meshes excluded).
+- FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
+  floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
 - All user-facing content is in English (any audience).
 
@@ -77,9 +86,9 @@ Decisions (keep them unless the look is retuned on purpose):
 2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
    textures 1K; building on the kit grid). Open: ground/path are still flat colour.
 3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; placeholder TTS voice).
-4. Mobile/perf: FPS check, reduced instances, fallback straight to the site.
-   Now: ~356 draw calls / 466k tris on the walk, 167 in the hall. Easy win: merge the
-   static village modules and props per material.
+4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
+   and ¼ texture memory; FPS guard; no-WebGL fallback). Not measured on a real phone —
+   check FPS on a device; the rest of the walk's calls are ~50 sprites (could be instanced).
 5. The site behind the poster (currently a stub).
 6. Avatar narrating site sections (last, most expensive).
 

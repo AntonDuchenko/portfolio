@@ -202,7 +202,9 @@ export function buildHall() {
 
   // hearth on the left wall: the stone mass goes 0.1 m into the wall
   tav.add(kitBox(.9, 3.4, 2.4, { mat: 'MI_UnevenBrick', tile: 1.6 }, -TAV_HW + WALL_IN + .35, FLOOR_Y + 1.7, D(HEARTH_D)));
-  const firebox = new Mesh(new BoxGeometry(.2, 1.1, 1.4), new MeshStandardMaterial({ color: 0x0b0806, roughness: 1 }));
+  // the firebox is unlit: the fire's own light sits 10 cm in front of it and blew a lit
+  // box out to a white panel; a dark opening with the flame sprite reads as a fireplace
+  const firebox = new Mesh(new BoxGeometry(.2, 1.1, 1.4), new MeshBasicMaterial({ color: 0x080504 }));
   firebox.position.set(-TAV_HW + WALL_IN + .9, FLOOR_Y + .55, D(HEARTH_D)); tav.add(firebox);
   const hearth = new RescaledPointLight(0xff8a3c, 18, 2);
   // light just in front of the firebox (its face is at x −1.8): the stone front face

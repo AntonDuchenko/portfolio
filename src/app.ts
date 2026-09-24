@@ -62,7 +62,9 @@ let last = 0;
    (tests drive a virtual clock at 20 fps). */
 const guard = { on: !new URLSearchParams(location.search).has('noguard'), time: 0, frames: 0, warm: 1.5 };
 function fpsGuard(raw: number) {
-  if (!guard.on || raw <= 0 || raw > 1) return;             // tab switches, first frame
+  // skip hidden tabs and one-off stalls; a slow device still counts (its frames can
+  // take over a second each — dropping those would disable the guard exactly there)
+  if (!guard.on || raw <= 0 || raw > 5 || document.hidden) return;
   if (guard.warm > 0) { guard.warm -= raw; return; }
   guard.time += raw; guard.frames++;
   if (guard.time < 2) return;
