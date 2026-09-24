@@ -39,6 +39,9 @@ let forestCut = 3500;
 let voiceSrc: AudioBufferSourceNode | null = null;
 export const mix = { torch: 1, wind: 1, forest: 1, music: 1 };   // layer switches, for listening checks
 const torchObj = new Object3D(); scene.add(torchObj);
+// beds (forest, music, wind) share a bus so the site narrator can duck them
+let bedBus: GainNode | null = null;
+const busIn = () => bedBus ??= (() => { const g = actx.createGain(); g.connect(listener.getInput()); return g; })();
 
 export function setMaster(v: number) { master = v; applyVolume(); }
 
@@ -87,7 +90,7 @@ function bed(buf: AudioBuffer, cut: number) {
   const s = actx.createBufferSource(); s.buffer = buf; s.loop = true;
   const f = actx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; f.Q.value = .5;
   const g = actx.createGain(); g.gain.value = 0;
-  s.connect(f).connect(g).connect(listener.getInput()); s.start();
+  s.connect(f).connect(g).connect(busIn()); s.start();
   return { f, g };
 }
 // pink noise → bandpass 380 Hz with a slow LFO on the centre frequency
@@ -103,7 +106,7 @@ function buildWind() {
   const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
   const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 380; bp.Q.value = .55;
   const g = actx.createGain(); g.gain.value = 0;
-  src.connect(bp).connect(g).connect(listener.getInput()); src.start();
+  src.connect(bp).connect(g).connect(busIn()); src.start();
   const lfo = actx.createOscillator(); lfo.frequency.value = .06;
   const lg = actx.createGain(); lg.gain.value = 230; lfo.connect(lg).connect(bp.frequency); lfo.start();
   return g;
@@ -176,6 +179,39 @@ export function playVoice(i: number) {
 }
 export function stopVoice() {
   if (voiceSrc) { try { voiceSrc.stop(); } catch { /* already stopped */ } voiceSrc = null; }
+}
+
+/* ── site narrator ───────────────────────────────────────────────────
+   Buffers load lazily after landing. One line at a time; the beds duck to a third
+   while it speaks. level() is the voice's RMS (0…~0.3) for the avatar. */
+export async function loadNarration(ids: string[]) {
+  const out: Record<string, AudioBuffer> = {};
+  await Promise.all(ids.map(async id => {
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}audio/narrator/${id}.mp3`);
+      if (res.ok) out[id] = await actx.decodeAudioData(await res.arrayBuffer());
+    } catch { /* a missing line just stays silent */ }
+  }));
+  return out;
+}
+export const audioStarted = () => audioReady;
+
+export function narrate(buf: AudioBuffer, onEnd: () => void) {
+  const s = actx.createBufferSource(); s.buffer = buf;
+  const g = actx.createGain(); g.gain.value = VOICE_GAIN;
+  const an = actx.createAnalyser(); an.fftSize = 512;
+  s.connect(g).connect(listener.getInput()); g.connect(an);
+  const duck = (v: number) => bedBus?.gain.setTargetAtTime(v, actx.currentTime, .25);
+  duck(.35);
+  let done = false;
+  const finish = () => { if (done) return; done = true; duck(1); onEnd(); };
+  s.onended = finish;
+  s.start();
+  const data = new Float32Array(an.fftSize);
+  return {
+    stop() { try { s.stop(); } catch { /* ended */ } finish(); },
+    level() { an.getFloatTimeDomainData(data); let e = 0; for (const v of data) e += v * v; return Math.sqrt(e / data.length); }
+  };
 }
 
 export function updateAudio(dt: number, camZ: number) {

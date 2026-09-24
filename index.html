@@ -107,6 +107,16 @@
 
   <div class="candlelight" aria-hidden="true"></div>
 
+  <!-- the innkeeper narrates each chapter (src/site/narrator.ts); click him to skip -->
+  <aside class="narrator" hidden>
+    <p class="bubble" aria-live="polite"><span class="who">The innkeeper</span><span class="say"></span></p>
+    <button class="keeper" type="button" aria-label="Skip the innkeeper's line" title="Click to skip">
+      <span class="portrait">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="21" r="13"/><path d="M6 64c0-14 12-23 26-23s26 9 26 23z"/></svg>
+      </span>
+    </button>
+  </aside>
+
   <nav class="bar" aria-label="Chapters">
     <a class="seal" href="#intro" aria-label="Back to the top">AD</a>
     <ul>
@@ -116,7 +126,10 @@
       <li><a href="#skills">Armoury</a></li>
       <li><a href="#contact">Raven</a></li>
     </ul>
-    <span class="candle" aria-hidden="true"><i class="wax"></i><i class="flame"></i></span>
+    <button id="sound" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="cross" d="M16 9l6 6M22 9l-6 6"/></svg>
+      <span class="label">Sound on</span>
+    </button>
   </nav>
 
   <header id="intro" class="sheet">
@@ -337,10 +350,6 @@
 </main>
 
 <button id="again" type="button">↺ Back to the tavern</button>
-<button id="sound" type="button" aria-pressed="false">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="cross" d="M16 9l6 6M22 9l-6 6"/></svg>
-  <span class="label">Sound on</span>
-</button>
 
 <script type="module" src="/src/main.ts"></script>
 </body>

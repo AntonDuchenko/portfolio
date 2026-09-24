@@ -18,6 +18,7 @@ import { state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
+import { resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
 
@@ -38,6 +39,7 @@ function land() {
   setLine(null); document.body.classList.remove('scene-locked');
   el.again.classList.add('on'); scrollTo(0, 0);
   inkHero();                              // skip lands without the crossfade
+  startNarrator();
 }
 el.skip.addEventListener('click', () => {
   if (state.phase === 'walk') { state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35; resetLines(); setLine(null); }
@@ -51,6 +53,7 @@ el.again.addEventListener('click', () => {
   Object.assign(state, { phase: 'walk', walked: 0, pt: 0, torchLeft: null, doorAngle: 0, inside: 0, lastStep: -1 });
   resetLines();
   resetAudio();
+  resetNarrator();
   noticeGlow.intensity = 0; el.poster.style.opacity = '1'; el.site.style.opacity = '0';
   setDoor(0); scrollTo(0, 0);
 });

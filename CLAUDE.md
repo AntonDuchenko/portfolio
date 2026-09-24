@@ -44,6 +44,8 @@ Layout:
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
 - All user-facing content is in English (any audience).
+- Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
+  `M` toggles; remembered in localStorage. Mutes the whole mix via the listener gain.
 
 Decisions (keep them unless the look is retuned on purpose):
 
@@ -97,7 +99,15 @@ Decisions (keep them unless the look is retuned on purpose):
    Records, Send a Raven. Motion is native CSS scroll timelines with an
    IntersectionObserver fallback (`html.no-sda`); transform/opacity/filter only;
    `prefers-reduced-motion` turns it all off. Section ids are hooks for the narrator.
-6. Avatar narrating site sections (last, most expensive).
+6. Avatar narrating site sections — narrator done, 3D model pending.
+   `src/site/narrator.ts`: the innkeeper (third person, voice `bm_lewis`, lines in
+   `src/site/narration.json` → `public/audio/narrator/<chapter>.mp3`) speaks when a chapter
+   crosses the middle of the screen, once per visit; a newer chapter interrupts; a click
+   on him skips. Beds duck to ⅓ while he talks. Without audio: bubbles only.
+   The portrait (`.narrator .portrait`) is the avatar slot; `setAvatar({ talk(level), idle() })`
+   receives the voice RMS each frame. Next: a Quaternius character pack (CC0, same author
+   as the kits) added to the repo → pack it in `scripts/assets/build.mjs` as a `narrator`
+   kit and mount a small three.js canvas in the portrait, animated by talk/idle.
 
 ## Open decisions
 

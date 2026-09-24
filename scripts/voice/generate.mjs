@@ -1,4 +1,5 @@
-// Synthesises the narration from src/ui/voice-lines.json into public/audio/voice/line<i>.mp3
+// Synthesises the walk narration (src/ui/voice-lines.json → public/audio/voice/line<i>.mp3)
+// and the site narrator (src/site/narration.json → public/audio/narrator/<chapter>.mp3)
 // (mono MP3, 24 kHz, 64 kbps). Placeholder voice until a real recording exists.
 //
 //   cd scripts/voice && npm install && npm run generate
@@ -51,9 +52,17 @@ function mp3(samples, rate) {
   return Buffer.concat(parts);
 }
 
-mkdirSync(OUT, { recursive: true });
-lines.forEach((text, i) => {
-  const a = tts.generate({ text, sid: voice.speaker, speed: voice.speed });
-  writeFileSync(join(OUT, `line${i}.mp3`), mp3(a.samples, a.sampleRate));
-  console.log(`line${i}.mp3  ${(a.samples.length / a.sampleRate).toFixed(2)} s  ${text}`);
-});
+function synth(dir, file, text, v) {
+  const a = tts.generate({ text, sid: v.speaker, speed: v.speed });
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, file), mp3(a.samples, a.sampleRate));
+  console.log(`${file.padEnd(16)} ${(a.samples.length / a.sampleRate).toFixed(2)} s  ${text}`);
+}
+
+// the walk: Anton, first person
+lines.forEach((text, i) => synth(OUT, `line${i}.mp3`, text, voice));
+
+// the site: the innkeeper narrates each chapter (src/site/narration.json)
+const narration = JSON.parse(readFileSync(join(ROOT, 'src/site/narration.json'), 'utf8'));
+for (const [id, text] of Object.entries(narration.lines))
+  synth(join(ROOT, 'public/audio/narrator'), `${id}.mp3`, text, narration.voice);
