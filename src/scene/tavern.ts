@@ -27,7 +27,7 @@ const HEARTH_D = 6;
 const LANTERN_HEAD = { y: .34, z: .8 };                   // Lantern_Wall head centre, model space
 
 /** world positions that audio attaches to */
-export const HEARTH_POS = { x: -1.75, y: 1.1, z: D(HEARTH_D) };
+export const HEARTH_POS = { x: -2.1, y: .6, z: D(HEARTH_D) };        // inside the recess
 export const SIGN_POS = { x: SIGN_X, y: SIGN_Y, z: GATE_Z + SIGN_Z };
 export const DOOR_POS = { x: 0, y: 1.2, z: GATE_Z };
 
@@ -200,18 +200,21 @@ export function buildHall() {
     village('Wall_BottomCover', x, BEAM_Y, D(d), 0, tav);
   const beamBottom = BEAM_Y - .12;
 
-  // hearth on the left wall: the stone mass goes 0.1 m into the wall
-  tav.add(kitBox(.9, 3.4, 2.4, { mat: 'MI_UnevenBrick', tile: 1.6 }, -TAV_HW + WALL_IN + .35, FLOOR_Y + 1.7, D(HEARTH_D)));
-  // the firebox is unlit: the fire's own light sits 10 cm in front of it and blew a lit
-  // box out to a white panel; a dark opening with the flame sprite reads as a fireplace
-  const firebox = new Mesh(new BoxGeometry(.2, 1.1, 1.4), new MeshBasicMaterial({ color: 0x080504 }));
-  firebox.position.set(-TAV_HW + WALL_IN + .9, FLOOR_Y + .55, D(HEARTH_D)); tav.add(firebox);
+  // hearth on the left wall, built as a real recess: back slab (0.1 m into the wall),
+  // two jambs and a lintel leave a 1.4 × 1.1 m opening 0.4 m deep. Faces that meet are
+  // buried inside the stone, none is exposed coplanar (hard rule 1).
+  const stone = { mat: 'MI_UnevenBrick', tile: 1.6 } as const, hz = D(HEARTH_D);
+  const back = -TAV_HW + WALL_IN - .1, face = back + .9, open = { w: 1.4, h: 1.1 };
+  tav.add(kitBox(.5, 3.4, 2.4, stone, back + .25, FLOOR_Y + 1.7, hz));                          // back slab
+  for (const s of [-1, 1])                                                                      // jambs
+    tav.add(kitBox(.4, open.h, (2.4 - open.w) / 2, stone, face - .2, FLOOR_Y + open.h / 2, hz + s * (open.w / 2 + (2.4 - open.w) / 4)));
+  tav.add(kitBox(.4, 3.4 - open.h, 2.4, stone, face - .2, FLOOR_Y + open.h + (3.4 - open.h) / 2, hz));   // lintel
+  // light 10 cm in front of the opening: lights the recess and the room, the stone
+  // front faces only get grazing light (a lit face this close blew out to white)
   const hearth = new RescaledPointLight(0xff8a3c, 18, 2);
-  // light just in front of the firebox (its face is at x −1.8): the stone front face
-  // (x −2.0) then only gets grazing light instead of a blown-out 1/d² hot spot
-  hearth.position.set(-1.7, .8, D(HEARTH_D)); tav.add(hearth);
+  hearth.position.set(face + .1, .7, hz); tav.add(hearth);
   const hearthFire = sprite(fireTex, .7, .9);
-  hearthFire.position.set(-1.72, .5, D(HEARTH_D)); tav.add(hearthFire);
+  hearthFire.position.set(face - .22, .45, hz); tav.add(hearthFire);
   fires.push({ light: hearth, sp: hearthFire, phase: rand(0, 10), power: 2.4 });
 
   // bar at the back: cabinets as the counter, a plank top resting on them,
