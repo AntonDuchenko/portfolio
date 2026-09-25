@@ -13,8 +13,6 @@ import { addGlobalLights, flame, moonDisc, setMoon, torch, updateFires, warmAmb,
 import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
-import { startPerf } from './ui/perf';
-import { tier } from './quality';
 import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
 import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/tavern';
 import { buildTerrain } from './scene/terrain';
@@ -193,9 +191,5 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
     setTimeout(() => el.gate.classList.add('hidden'), 950);
     last = performance.now();
     frame();
-    // ?perf: frame times per phase, reported after landing (measure on a real device)
-    startPerf(
-      () => state.phase === 'done' ? 'site' : (+el.site.style.opacity > .01 ? 'fade' : state.phase),
-      () => ({ tier, dpr: devicePixelRatio, ratio: renderer.getPixelRatio().toFixed(2), view: `${innerWidth}x${innerHeight}` }));
   }, { once: true });
 });

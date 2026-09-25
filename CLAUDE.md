@@ -57,9 +57,7 @@ Repository:
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
-- `?perf` (`ui/perf.ts`): frame times per phase (walk/hold/open/fly/fade/site), shown 4 s after
-  landing — for real devices; the container has no GPU and cannot reproduce phone jank.
-- Transition cost. Measured on a phone with `?perf`: the fade ran at 8 fps (everything else
+- Transition cost. Measured on a phone (a temporary `?perf` frame-time overlay, since removed): the fade ran at 8 fps (everything else
   53–60). Reproduced in the container with xvfb + real time + CPU ×4 (screenshot-driven
   traces mislead: each screenshot repaints the whole document). Bisection: hiding the page
   changed nothing, hiding the poster 5 → 19 fps — the sheet, scaled past the screen, was
@@ -72,7 +70,6 @@ Repository:
   Then: the page stays at an invisible opacity .002 from the door on (rastered during
   the flight, not on the first fade frame); the avatar compiles its shaders with
   `compileAsync` and mounts ~1.5 s after landing (was a 0.3 s frame on the phone).
-  `?perf` also lists frames over 50 ms as `phase+ms-into-phase:duration`.
 - All user-facing content is in English (any audience).
 - Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
   `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the
