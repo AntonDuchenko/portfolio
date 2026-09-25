@@ -26,6 +26,12 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('#volume')).toBeVisible();
   await page.locator('#volume input').fill('30');
   expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.3');
+  // full screen: on and off from the corner button
+  await page.locator('#fullscreen').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#fullscreen').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(false);
   await page.locator('#skip').click();                // → hold, door, flight
   // skip shortens the walk only: it is gone for the door and the flight
   await expect(page.locator('#skip')).toBeHidden();
@@ -49,6 +55,7 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('.narrator')).toBeVisible();
   await expect(page.locator('#again')).toBeVisible();
   await expect(page.locator('#volume')).toBeHidden();
+  await expect(page.locator('#fullscreen')).toBeHidden();
   expect(errors()).toEqual([]);
 });
 

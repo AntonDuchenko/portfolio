@@ -40,6 +40,9 @@ Repository:
   narration), `narration` (the site innkeeper).
 - `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build), `volume`
   (scene slider next to Skip, shown when entered with sound, remembered in localStorage).
+- Full screen (`ui/fullscreen.ts`): corner button + F during the scene, hidden where the
+  browser does not allow it for a page (iPhone Safari). Needs a user gesture — it cannot
+  start on load.
 - Skip (`Skip the walk →`) shortens the walk only and then disappears: the door and the
   flight into the poster always play.
 - `state.ts` — the run state; `resetRun()` is the one place a replay resets it.

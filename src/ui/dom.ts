@@ -8,5 +8,5 @@ export const el = {
   scene: $('scene'), vignette: $('vignette'), portal: $('portal'), pane: $('pane'),
   poster: $('poster'), site: $('site'),
   line: $('line'), skip: $('skip'), tune: $<HTMLDetailsElement>('tune'), again: $('again'),
-  gate: $('gate'), enter: $<HTMLButtonElement>('enter'), volume: $('volume')
+  gate: $('gate'), enter: $<HTMLButtonElement>('enter'), volume: $('volume'), fullscreen: $<HTMLButtonElement>('fullscreen')
 };

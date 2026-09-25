@@ -40,11 +40,16 @@ body.scene-locked{overflow:hidden;height:100%}
 
 /* top right during the scene: volume, then skip */
 #corner{position:fixed;right:18px;top:16px;z-index:10;display:flex;align-items:center;gap:10px}
-#skip,#volume{color:#a9a091;background:rgba(8,10,16,.55);border:1px solid rgba(201,123,46,.3);
+#skip,#volume,#fullscreen{color:#a9a091;background:rgba(8,10,16,.55);border:1px solid rgba(201,123,46,.3);
   border-radius:2px;backdrop-filter:blur(4px)}
 #skip{padding:8px 15px;cursor:pointer;font-family:var(--body);font-size:13px}
 #skip:hover{color:var(--parchment);border-color:rgba(201,123,46,.6)}
 #volume{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 9px}
+#fullscreen{display:grid;place-items:center;width:34px;height:34px;padding:0;cursor:pointer}
+#fullscreen:hover,#fullscreen:focus-visible{color:var(--parchment);border-color:rgba(201,123,46,.6)}
+#fullscreen svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#fullscreen .leave,#fullscreen[aria-pressed="true"] .enter{display:none}
+#fullscreen[aria-pressed="true"] .leave{display:inline}
 #volume:hover,#volume:focus-within{border-color:rgba(201,123,46,.6);color:var(--parchment)}
 #volume svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
 #volume .spk{fill:currentColor;stroke:none}
