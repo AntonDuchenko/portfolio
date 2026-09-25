@@ -142,6 +142,9 @@ Decisions (keep them unless the look is retuned on purpose):
   Pin the layout with `?seed=1` (the smoke test does). Compare frames against a build of
   the previous commit, never against numbers from an older session (narration length
   moves the walk). A Python `http.server` keeps serving its directory — rebuild in place.
+  Waiting on an IntersectionObserver (the innkeeper) needs a real frame: headless Chrome
+  draws them rarely once the page is still (3–9 s locally, 30 s+ on CI) — move the pointer
+  while polling. `?noavatar` skips the avatar, whose shader compile blocks swiftshader 30 s+.
 - **Lint:** ESLint 9 + typescript-eslint (type-aware) + `@stylistic` pinned to the house
   style (single quotes, semicolons, 2-space indent); no Prettier — it would reflow the
   compact scene code. Runs in CI before the build; `npm run lint -- --fix` for style.

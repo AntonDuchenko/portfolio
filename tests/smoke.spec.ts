@@ -88,16 +88,28 @@ async function flyToPage(page: Page) {
   throw new Error('did not land within 20 s of scene time');
 }
 
+/* The innkeeper starts from an IntersectionObserver, whose callbacks run only on a real
+   rendering frame. Headless Chrome with software WebGL draws them rarely once the page is
+   still (measured 3–9 s here, over 30 s on CI); a pointer move asks for one (0.24 s). */
+async function innkeeperSpeaks(page: Page) {
+  let x = 0;
+  await expect.poll(async () => {
+    await page.mouse.move(100 + (x ^= 1), 100);
+    return page.locator('.narrator').getAttribute('class');
+  }, { timeout: 30_000 }).toMatch(/open/);
+}
+
 test('replaying the scene silences the innkeeper until the next landing', async ({ page }) => {
   const errors = collectErrors(page);
   await virtualClock(page);
-  await page.goto('./?noguard&quality=low&seed=1');
+  // ?noavatar: under swiftshader the avatar's shader compile blocks the page for 30 s+
+  await page.goto('./?noguard&noavatar&quality=low&seed=1');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);
   await page.locator('#skip').click();                // the door and the flight still play
   await flyToPage(page);
-  await expect(page.locator('.narrator')).toHaveClass(/open/);   // the intro line
+  await innkeeperSpeaks(page);                        // the intro line
 
   await page.locator('#again').click();               // back to the scene, full screen again
   await expect(page.locator('.narrator')).toBeHidden();
@@ -112,7 +124,7 @@ test('replaying the scene silences the innkeeper until the next landing', async 
   await page.locator('#skip').click();
   await flyToPage(page);
   await expect(page.locator('.narrator')).toBeVisible();
-  await expect(page.locator('.narrator')).toHaveClass(/open/);   // tells the tale again
+  await innkeeperSpeaks(page);                        // tells the tale again
   expect(errors()).toEqual([]);
 });
 

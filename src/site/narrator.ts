@@ -22,6 +22,9 @@ const root = () => document.querySelector<HTMLElement>('.narrator')!;
 /** The 3D innkeeper (avatar.ts) follows the voice level; until it loads, the portrait
  *  shows the poster's silhouette and bobs via --lvl. */
 let avatar: Avatar | null = null;
+/** ?noavatar keeps the silhouette: under swiftshader (the tests) the avatar's shader compile
+ *  blocks the main thread for 30 s and more, which the narration tests must not wait on. */
+const AVATAR = !new URLSearchParams(location.search).has('noavatar');
 
 function show(text: string) {
   const r = root();
@@ -72,7 +75,7 @@ let lines: Promise<void> | null = null;
  *  the scene plays, so none of it lands on the frames where the page appears. */
 export function preloadNarrator(withAudio: boolean) {
   if (withAudio) lines ??= loadNarration(Object.keys(LINES)).then(b => { buffers = b; });
-  loadAvatar().catch(() => { /* mountAvatar reports it */ });
+  if (AVATAR) loadAvatar().catch(() => { /* mountAvatar reports it */ });
 }
 
 // after the page has appeared: a second WebGL context and its shader compile are the
@@ -94,7 +97,7 @@ export function startNarrator() {
       if (current) track('narrator_skipped');
       current?.stop(); current = null; hide();
     });
-    whenIdle(() => {
+    if (AVATAR) whenIdle(() => {
       mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
         .then(a => { avatar = a; a.pause(!landed); r.classList.add('has-avatar'); })
         .catch((e: unknown) => console.warn('avatar:', e));   // the silhouette stays
