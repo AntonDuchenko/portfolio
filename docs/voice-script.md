@@ -28,13 +28,13 @@ screen; the music ducks while he speaks.
 
 | File | Chapter | Line |
 |---|---|---|
-| `intro.mp3` | hero | Ah — you found his notice. That's Anton Duchenko, full-stack developer. Pull up a stool, I'll tell you what I know. |
+| `intro.mp3` | hero | So you're the one who's been asking about him. That's Anton Duchenko, full-stack developer. Pull up a stool — I'll tell you what I know. |
 | `about.mp3` | The Tale | He likes to own a feature from end to end — from the data model to the last pixel. Used to be a ship's electro-technical officer, if you can believe it. |
 | `work.mp3` | Quest Board | These are the quests he's taken. Releaf, where he works now. The Levels, a language-learning app with AI inside. And a phone store he built with his crew. |
 | `experience.mp3` | Journeys | Three companies so far — Maxopen, Nitrix Soft, and now Binary Studio. At every stop he made things faster: pages, queries, delivery. |
-| `skills.mp3` | Armoury | His armoury: TypeScript, React and Node.js, a good deal of SQL, and a knack for plugging AI into real products. |
+| `skills.mp3` | Armoury | His weapons of choice: TypeScript, React and Node.js — a good deal of SQL, and a knack for putting AI to real work. |
 | `education.mp3` | Guild Records | Learned his trade at Mate Academy. Before that, the maritime academy in Kherson. |
-| `contact.mp3` | Send a Raven | Got a quest for him? Send a raven. He answers quickly. |
+| `contact.mp3` | Send a Raven | Mean to claim the bounty? Send a raven — he answers quickly. |
 
 Replacing a file: drop the recording in place under the same name (MP3, mono). Positional
 audio is not involved, but keep it mono anyway — the mix expects it.
