@@ -195,7 +195,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
     frame();
     // ?perf: frame times per phase, reported after landing (measure on a real device)
     startPerf(
-      () => state.phase === 'done' ? 'site' : (+el.site.style.opacity > 0 ? 'fade' : state.phase),
+      () => state.phase === 'done' ? 'site' : (+el.site.style.opacity > .01 ? 'fade' : state.phase),
       () => ({ tier, dpr: devicePixelRatio, ratio: renderer.getPixelRatio().toFixed(2), view: `${innerWidth}x${innerHeight}` }));
   }, { once: true });
 });

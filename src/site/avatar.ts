@@ -49,8 +49,12 @@ export async function mountAvatar(slot: HTMLElement): Promise<Avatar> {
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   const size = () => { const r = slot.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); };
-  slot.replaceChildren(canvas);
   size(); addEventListener('resize', size);
+  // shaders compile in the background (KHR_parallel_shader_compile where available): a
+  // blocking first render cost a ~0.3 s frame on a phone right after landing. The
+  // silhouette stays until the canvas can draw.
+  await renderer.compileAsync(scene, camera);
+  slot.replaceChildren(canvas);
 
   const mixer = new AnimationMixer(model);
   const clip = (n: string) => gltf.animations.find(a => a.name === n);

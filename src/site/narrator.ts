@@ -75,8 +75,9 @@ export function preloadNarrator(withAudio: boolean) {
 
 // after the page has appeared: a second WebGL context and its shader compile are the
 // heaviest step, so they wait for an idle moment
-const whenIdle = (fn: () => void) =>
-  'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 600);
+// … and not before the hero name has inked in (~1.5 s after the handover)
+const whenIdle = (fn: () => void) => setTimeout(() =>
+  'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : fn(), 1500);
 
 let started = false;
 /** Called on every landing. Narrates chapters as they come into view. */

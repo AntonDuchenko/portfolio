@@ -7,17 +7,21 @@ export const perfEnabled = new URLSearchParams(location.search).has('perf');
 
 interface Stat { n: number; sum: number; worst: number; long: number }
 const stats = new Map<string, Stat>();
+// every frame over 50 ms: phase, ms since that phase began, duration — says *where* a hitch is
+const hitches: string[] = [], flyHitches: string[] = [];
 
 export function startPerf(phase: () => string, info: () => Record<string, string | number>) {
   if (!perfEnabled) return;
-  let last = performance.now(), landedAt = -1;
+  let last = performance.now(), landedAt = -1, cur = '', since = 0;
   const tick = (now: number) => {
     const dt = now - last; last = now;
     const p = phase();
+    if (p !== cur) { cur = p; since = now - dt; }
     if (!document.hidden && dt < 5000) {
       let s = stats.get(p);
       if (!s) stats.set(p, s = { n: 0, sum: 0, worst: 0, long: 0 });
-      s.n++; s.sum += dt; s.worst = Math.max(s.worst, dt); if (dt > 50) s.long++;
+      s.n++; s.sum += dt; s.worst = Math.max(s.worst, dt);
+      if (dt > 50) { s.long++; const h = `${p}+${(now - since).toFixed(0)}:${dt.toFixed(0)}`; if (/fade|site/.test(p)) hitches.push(h); else if (p === 'fly') flyHitches.push(h); }
     }
     if (p === 'site' && landedAt < 0) landedAt = now;
     if (landedAt >= 0 && now - landedAt > 4000) { report(info()); return; }
@@ -26,6 +30,8 @@ export function startPerf(phase: () => string, info: () => Record<string, string
   requestAnimationFrame(tick);
 }
 
+const chunk = <T>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
 function report(info: Record<string, string | number>) {
   const rows = [...stats].map(([p, s]) =>
     `${p.padEnd(6)} ${String(s.n).padStart(5)} ${(1000 / (s.sum / s.n)).toFixed(0).padStart(5)} ` +
@@ -33,7 +39,8 @@ function report(info: Record<string, string | number>) {
   const box = document.createElement('pre');
   box.textContent = [
     Object.entries(info).map(([k, v]) => `${k}: ${v}`).join('  '),
-    'phase  frames   fps  worst  >50ms', ...rows, '(tap to close)'
+    'phase  frames   fps  worst  >50ms', ...rows,
+    'hitches (phase+ms into it: ms)', ...chunk([...flyHitches.slice(-6), ...hitches.slice(0, 18)], 3).map(r => r.join('  ')), '(tap to close)'
   ].join('\n');
   box.style.cssText = 'position:fixed;left:8px;top:8px;z-index:100;margin:0;padding:10px 12px;' +
     'background:rgba(0,0,0,.85);color:#e8e0cc;font:12px/1.45 ui-monospace,monospace;' +

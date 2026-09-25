@@ -68,7 +68,11 @@ Repository:
   rastered once, scaled by the compositor; fade 5 → 14 fps. Only from cover: set during
   the approach it rasters at a tiny scale and turns visibly soft. Also: `#site` is its own
   layer during the scene, the hero name inks without blur, 3D frames are skipped while
-  the poster covers the screen.
+  the poster covers the screen. Second phone run: fade 8 → 47 fps, ratio stays 1.00.
+  Then: the page stays at an invisible opacity .002 from the door on (rastered during
+  the flight, not on the first fade frame); the avatar compiles its shaders with
+  `compileAsync` and mounts ~1.5 s after landing (was a 0.3 s frame on the phone).
+  `?perf` also lists frames over 50 ms as `phase+ms-into-phase:duration`.
 - All user-facing content is in English (any audience).
 - Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
   `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the
