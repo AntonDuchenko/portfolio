@@ -7,40 +7,48 @@ import { camera } from '../camera/camera';
 export const listener = new AudioListener(); camera.add(listener);
 export const actx = listener.context;
 
-/* Volume: the visitor's slider (ui/volume.ts), remembered between visits. */
+/* Volume: the visitor's sliders (ui/sound.ts), remembered between visits. */
 const VOLUME_KEY = 'tavern:volume';
 const stored = (() => { try { return localStorage.getItem(VOLUME_KEY); } catch { return null; } })();
 let master = stored !== null && Number.isFinite(+stored) ? Math.min(1, Math.max(0, +stored)) : .7, ready = false;
 export const getMaster = () => master;
+const masterListeners = new Set<(v: number) => void>();
+/** Sliders subscribe so the scene's and the site's stay in step. */
+export function onMasterChange(fn: (v: number) => void) { masterListeners.add(fn); }
 export function setMaster(v: number) {
   master = v;
   try { localStorage.setItem(VOLUME_KEY, String(v)); } catch { /* private mode */ }
   applyVolume();
+  masterListeners.forEach(fn => fn(v));
 }
 
 /* Mute: the whole mix (beds, one-shots, narrator) goes through the listener's gain,
-   ramped over ~0.15 s so toggling never clicks. It is a preference for the SITE only:
-   the scene always plays with sound (the intro is the point, and Skip is there for
-   anyone who wants out), so the stored choice applies from landing on (setOnSite). */
+   ramped over ~0.15 s so toggling never clicks. The speaker icon toggles it, in the scene
+   and on the site. The scene always STARTS with sound — after a reload and on "Back to
+   the tavern" — because the intro is the point; the visitor's last choice (remembered)
+   applies from landing on, and a mute clicked during the walk carries onto the page. */
 const MUTE_KEY = 'tavern:muted';
-let muted = (() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; } })();
-let onSite = false;
+let wantMuted = (() => { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch { return false; } })();
+let muted = false;
 export const isMuted = () => muted;
+const muteListeners = new Set<(m: boolean) => void>();
+export function onMuteChange(fn: (m: boolean) => void) { muteListeners.add(fn); }
+function applyMute(m: boolean) { muted = m; applyVolume(); muteListeners.forEach(fn => fn(m)); }
 export function setMuted(m: boolean) {
-  muted = m;
+  wantMuted = m;
   try { localStorage.setItem(MUTE_KEY, m ? '1' : '0'); } catch { /* private mode */ }
-  applyVolume();
+  applyMute(m);
 }
-/** true on landing, false when the scene replays */
-export function setOnSite(v: boolean) { onSite = v; applyVolume(); }
+/** true on landing (the remembered choice applies), false when the scene replays (sound on) */
+export function setOnSite(v: boolean) { applyMute(v && wantMuted); }
 function applyVolume() {
   if (!ready) return;
-  listener.gain.gain.setTargetAtTime(muted && onSite ? 0 : master, actx.currentTime, .05);
+  listener.gain.gain.setTargetAtTime(muted ? 0 : master, actx.currentTime, .05);
 }
 
 /** true once the context runs and the scene's sounds are started */
 export const audioStarted = () => ready;
-export function markStarted() { listener.setMasterVolume(muted && onSite ? 0 : master); ready = true; }
+export function markStarted() { listener.setMasterVolume(muted ? 0 : master); ready = true; }
 
 // beds (forest, music, wind) share a bus so the site narrator can duck them
 let bedBus: GainNode | null = null;

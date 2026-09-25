@@ -22,10 +22,15 @@ test('the scene hands over to the page', async ({ page }) => {
   await page.locator('#enter').click();
   await step(page, 20);                               // a second of the walk
   await expect(page.locator('#skip')).toBeVisible();
-  // entered with sound: the volume slider is up and remembers its level
+  // entered with sound: the sound control is up; the slider remembers its level, the
+  // speaker mutes and unmutes
   await expect(page.locator('#volume')).toBeVisible();
   await page.locator('#volume input').fill('30');
   expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.3');
+  await page.locator('#volume .mute').click();
+  await expect(page.locator('#volume .mute')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#volume .mute').click();
+  await expect(page.locator('#volume .mute')).toHaveAttribute('aria-pressed', 'false');
   // full screen: started by the enter click; the corner button leaves and re-enters it
   const fullscreen = () => page.evaluate(() => !!document.fullscreenElement);
   await expect.poll(fullscreen).toBe(true);
@@ -58,6 +63,18 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('#again')).toBeVisible();
   await expect(page.locator('#volume')).toBeHidden();
   await expect(page.locator('#fullscreen')).toBeHidden();
+  // the nav has the same control, in step with the scene's (set to 30 above); the slider
+  // shows from 761 px, phones get the speaker only
+  await page.setViewportSize({ width: 1280, height: 720 });
+  const nav = page.locator('#sound');
+  await expect(nav).toBeVisible();
+  await expect(nav.locator('input')).toHaveValue('30');
+  await nav.locator('.mute').click();
+  await expect(nav.locator('.mute')).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('tavern:muted'))).toBe('1');
+  await nav.locator('input').fill('55');                  // moving the slider unmutes
+  await expect(nav.locator('.mute')).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.55');
   await expect.poll(fullscreen, { message: 'the page reads in the normal window' }).toBe(false);
   expect(errors()).toEqual([]);
 });

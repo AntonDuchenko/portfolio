@@ -38,23 +38,33 @@ body.scene-locked{overflow:hidden;height:100%}
   line-height:1.65;text-shadow:0 2px 20px #000}
 #line.on{opacity:1}
 
+/* sound control, shared by the scene corner (#volume) and the site nav (#sound):
+   the speaker mutes and unmutes, the slider sets the level (src/ui/sound.ts) */
+.vol{display:flex;align-items:center;gap:6px}
+.vol .mute{display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:50%;
+  background:none;color:inherit;cursor:pointer}
+.vol .mute:focus-visible{outline:1px solid currentColor;outline-offset:1px}
+.vol svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.vol .spk{fill:currentColor;stroke:none}
+.vol .cross,.vol.muted .wave,.vol.silent .wave{display:none}
+.vol.muted .cross{display:inline}
+.vol.muted input{opacity:.45}
+.vol input{margin:0;cursor:pointer}
+
 /* top right during the scene: volume, then skip */
 #corner{position:fixed;right:18px;top:16px;z-index:10;display:flex;align-items:center;gap:10px}
 #skip,#volume,#fullscreen{color:#a9a091;background:rgba(8,10,16,.55);border:1px solid rgba(201,123,46,.3);
   border-radius:2px;backdrop-filter:blur(4px)}
 #skip{padding:8px 15px;cursor:pointer;font-family:var(--body);font-size:13px}
 #skip:hover{color:var(--parchment);border-color:rgba(201,123,46,.6)}
-#volume{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 9px}
+#volume{padding:3px 12px 3px 4px}
 #fullscreen{display:grid;place-items:center;width:34px;height:34px;padding:0;cursor:pointer}
 #fullscreen:hover,#fullscreen:focus-visible{color:var(--parchment);border-color:rgba(201,123,46,.6)}
 #fullscreen svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #fullscreen .leave,#fullscreen[aria-pressed="true"] .enter{display:none}
 #fullscreen[aria-pressed="true"] .leave{display:inline}
 #volume:hover,#volume:focus-within{border-color:rgba(201,123,46,.6);color:var(--parchment)}
-#volume svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
-#volume .spk{fill:currentColor;stroke:none}
-#volume.silent .wave{display:none}
-#volume input{width:96px;margin:0;accent-color:#c97b2e;cursor:pointer}
+#volume input{width:96px;accent-color:#c97b2e}
 @media (max-width:520px){#volume input{width:72px}#skip{padding:8px 11px}}
 
 #tune{position:fixed;left:14px;top:14px;z-index:10;width:250px;max-width:calc(100vw - 28px);

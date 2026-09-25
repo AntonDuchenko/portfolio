@@ -12,8 +12,14 @@ export async function loadNarration(ids: string[]) {
   return out;
 }
 
+// The recorded lines (ElevenLabs) come in at −18…−20 LUFS, ~8 dB above the synthesised
+// ones the mix was balanced for, with peaks at −0.6 dBTP. −6.5 dB puts him level with the
+// walk narration (~−24 LUFS) and keeps the peaks clear of clipping at full volume.
+const INNKEEPER_TRIM = 10 ** (-6.5 / 20);
+
 export function narrate(buf: AudioBuffer, onEnd: () => void) {
   const { s, g } = voice(buf);
+  g.gain.value *= INNKEEPER_TRIM;
   const an = g.context.createAnalyser(); an.fftSize = 512;
   g.connect(an);
   duckBeds(.35);

@@ -38,8 +38,8 @@ Repository:
 - `audio/` — `engine` (context, master/mute, bed bus + ducking, one-shots, voice),
   `scene` (typed sound names, loading, beds, positional sources, script events, walk
   narration), `narration` (the site innkeeper).
-- `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build), `volume`
-  (scene slider next to Skip, shown when entered with sound, remembered in localStorage).
+- `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build), `sound`
+  (the sound control, see below).
 - Full screen (`ui/fullscreen.ts`) is for the scene only: entered by the "Take the trail" and
   "Back to the tavern" clicks (a user gesture is required — it cannot start on load), left
   automatically on landing. During the scene the corner button and F toggle it; hidden
@@ -91,10 +91,14 @@ Repository:
   the flight, not on the first fade frame); the avatar compiles its shaders with
   `compileAsync` and mounts ~1.5 s after landing (was a 0.3 s frame on the phone).
 - All user-facing content is in English (any audience).
-- Sound toggle (`ui/sound.ts`): in the site nav only, when the visitor entered with sound;
-  `M` toggles (site only); remembered in localStorage. Mutes the whole mix via the
-  listener gain — but only on the site (`setOnSite`): the scene always plays with sound,
-  also after a reload or "Back to the tavern" (Skip is the way out of the scene).
+- Sound control (`ui/sound.ts`): one control in two places with one state — the scene's
+  top corner (`#volume`) and the site nav (`#sound`; phones show the speaker only). The
+  speaker mutes/unmutes, the slider sets the master level (moving it unmutes), `M` toggles;
+  shown when the visitor entered with sound; level and mute remembered in localStorage.
+  The scene always STARTS with sound (reload, "Back to the tavern"): the remembered mute
+  applies from landing (`setOnSite`); a mute clicked during the walk carries onto the page.
+- The innkeeper's lines are ElevenLabs recordings (−18…−20 LUFS); `INNKEEPER_TRIM`
+  (−6.5 dB, `audio/narration.ts`) levels them with the walk narration.
 
 Decisions (keep them unless the look is retuned on purpose):
 

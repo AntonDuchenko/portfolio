@@ -1,26 +1,40 @@
-import { isMuted, setMuted } from '../audio/engine';
+import { getMaster, isMuted, onMasterChange, onMuteChange, setMaster, setMuted } from '../audio/engine';
 
-/** Sound toggle in the site nav (shown after entering with sound). M toggles — on the
- *  site only; the scene always plays with sound (see setOnSite in audio.ts). */
-export function initSoundToggle() {
-  const btn = document.getElementById('sound') as HTMLButtonElement | null;
-  if (!btn) return;
-  const label = btn.querySelector('.label')!;
+/* The sound control, in two places with one state: the scene's top corner (#volume, next
+   to Skip) and the site's nav (#sound). The speaker mutes and unmutes, the slider sets the
+   level; moving the slider while muted unmutes. M toggles mute anywhere outside a text
+   field. Shown only when the visitor entered with sound. The scene always starts with
+   sound — see setOnSite in audio/engine.ts. */
+
+function bind(root: HTMLElement) {
+  const btn = root.querySelector<HTMLButtonElement>('.mute')!;
+  const input = root.querySelector<HTMLInputElement>('input[type=range]')!;
   const sync = () => {
     const m = isMuted();
+    root.classList.toggle('muted', m);
+    root.classList.toggle('silent', +input.value === 0);
     btn.setAttribute('aria-pressed', String(m));
-    btn.classList.toggle('muted', m);
-    label.textContent = m ? 'Sound off' : 'Sound on';
-    btn.title = (m ? 'Turn sound on' : 'Turn sound off') + ' (M)';
+    btn.setAttribute('aria-label', m ? 'Unmute' : 'Mute');
+    btn.title = (m ? 'Unmute' : 'Mute') + ' (M)';
   };
-  const toggle = () => { setMuted(!isMuted()); sync(); };
-  btn.addEventListener('click', toggle);
-  addEventListener('keydown', e => {
-    if (e.key.toLowerCase() !== 'm' || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (!document.body.classList.contains('landed')) return;
-    if ((e.target as HTMLElement).closest('input, textarea, [contenteditable]')) return;
-    toggle();
+  btn.addEventListener('click', () => setMuted(!isMuted()));
+  input.addEventListener('input', () => {
+    setMaster(+input.value / 100);
+    if (isMuted()) setMuted(false);
   });
+  onMasterChange(v => { input.value = String(Math.round(v * 100)); sync(); });
+  onMuteChange(sync);
+  input.value = String(Math.round(getMaster() * 100));
   sync();
-  btn.classList.add('on');
+}
+
+export function initSoundControls() {
+  const scene = document.getElementById('volume'), site = document.getElementById('sound');
+  if (scene) { bind(scene); scene.classList.remove('hidden'); }
+  if (site) { bind(site); site.classList.add('on'); }
+  addEventListener('keydown', e => {
+    if (e.key.toLowerCase() !== 'm' || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    if ((e.target as HTMLElement).closest('input:not([type=range]), textarea, [contenteditable]')) return;
+    setMuted(!isMuted());
+  });
 }

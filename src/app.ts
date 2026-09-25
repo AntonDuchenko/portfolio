@@ -22,9 +22,8 @@ import { buildTerrain, surfaceY } from './scene/terrain';
 import { resetRun, state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
-import { initSoundToggle } from './ui/sound';
+import { initSoundControls } from './ui/sound';
 import { enterFullscreen, initFullscreen, leaveFullscreen } from './ui/fullscreen';
-import { initVolume } from './ui/volume';
 import { preloadNarrator, resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine, updateLines } from './ui/voice';
@@ -198,7 +197,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   if (!bufs) document.querySelector('#gate .hint')?.classList.add('hidden');
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);
-    if (bufs) { initSoundToggle(); initVolume(); withSound = true; }
+    if (bufs) { initSoundControls(); withSound = true; }
     initFullscreen();
     enterFullscreen();                    // this click is the gesture the browser requires
     setTimeout(() => preloadNarrator(!!bufs), 4000);   // a few seconds into the walk
