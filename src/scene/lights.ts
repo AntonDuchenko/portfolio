@@ -1,7 +1,7 @@
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, LinearSRGBColorSpace, PointLight, Vector3 } from 'three';
 import { camera } from '../camera/camera';
 import { cfg } from '../config';
-import { random } from '../random';
+import { jitter } from '../random';
 import { state } from '../state';
 import { fireTex, type GlowSprite, sprite } from './sprites';
 import { scene } from './stage';
@@ -54,7 +54,7 @@ export function addGlobalLights() {
  *  small sway; on `fly` it stays at the threshold (state.torchLeft). Dims inside. */
 const HAND = new Vector3(-.34, .34, -1.15), hand = new Vector3();
 export function updateTorch(t: number, inside: number) {
-  const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * random();
+  const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * jitter();
   if (state.torchLeft) torch.position.copy(state.torchLeft);
   else {
     hand.copy(HAND).applyQuaternion(camera.quaternion).add(camera.position);
@@ -85,7 +85,7 @@ export const fires: Fire[] = [];
 // tavern fires come up as we enter, street lanterns stay as they are
 export function updateFires(t: number, inside: number) {
   for (const f of fires) {
-    const f2 = .82 + .11 * Math.sin(t * 9.3 + f.phase) + .07 * Math.sin(t * 16.7 + f.phase) + .03 * random();
+    const f2 = .82 + .11 * Math.sin(t * 9.3 + f.phase) + .07 * Math.sin(t * 16.7 + f.phase) + .03 * jitter();
     const gain = f.outside ? 1 : (cfg.hall * Math.max(inside, .12));
     if (f.light) f.light.setLegacy((f.power || 1.4) * f2 * gain);
     f.sp.material.opacity = Math.min(1, (.5 + .3 * f2) * (f.outside ? 1 : Math.max(inside, .15) * 1.6));

@@ -1,6 +1,6 @@
 import { Object3D, PositionalAudio } from 'three';
 import { GATE_Z, MAX_ANGLE } from '../config';
-import { random } from '../random';
+import { jitter } from '../random';
 import { torch } from '../scene/lights';
 import { scene } from '../scene/stage';
 import { DOOR_POS, HEARTH_POS, SIGN_POS } from '../scene/tavern';
@@ -113,10 +113,10 @@ let stepLeft = false, lastStepIdx = -1, nextSign = 4, nextOwl = 9, owlsLeft = 3;
 
 export function sfxStep() {
   // the index is drawn even without audio, like in the prototype
-  let i; do { i = Math.floor(random() * 6); } while (i === lastStepIdx); lastStepIdx = i;
+  let i; do { i = Math.floor(jitter() * 6); } while (i === lastStepIdx); lastStepIdx = i;
   stepLeft = !stepLeft;
   oneShot(B[`step${i}`], {
-    rate: .92 + random() * .16, gain: .5 + random() * .25, pan: stepLeft ? -.2 : .2
+    rate: .92 + jitter() * .16, gain: .5 + jitter() * .25, pan: stepLeft ? -.2 : .2
   });
 }
 export function sfxDoor() { if (snd) { if (snd.door.isPlaying) snd.door.stop(); snd.door.play(); } }
@@ -162,17 +162,17 @@ export function updateAudio(dt: number, camZ: number) {
   // the sign creaks while we are outside
   nextSign -= dt;
   if (nextSign <= 0 && inside < .5) {
-    nextSign = 3.5 + random() * 5;
+    nextSign = 3.5 + jitter() * 5;
     if (snd.sign.isPlaying) snd.sign.stop();
-    snd.sign.setBuffer(B[`sign${Math.floor(random() * 3)}`]);
-    snd.sign.setPlaybackRate(.9 + random() * .2); snd.sign.play();
+    snd.sign.setBuffer(B[`sign${Math.floor(jitter() * 3)}`]);
+    snd.sign.setPlaybackRate(.9 + jitter() * .2); snd.sign.play();
   }
   // distant owls, three per walk
   if (phase === 'walk' && owlsLeft > 0) {
     nextOwl -= dt;
     if (nextOwl <= 0) {
-      owlsLeft--; nextOwl = 13 + random() * 9;
-      oneShot(B[`owl${2 - owlsLeft}`], { gain: .32, pan: (random() * 2 - 1) * .7, lowpass: 2200 });
+      owlsLeft--; nextOwl = 13 + jitter() * 9;
+      oneShot(B[`owl${2 - owlsLeft}`], { gain: .32, pan: (jitter() * 2 - 1) * .7, lowpass: 2200 });
     }
   }
 }

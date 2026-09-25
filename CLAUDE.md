@@ -37,8 +37,9 @@ Repository:
   narration), `narration` (the site innkeeper).
 - `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
 - `state.ts` — the run state; `resetRun()` is the one place a replay resets it.
-- `random.ts` — the scene's own seeded generator (`random`, `rand`, `side`); `?seed=<n>`
-  pins it. Never use `Math.random` for layout or variation: three.js draws from it for
+- `random.ts` — the scene's own seeded generators; `?seed=<n>` pins them. `random`/`rand`/
+  `side` for placement, `jitter` for per-frame variation (flicker, sounds) so frame count
+  cannot move the layout. Never use `Math.random` for layout or variation: three.js draws from it for
   every object's uuid, so the forest moved whenever the code created more objects.
 - `loaders/gltf.ts` — `GLTFLoader` with meshopt (no Draco: nothing uses it, 1.3 MB of wasm).
 - `scripts/assets/build.mjs` — packs the kits into `public/models/{forest,village,props}.glb`
