@@ -38,10 +38,19 @@ body.scene-locked{overflow:hidden;height:100%}
   line-height:1.65;text-shadow:0 2px 20px #000}
 #line.on{opacity:1}
 
-#skip{position:fixed;right:18px;top:16px;z-index:10;padding:8px 15px;cursor:pointer;
-  color:#a9a091;font-family:var(--body);font-size:13px;background:rgba(8,10,16,.55);
-  border:1px solid rgba(201,123,46,.3);border-radius:2px;backdrop-filter:blur(4px)}
+/* top right during the scene: volume, then skip */
+#corner{position:fixed;right:18px;top:16px;z-index:10;display:flex;align-items:center;gap:10px}
+#skip,#volume{color:#a9a091;background:rgba(8,10,16,.55);border:1px solid rgba(201,123,46,.3);
+  border-radius:2px;backdrop-filter:blur(4px)}
+#skip{padding:8px 15px;cursor:pointer;font-family:var(--body);font-size:13px}
 #skip:hover{color:var(--parchment);border-color:rgba(201,123,46,.6)}
+#volume{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 9px}
+#volume:hover,#volume:focus-within{border-color:rgba(201,123,46,.6);color:var(--parchment)}
+#volume svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+#volume .spk{fill:currentColor;stroke:none}
+#volume.silent .wave{display:none}
+#volume input{width:96px;margin:0;accent-color:#c97b2e;cursor:pointer}
+@media (max-width:520px){#volume input{width:72px}#skip{padding:8px 11px}}
 
 #tune{position:fixed;left:14px;top:14px;z-index:10;width:250px;max-width:calc(100vw - 28px);
   background:rgba(9,11,16,.76);border:1px solid rgba(150,170,210,.15);border-radius:3px;

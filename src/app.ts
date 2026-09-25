@@ -18,11 +18,12 @@ import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
 import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
 import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/tavern';
-import { buildTerrain } from './scene/terrain';
+import { buildTerrain, surfaceY } from './scene/terrain';
 import { resetRun, state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
+import { initVolume } from './ui/volume';
 import { preloadNarrator, resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
 import { buildSchedule, LINES, resetLines, setLine, updateLines } from './ui/voice';
@@ -39,25 +40,28 @@ const NOTICE_GLOW = 2.86;
 
 /* ── landing, skip, replay ───────────────────────────────────────── */
 const chrome = [el.scene, el.vignette, el.skip, ...(tuneEnabled ? [el.tune] : [])];
+let withSound = false;
 
 function land() {
   state.phase = 'done';
   document.body.classList.add('landed'); el.portal.style.clipPath = 'none';
-  chrome.forEach(e => e.classList.add('hidden'));
+  chrome.forEach(e => e.classList.add('hidden')); el.volume.classList.add('hidden');
   setLine(null); document.body.classList.remove('scene-locked');
   el.again.classList.add('on'); scrollTo(0, 0);
   inkHero();                              // skip lands without the crossfade
   setOnSite(true);                        // the visitor's mute choice applies from here
   startNarrator();
 }
+// Skip shortens the walk only: the door and the flight into the poster always play.
 el.skip.addEventListener('click', () => {
-  if (state.phase === 'walk') { state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35; resetLines(); setLine(null); }
-  else if (state.phase !== 'done') land();
+  if (state.phase !== 'walk') return;
+  state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35;
+  resetLines(); setLine(null); el.skip.classList.add('hidden');
 });
 el.again.addEventListener('click', () => {
   document.body.classList.remove('landed'); el.portal.classList.remove('on');
   el.again.classList.remove('on');
-  chrome.forEach(e => e.classList.remove('hidden'));
+  chrome.forEach(e => e.classList.remove('hidden')); el.volume.classList.toggle('hidden', !withSound);
   document.body.classList.add('scene-locked');
   resetRun();
   resetLines();
@@ -71,6 +75,7 @@ el.again.addEventListener('click', () => {
 /* ── what the timeline's phases do to the page, the sound and the door ── */
 const phases: TimelineHooks = {
   walk: updateLines,
+  arrive() { el.skip.classList.add('hidden'); },
   open() { setLine(null); el.portal.classList.add('on'); sfxDoor(); },
   fly() { state.torchLeft = torch.position.clone(); sfxWhoosh(); },
   land() { el.site.style.opacity = '1'; land(); }
@@ -178,7 +183,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   console.info(`merged meshes: facade ${mf.before} → ${mf.after}, hall ${mh.before} → ${mh.after}`);
   batchSprites(scene);                                // glow sprites: one draw call per kind
   // dev hook for the numeric checks (hard rules 1–4), stripped from production builds
-  if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C, listener } });
+  if (import.meta.env.DEV) Object.assign(window, { __tavern: { THREE, scene, camera, renderer, state, setDoor, C, listener, surfaceY } });
   // draw the first frame right away — it shows through the entry gate
   camera.position.set(0, EYE, state.startZ); camera.updateMatrixWorld();
   renderer.render(scene, camera);
@@ -189,7 +194,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   if (!bufs) document.querySelector('#gate .hint')?.classList.add('hidden');
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);
-    if (bufs) initSoundToggle();
+    if (bufs) { initSoundToggle(); initVolume(); withSound = true; }
     setTimeout(() => preloadNarrator(!!bufs), 4000);   // a few seconds into the walk
     el.gate.classList.add('off');
     setTimeout(() => el.gate.classList.add('hidden'), 950);

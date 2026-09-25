@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { collectErrors, step, virtualClock } from './helpers';
 
 // Everything the visitor can hit on the way in: the gate, the scene up to the page and
@@ -8,7 +8,7 @@ test('gate explains the scene and becomes enterable', async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto('./?noguard&quality=low&seed=1');
   await expect(page.locator('#gate h2')).toHaveText('Anton Duchenko');
-  await expect(page.locator('#gate .what')).toContainText('skip it any time');
+  await expect(page.locator('#gate .what')).toContainText('skip the walk');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await expect(page.locator('#enter')).toHaveText(/^Take the trail( \(no sound\))?$/);
   expect(errors()).toEqual([]);
@@ -22,7 +22,13 @@ test('the scene hands over to the page', async ({ page }) => {
   await page.locator('#enter').click();
   await step(page, 20);                               // a second of the walk
   await expect(page.locator('#skip')).toBeVisible();
+  // entered with sound: the volume slider is up and remembers its level
+  await expect(page.locator('#volume')).toBeVisible();
+  await page.locator('#volume input').fill('30');
+  expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.3');
   await page.locator('#skip').click();                // → hold, door, flight
+  // skip shortens the walk only: it is gone for the door and the flight
+  await expect(page.locator('#skip')).toBeHidden();
 
   // the door opens: the poster layer shows, clipped to the doorway
   let clipped = false, landed = false;
@@ -42,8 +48,18 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('#intro [data-ink]')).toHaveClass(/is-in/);
   await expect(page.locator('.narrator')).toBeVisible();
   await expect(page.locator('#again')).toBeVisible();
+  await expect(page.locator('#volume')).toBeHidden();
   expect(errors()).toEqual([]);
 });
+
+/** Steps the scene until it lands on the page (the flight takes ~8 s of scene time). */
+async function flyToPage(page: Page) {
+  for (let i = 0; i < 40; i++) {
+    await step(page, 10);
+    if (await page.evaluate(() => document.body.classList.contains('landed'))) return;
+  }
+  throw new Error('did not land within 20 s of scene time');
+}
 
 test('replaying the scene silences the innkeeper until the next landing', async ({ page }) => {
   const errors = collectErrors(page);
@@ -52,9 +68,8 @@ test('replaying the scene silences the innkeeper until the next landing', async 
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);
-  await page.locator('#skip').click();                // → hold
-  await step(page, 5);
-  await page.locator('#skip').click();                // → straight onto the page
+  await page.locator('#skip').click();                // the door and the flight still play
+  await flyToPage(page);
   await expect(page.locator('.narrator')).toHaveClass(/open/);   // the intro line
 
   await page.locator('#again').click();               // back to the scene
@@ -65,9 +80,9 @@ test('replaying the scene silences the innkeeper until the next landing', async 
     await expect(page.locator('.narrator')).not.toHaveClass(/open/);
   }
 
+  await expect(page.locator('#skip')).toBeVisible();   // back for the new walk
   await page.locator('#skip').click();
-  await step(page, 5);
-  await page.locator('#skip').click();
+  await flyToPage(page);
   await expect(page.locator('.narrator')).toBeVisible();
   await expect(page.locator('.narrator')).toHaveClass(/open/);   // tells the tale again
   expect(errors()).toEqual([]);

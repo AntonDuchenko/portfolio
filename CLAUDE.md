@@ -28,6 +28,9 @@ Repository:
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
   `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `ground` (path dressing), `tavern` (facade + hall), `post`.
+  Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
+  height function: on the old 5 m grid ~40 % of stones and grass floated (up to 0.8 m) and
+  the ground rose through the path. The grid is dense along the path and flat under it.
 - `camera/` — `timeline` (walk → hold → open → fly → done), `easing`. The timeline only
   moves the camera and advances phases; what a phase does to the page, sound and door is
   wired in `app.ts` (`TimelineHooks`). Keep DOM and audio out of it.
@@ -35,7 +38,10 @@ Repository:
 - `audio/` — `engine` (context, master/mute, bed bus + ducking, one-shots, voice),
   `scene` (typed sound names, loading, beds, positional sources, script events, walk
   narration), `narration` (the site innkeeper).
-- `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
+- `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build), `volume`
+  (scene slider next to Skip, shown when entered with sound, remembered in localStorage).
+- Skip (`Skip the walk →`) shortens the walk only and then disappears: the door and the
+  flight into the poster always play.
 - `state.ts` — the run state; `resetRun()` is the one place a replay resets it.
 - `random.ts` — the scene's own seeded generators; `?seed=<n>` pins them. `random`/`rand`/
   `side` for placement, `jitter` for per-frame variation (flicker, sounds) so frame count

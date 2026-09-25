@@ -11,6 +11,8 @@ import { ease, easeOut, flyEase } from './easing';
 export interface TimelineHooks {
   /** each walk frame, with the seconds walked so far (the narration clock) */
   walk(t: number): void;
+  /** the walk is over: the camera stands at the door */
+  arrive(): void;
   /** the door starts to open */
   open(): void;
   /** the camera leaves the threshold */
@@ -30,7 +32,7 @@ export function advance(dt: number, on: TimelineHooks): Pose | null {
   if (s.phase === 'walk') {
     s.walked += SPEED * dt;
     on.walk(s.walked / SPEED);
-    if (s.walked >= s.walkLen) { s.walked = s.walkLen; s.phase = 'hold'; s.pt = 0; }
+    if (s.walked >= s.walkLen) { s.walked = s.walkLen; s.phase = 'hold'; s.pt = 0; on.arrive(); }
     camZ = s.startZ - s.walked;
   } else camZ = STOP_AT;
 

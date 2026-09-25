@@ -7,9 +7,16 @@ import { camera } from '../camera/camera';
 export const listener = new AudioListener(); camera.add(listener);
 export const actx = listener.context;
 
-let master = .7, ready = false;
-
-export function setMaster(v: number) { master = v; applyVolume(); }
+/* Volume: the visitor's slider (ui/volume.ts), remembered between visits. */
+const VOLUME_KEY = 'tavern:volume';
+const stored = (() => { try { return localStorage.getItem(VOLUME_KEY); } catch { return null; } })();
+let master = stored !== null && Number.isFinite(+stored) ? Math.min(1, Math.max(0, +stored)) : .7, ready = false;
+export const getMaster = () => master;
+export function setMaster(v: number) {
+  master = v;
+  try { localStorage.setItem(VOLUME_KEY, String(v)); } catch { /* private mode */ }
+  applyVolume();
+}
 
 /* Mute: the whole mix (beds, one-shots, narrator) goes through the listener's gain,
    ramped over ~0.15 s so toggling never clicks. It is a preference for the SITE only:

@@ -1,4 +1,4 @@
-import { setMaster } from '../audio/engine';
+import { getMaster, setMaster } from '../audio/engine';
 import { mix, setForestCut } from '../audio/scene';
 import { cfg } from '../config';
 import { setMoon } from '../scene/lights';
@@ -28,6 +28,7 @@ export function initTune() {
     input.addEventListener('input', sync); sync();
   }
   const sVol = $('s-vol'), vVol = $('v-vol');
+  sVol.value = String(Math.round(getMaster() * 100));
   const syncVol = () => { setMaster(+sVol.value / 100); vVol.textContent = sVol.value + '%'; };
   sVol.addEventListener('input', syncVol); syncVol();
   const sCut = $('s-cut'), vCut = $('v-cut');

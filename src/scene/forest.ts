@@ -7,7 +7,7 @@ import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { type GlowSprite, mistTex, sprite } from './sprites';
 import { scene } from './stage';
-import { terrainY } from './terrain';
+import { surfaceY } from './terrain';
 
 // The forest is finite (route 0 → GATE_Z): instances behind the camera are
 // re-placed ahead of it, never past GATE_Z + 4.
@@ -73,16 +73,16 @@ export function buildForest(start: number) {
   for (const name of ['pine_a', 'pine_b']) field(name, n(105), (z, m) => {
     const h = rand(5, 13), s = h / m.height;
     const x = side() * (m.reach * s + CLEAR + rand(0, 30));
-    return { x, z, y: terrainY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
+    return { x, z, y: surfaceY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
   });
   // bare snags: slim trunk, branches only high up, so they may stand close to the path
   field('snag', n(80), (z, m) => {
     const x = side() * rand(2.3, 18), s = rand(6, 12) / m.height;
-    return { x, z, y: terrainY(x, z) - .1, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.07, .07) };
+    return { x, z, y: surfaceY(x, z) - .1, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.07, .07) };
   });
   field('rock', n(170), (z, m) => {
     const x = side() * rand(.3, 7), w = rand(.15, .5), s = w / m.reach;
-    return { x, z, y: terrainY(x, z) - w * .4, h: s * rand(.6, 1), w: s, rx: rand(-.3, .3), ry: rand(0, 6.28), rz: rand(-.3, .3) };
+    return { x, z, y: surfaceY(x, z) - w * .4, h: s * rand(.6, 1), w: s, rx: rand(-.3, .3), ry: rand(0, 6.28), rz: rand(-.3, .3) };
   });
 
   for (let i = 0; i < Q.mist; i++) {

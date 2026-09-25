@@ -42,7 +42,7 @@
     <p class="kicker">Portfolio · Full-stack developer</p>
     <h2>Anton Duchenko</h2>
     <p class="what">Looking for a developer who ships? His notice hangs in a tavern at the end
-      of a forest path. The trail is a short 3D scene with sound — under a minute, and you can skip it any time.</p>
+      of a forest path. The trail is a short 3D scene with sound — under a minute, and you can skip the walk.</p>
     <button id="enter" type="button" disabled>loading…</button>
     <p class="hint">Headphones recommended</p>
   </div>
@@ -51,7 +51,14 @@
 <div id="scene"></div>
 <div id="vignette"></div>
 <div id="line"><p></p></div>
-<button id="skip" type="button">Skip →</button>
+<div id="corner">
+  <!-- scene volume (src/ui/volume.ts): shown when the visitor entered with sound -->
+  <label id="volume" class="hidden" title="Volume">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
+    <input type="range" min="0" max="100" step="1" value="70" aria-label="Volume">
+  </label>
+  <button id="skip" type="button">Skip the walk →</button>
+</div>
 
 <details id="tune" open>
   <summary>Tuning</summary>

@@ -5,7 +5,7 @@ import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { night } from './forest';
 import { scene } from './stage';
-import { terrainY } from './terrain';
+import { surfaceY } from './terrain';
 
 /* The path dressed with the Nature kit: flat stepping stones along the trodden middle,
    pebbles and short grass along the edges. Static — the walk only looks ahead, so it is
@@ -14,7 +14,7 @@ import { terrainY } from './terrain';
    Everything sinks 2 cm into the ground: bases never lie on the path plane (hard rule 1). */
 
 const PATH_HW = 1.7, PATH_Y = .05, SINK = .02;
-const groundY = (x: number, z: number) => Math.abs(x) < PATH_HW ? PATH_Y : terrainY(x, z);
+const groundY = (x: number, z: number) => Math.abs(x) < PATH_HW ? PATH_Y : surfaceY(x, z);
 
 interface Item { x: number; z: number; s: number; sy?: number }
 
