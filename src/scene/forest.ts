@@ -47,7 +47,7 @@ function field(name: string, count: number, place: (z: number, size: Size) => Pl
   // horizontal reach from the trunk and height of the unscaled model
   const size = { reach: Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z), height: b.max.y };
   const meshes = instanced(ps, count);
-  const f: Field = { meshes, count, place: z => place(z, size), data: new Array(count) };
+  const f: Field = { meshes, count, place: z => place(z, size), data: new Array<Placement>(count) };
   for (const m of meshes) { m.frustumCulled = false; m.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(m); }
   for (let i = 0; i < count; i++) {
     // spread over SPREAD metres from just behind the start; anything that would land

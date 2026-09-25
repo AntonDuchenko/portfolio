@@ -1,6 +1,6 @@
 import {
   type Blending, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, type Object3D, PlaneGeometry,
-  ShaderMaterial, Sprite, type SpriteMaterial, type Texture, UniformsLib, UniformsUtils, Vector3
+  ShaderMaterial, Sprite, type Texture, UniformsLib, UniformsUtils, Vector3
 } from 'three';
 
 /* Sprite instancing: every glow sprite (flames, candles, mist, chimney smoke) used to be
@@ -71,7 +71,7 @@ class SpriteBatch {
       const on = shown(p);
       this.pos.setXYZ(i, w.x, w.y, w.z);
       this.size.setXY(i, on ? s.x : 0, on ? s.y : 0);
-      this.op.setX(i, (p.material as SpriteMaterial).opacity);
+      this.op.setX(i, p.material.opacity);
     });
     this.pos.needsUpdate = this.size.needsUpdate = this.op.needsUpdate = true;
   }
@@ -90,12 +90,12 @@ export function batchSprites(root: Object3D, min = 3) {
   const groups = new Map<string, { sprites: Sprite[]; map: Texture; blending: Blending; fog: boolean }>();
   root.traverse(o => {
     if (!(o instanceof Sprite)) return;
-    const m = o.material as SpriteMaterial;
+    const sp = o as Sprite, m = sp.material;
     if (!m.map || m.rotation !== 0) return;
     const key = `${m.map.uuid}|${m.blending}|${m.fog}`;
     let g = groups.get(key);
     if (!g) groups.set(key, g = { sprites: [], map: m.map, blending: m.blending, fog: m.fog });
-    g.sprites.push(o);
+    g.sprites.push(sp);
   });
   for (const g of groups.values()) {
     if (g.sprites.length < min) continue;

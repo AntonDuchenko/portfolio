@@ -23,7 +23,7 @@ export function mergeStatic(root: Object3D, keep: Object3D[] = []) {
   const skip = new Set<Object3D>();
   for (const k of keep) k.traverse(o => skip.add(o));
 
-  const groups = new Map<string, { material: Material; geos: BufferGeometry[]; meshes: Mesh[] }>();
+  const groups = new Map<string, { material: Material; geos: BufferGeometry[]; meshes: Object3D[] }>();
   root.traverse(o => {
     if (!(o instanceof Mesh) || skip.has(o) || (o as { isInstancedMesh?: boolean }).isInstancedMesh) return;
     if (Array.isArray(o.material) || o.matrixWorld.determinant() < 0) return;

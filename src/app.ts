@@ -159,7 +159,9 @@ addEventListener('resize', () => {
   if (state.phase === 'open' || state.phase === 'fly') { camera.updateMatrixWorld(); layoutPane(); }
 });
 
-Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
+// A failure here surfaces on the enter button through the unhandledrejection handler in
+// index.html (hard rule 8), so the chain is deliberately left without a catch.
+void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   // timeline inversion: the narration's length sets the walk's length
   const walkTime = buildSchedule(LINES.map((_, i) => bufs?.[voiceName(i)]?.duration ?? null));
   state.walkLen = SPEED * walkTime;

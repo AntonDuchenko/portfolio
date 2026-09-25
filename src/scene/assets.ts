@@ -1,5 +1,5 @@
 import {
-  Box3, BufferAttribute, BufferGeometry, InstancedMesh, type Material, Matrix4, Mesh, type Object3D
+  Box3, BufferAttribute, type BufferGeometry, InstancedMesh, type Material, Matrix4, Mesh, type Object3D
 } from 'three';
 import { loadGLTF } from '../loaders/gltf';
 import { Q } from '../quality';

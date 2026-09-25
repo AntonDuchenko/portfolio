@@ -1,4 +1,4 @@
-# Builds the site, smoke-tests it and publishes it to GitHub Pages (branch gh-pages).
+# Lints, builds and smoke-tests the site, then publishes it to GitHub Pages (branch gh-pages).
 #
 # One-time setup in the repository settings:
 #   Settings → Pages → Build and deployment → Source: "Deploy from a branch",
@@ -37,6 +37,8 @@ jobs:
           cache: npm
 
       - run: npm ci
+      - run: npm run lint           # ESLint: type-aware rules + code style (eslint.config.js)
+      - run: npm run typecheck      # app and tests
       - run: npm run build          # typecheck + bundle
 
       # smoke test of the built site (tests/): gate, scene → page, no-WebGL fallback,

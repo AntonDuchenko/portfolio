@@ -10,7 +10,7 @@ import { type Avatar, loadAvatar, mountAvatar } from './avatar';
 const LINES: Record<string, string> = data.lines;
 const WORDS_PER_S = 2.6, LINGER = 1.4;
 
-type Line = { stop(): void; level(): number };
+interface Line { stop(): void; level(): number }
 let buffers: Record<string, AudioBuffer> = {};
 let current: Line | null = null, hideTimer = 0, raf = 0;
 const said = new Set<string>();
@@ -89,9 +89,11 @@ export function startNarrator() {
   if (!started) {
     started = true;
     r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
-    whenIdle(() => mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
-      .then(a => { avatar = a; a.pause(!landed); r.classList.add('has-avatar'); })
-      .catch(e => console.warn('avatar:', e)));           // the silhouette stays
+    whenIdle(() => {
+      mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
+        .then(a => { avatar = a; a.pause(!landed); r.classList.add('has-avatar'); })
+        .catch((e: unknown) => console.warn('avatar:', e));   // the silhouette stays
+    });
   }
   if (audioStarted()) preloadNarrator(true);            // skipped early, or entered straight
   void (lines ?? Promise.resolve()).then(() => { if (landed) watch(Object.keys(LINES)); });

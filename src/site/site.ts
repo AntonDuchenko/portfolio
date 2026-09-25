@@ -111,13 +111,14 @@ function raven() {
   const btn = document.querySelector<HTMLButtonElement>('.send');
   const toast = document.querySelector<HTMLElement>('.toast');
   if (!btn || !toast) return;
-  btn.addEventListener('click', async () => {
+  const send = async () => {
     const text = btn.dataset.copy ?? '';
     let ok = false;
     try { await navigator.clipboard.writeText(text); ok = true; } catch { /* insecure context or denied */ }
     toast.textContent = ok ? 'Copied. The raven is on its way.' : `Write to ${text}`;
     btn.classList.remove('sent'); void btn.offsetWidth; btn.classList.add('sent');
-  });
+  };
+  btn.addEventListener('click', () => { void send(); });
 }
 
 /** Called when the resume starts to fade in over the poster (or at once without the scene). */

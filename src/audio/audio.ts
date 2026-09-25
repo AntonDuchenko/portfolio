@@ -161,9 +161,9 @@ function startAudio(bufs: Buffers | null) {
 export function sfxStep() {
   // the index is drawn even without audio, like in the prototype
   let i; do { i = Math.floor(Math.random() * 6); } while (i === lastStepIdx); lastStepIdx = i;
+  stepLeft = !stepLeft;
   oneShot(B[`step${i}`], {
-    rate: .92 + Math.random() * .16, gain: .5 + Math.random() * .25,
-    pan: (stepLeft = !stepLeft) ? -.2 : .2
+    rate: .92 + Math.random() * .16, gain: .5 + Math.random() * .25, pan: stepLeft ? -.2 : .2
   });
 }
 export function sfxDoor() { if (audioReady && doorSnd) { if (doorSnd.isPlaying) doorSnd.stop(); doorSnd.play(); } }
@@ -259,5 +259,5 @@ export function updateAudio(dt: number, camZ: number) {
 
 export function resetAudio() {
   nextSign = 4; nextOwl = 9; owlsLeft = 3; paperPlayed = false; lastStepIdx = -1;
-  if (audioReady && doorSnd && doorSnd.isPlaying) doorSnd.stop();
+  if (audioReady && doorSnd?.isPlaying) doorSnd.stop();
 }
