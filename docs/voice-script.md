@@ -36,5 +36,9 @@ screen; the music ducks while he speaks.
 | `education.mp3` | Guild Records | Learned his trade at Mate Academy. Before that, the maritime academy in Kherson. |
 | `contact.mp3` | Send a Raven | Mean to claim the bounty? Send a raven — he answers quickly. |
 
+ElevenLabs for the innkeeper: `cd scripts/voice && ELEVENLABS_API_KEY=… npm run elevenlabs` lists
+the account's voices; add `ELEVENLABS_VOICE_ID=…` to voice all lines (or name chapters to
+redo some: `npm run elevenlabs -- intro contact`). It overwrites `public/audio/narrator/`.
+
 Replacing a file: drop the recording in place under the same name (MP3, mono). Positional
 audio is not involved, but keep it mono anyway — the mix expects it.
