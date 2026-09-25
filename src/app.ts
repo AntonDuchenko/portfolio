@@ -23,7 +23,7 @@ import { resetRun, state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
-import { initFullscreen } from './ui/fullscreen';
+import { enterFullscreen, initFullscreen, leaveFullscreen } from './ui/fullscreen';
 import { initVolume } from './ui/volume';
 import { preloadNarrator, resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
@@ -47,6 +47,7 @@ function land() {
   state.phase = 'done';
   document.body.classList.add('landed'); el.portal.style.clipPath = 'none';
   chrome.forEach(e => e.classList.add('hidden')); el.volume.classList.add('hidden'); el.fullscreen.classList.add('hidden');
+  leaveFullscreen();                      // full screen is for the scene; the page reads in the window
   setLine(null); document.body.classList.remove('scene-locked');
   el.again.classList.add('on'); scrollTo(0, 0);
   inkHero();                              // skip lands without the crossfade
@@ -64,6 +65,7 @@ el.again.addEventListener('click', () => {
   el.again.classList.remove('on');
   chrome.forEach(e => e.classList.remove('hidden')); el.volume.classList.toggle('hidden', !withSound);
   el.fullscreen.classList.toggle('hidden', !document.fullscreenEnabled);
+  enterFullscreen();                      // the replay starts full screen, like the first run
   document.body.classList.add('scene-locked');
   resetRun();
   resetLines();
@@ -198,6 +200,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
     resumeAndStart(bufs);
     if (bufs) { initSoundToggle(); initVolume(); withSound = true; }
     initFullscreen();
+    enterFullscreen();                    // this click is the gesture the browser requires
     setTimeout(() => preloadNarrator(!!bufs), 4000);   // a few seconds into the walk
     el.gate.classList.add('off');
     setTimeout(() => el.gate.classList.add('hidden'), 950);

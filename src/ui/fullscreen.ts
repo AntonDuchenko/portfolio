@@ -1,18 +1,27 @@
 import { el } from './dom';
 
-/** Full screen, like F11, for the scene: a button in the top corner and the F key (scene
- *  only). Browsers allow it only from a click or a key press, and not every one allows it
- *  for a page (iPhone Safari does not) — there the button stays hidden. Leaving: the
- *  button, F or Esc; landing on the page keeps it, Esc still leaves. */
+/* Full screen, like F11, for the scene only: it starts with the click that starts the
+   scene ("Take the trail", "Back to the tavern") and ends on landing — the page is read
+   in the normal window. Browsers allow it only from a click or key press (never on load)
+   and not everywhere (iPhone Safari has none for pages): there nothing happens and the
+   corner button stays hidden. During the scene the button and F toggle it; Esc leaves. */
+
+const supported = () => document.fullscreenEnabled;
+const report = (e: unknown) => console.warn('fullscreen:', e);
+
+/** Call from inside a click or key handler. */
+export function enterFullscreen() {
+  if (!supported() || document.fullscreenElement) return;
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(report);
+}
+export function leaveFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen().catch(report);
+}
+
 export function initFullscreen() {
-  if (!document.fullscreenEnabled) return;
+  if (!supported()) return;
   const btn = el.fullscreen;
-  const toggle = () => {
-    const change = document.fullscreenElement
-      ? document.exitFullscreen()
-      : document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-    change.catch((e: unknown) => console.warn('fullscreen:', e));
-  };
+  const toggle = () => { if (document.fullscreenElement) leaveFullscreen(); else enterFullscreen(); };
   const sync = () => {
     const on = !!document.fullscreenElement;
     btn.setAttribute('aria-pressed', String(on));

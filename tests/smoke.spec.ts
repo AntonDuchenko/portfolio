@@ -26,12 +26,14 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('#volume')).toBeVisible();
   await page.locator('#volume input').fill('30');
   expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.3');
-  // full screen: on and off from the corner button
-  await page.locator('#fullscreen').click();
-  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  // full screen: started by the enter click; the corner button leaves and re-enters it
+  const fullscreen = () => page.evaluate(() => !!document.fullscreenElement);
+  await expect.poll(fullscreen).toBe(true);
   await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('#fullscreen').click();
-  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(false);
+  await expect.poll(fullscreen).toBe(false);
+  await page.locator('#fullscreen').click();
+  await expect.poll(fullscreen).toBe(true);
   await page.locator('#skip').click();                // → hold, door, flight
   // skip shortens the walk only: it is gone for the door and the flight
   await expect(page.locator('#skip')).toBeHidden();
@@ -56,6 +58,7 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(page.locator('#again')).toBeVisible();
   await expect(page.locator('#volume')).toBeHidden();
   await expect(page.locator('#fullscreen')).toBeHidden();
+  await expect.poll(fullscreen, { message: 'the page reads in the normal window' }).toBe(false);
   expect(errors()).toEqual([]);
 });
 
@@ -79,8 +82,9 @@ test('replaying the scene silences the innkeeper until the next landing', async 
   await flyToPage(page);
   await expect(page.locator('.narrator')).toHaveClass(/open/);   // the intro line
 
-  await page.locator('#again').click();               // back to the scene
+  await page.locator('#again').click();               // back to the scene, full screen again
   await expect(page.locator('.narrator')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
   for (let i = 0; i < 6; i++) {                        // three seconds of the walk
     await step(page, 10);
     await expect(page.locator('.narrator')).toBeHidden();
