@@ -26,3 +26,11 @@ assets-src/audio/410357__felixblume__*.wav
 # voice generator (scripts/voice): its own deps and the cached TTS model
 scripts/voice/node_modules/
 scripts/voice/.cache/
+
+# Local copies from the old layout (kits now live in assets-src/)
+/410357__felixblume__*.wav
+/Character/
+/*MegaKit*/
+
+# Raw recordings next to the shipped MP3s (the app loads .mp3 only)
+public/audio/**/*.wav
