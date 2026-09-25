@@ -1,4 +1,5 @@
-import { mix, setForestCut, setMaster } from '../audio/audio';
+import { setMaster } from '../audio/engine';
+import { mix, setForestCut } from '../audio/scene';
 import { cfg } from '../config';
 import { setMoon } from '../scene/lights';
 import { el } from './dom';

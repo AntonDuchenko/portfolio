@@ -1,4 +1,4 @@
-import { isMuted, setMuted } from '../audio/audio';
+import { isMuted, setMuted } from '../audio/engine';
 
 /** Sound toggle in the site nav (shown after entering with sound). M toggles — on the
  *  site only; the scene always plays with sound (see setOnSite in audio.ts). */

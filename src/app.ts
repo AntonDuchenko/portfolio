@@ -1,15 +1,18 @@
 import * as THREE from 'three';
-import { Color, Vector3 } from 'three';
-import { listener, loadAudio, resetAudio, resumeAndStart, setOnSite, sfxPaper, updateAudio, voiceName } from './audio/audio';
+import { Color } from 'three';
+import { listener, setOnSite } from './audio/engine';
+import {
+  loadAudio, resetAudio, resumeAndStart, sfxDoor, sfxPaper, sfxStep, sfxWhoosh, updateAudio, voiceName
+} from './audio/scene';
 import { camera } from './camera/camera';
-import { advance, footsteps, placeCamera } from './camera/timeline';
+import { advance, placeCamera, stepDue, type TimelineHooks } from './camera/timeline';
 import * as C from './config';
 import { cfg, EYE, FOG_IN, FOG_OUT, GATE_Z, SPEED, STOP_AT, T_HOLD } from './config';
 import { crossfade, layoutPane, maskDoor, posterCoversScreen } from './portal/portal';
 import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
 import { buildGround } from './scene/ground';
-import { addGlobalLights, flame, moonDisc, setMoon, torch, updateFires, warmAmb, LEGACY } from './scene/lights';
+import { addGlobalLights, LEGACY, moonDisc, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
 import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
@@ -22,7 +25,7 @@ import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
 import { preloadNarrator, resetNarrator, startNarrator } from './site/narrator';
 import { initTune, tuneEnabled } from './ui/tune';
-import { buildSchedule, LINES, resetLines, setLine } from './ui/voice';
+import { buildSchedule, LINES, resetLines, setLine, updateLines } from './ui/voice';
 
 /* ── build: procedural parts now, kit models once they are loaded ── */
 el.scene.appendChild(renderer.domElement);
@@ -65,8 +68,16 @@ el.again.addEventListener('click', () => {
   setDoor(0); scrollTo(0, 0);
 });
 
+/* ── what the timeline's phases do to the page, the sound and the door ── */
+const phases: TimelineHooks = {
+  walk: updateLines,
+  open() { setLine(null); el.portal.classList.add('on'); sfxDoor(); },
+  fly() { state.torchLeft = torch.position.clone(); sfxWhoosh(); },
+  land() { el.site.style.opacity = '1'; land(); }
+};
+
 /* ── loop ────────────────────────────────────────────────────────── */
-const hand = new Vector3(), fogC = new Color();
+const fogC = new Color();
 let last = 0;
 
 /* FPS guard. Measures real frame time (before the dt clamp) in 2 s windows after a
@@ -102,10 +113,11 @@ function frame() {
   if (state.phase === 'done') return;
   fpsGuard(raw);
 
-  const pose = advance(dt, land);
+  const pose = advance(dt, phases);
   if (!pose) return;
-  const { camZ, pitch, bob } = pose;
+  const { camZ } = pose;
   const { inside, t } = state;
+  setDoor(state.doorAngle);
 
   // fog and background shift from night blue to the warm interior
   fog.density = cfg.fog * (1 - inside) + .005 * inside;
@@ -113,9 +125,9 @@ function frame() {
   fog.color.copy(fogC); renderer.setClearColor(fogC, 1);
   setMoon(1 - inside * .85);
 
-  footsteps();
+  if (stepDue()) sfxStep();
   updateAudio(dt, camZ);
-  placeCamera(camZ, pitch, bob);
+  placeCamera(pose);
 
   let hidden3d = false;
   if (state.phase === 'open' || state.phase === 'fly') {
@@ -126,18 +138,7 @@ function frame() {
     else { el.portal.style.clipPath = 'none'; hidden3d = posterCoversScreen(); }
   }
 
-  const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * Math.random();
-  if (state.torchLeft) { torch.position.copy(state.torchLeft); flame.position.copy(state.torchLeft); }
-  else {
-    // carried at camera-space (−0.34, +0.34, −1.15); on `fly` it stays at the threshold
-    hand.set(-.34, .34, -1.15).applyQuaternion(camera.quaternion).add(camera.position);
-    torch.position.set(hand.x + Math.sin(t * 8.3) * .02, hand.y + Math.sin(t * 11.7) * .018, hand.z);
-    flame.position.copy(torch.position);
-  }
-  torch.setLegacy(2.8 * flick * (1 - inside * .7));
-  flame.material.opacity = (.45 + .28 * flick) * (1 - inside * .6);
-  flame.scale.set(.76 * flick, .98 * flick, 1);
-
+  updateTorch(t, inside);
   updateFires(t, inside);
   noticeGlow.setLegacy(inside * NOTICE_GLOW);          // not tied to the hall: the poster hands over to the page
   warmAmb.intensity = inside * cfg.hall * .5 * LEGACY;

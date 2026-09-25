@@ -1,5 +1,7 @@
-import { AmbientLight, Color, DirectionalLight, HemisphereLight, LinearSRGBColorSpace, PointLight } from 'three';
+import { AmbientLight, Color, DirectionalLight, HemisphereLight, LinearSRGBColorSpace, PointLight, Vector3 } from 'three';
+import { camera } from '../camera/camera';
 import { cfg } from '../config';
+import { state } from '../state';
 import { fireTex, type GlowSprite, sprite } from './sprites';
 import { scene } from './stage';
 
@@ -45,6 +47,22 @@ moonDisc.material.color.set(0xc3d4ff);
 
 export function addGlobalLights() {
   scene.add(moon, sky, ambient, warmAmb, torch, flame, moonDisc);
+}
+
+/** The torch in the visitor's hand: carried at camera-space (−0.34, +0.34, −1.15) with a
+ *  small sway; on `fly` it stays at the threshold (state.torchLeft). Dims inside. */
+const HAND = new Vector3(-.34, .34, -1.15), hand = new Vector3();
+export function updateTorch(t: number, inside: number) {
+  const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * Math.random();
+  if (state.torchLeft) torch.position.copy(state.torchLeft);
+  else {
+    hand.copy(HAND).applyQuaternion(camera.quaternion).add(camera.position);
+    torch.position.set(hand.x + Math.sin(t * 8.3) * .02, hand.y + Math.sin(t * 11.7) * .018, hand.z);
+  }
+  flame.position.copy(torch.position);
+  torch.setLegacy(2.8 * flick * (1 - inside * .7));
+  flame.material.opacity = (.45 + .28 * flick) * (1 - inside * .6);
+  flame.scale.set(.76 * flick, .98 * flick, 1);
 }
 
 /** moon slider and the `inside` fade both go through here */

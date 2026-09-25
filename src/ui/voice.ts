@@ -1,4 +1,4 @@
-import { playVoice, stopVoice } from '../audio/audio';
+import { playVoice, stopVoice } from '../audio/scene';
 import data from './voice-lines.json';
 import { el } from './dom';
 

@@ -1,4 +1,5 @@
-import { audioStarted, loadNarration, narrate } from '../audio/audio';
+import { audioStarted } from '../audio/engine';
+import { loadNarration, narrate } from '../audio/narration';
 import data from './narration.json';
 import { type Avatar, loadAvatar, mountAvatar } from './avatar';
 
