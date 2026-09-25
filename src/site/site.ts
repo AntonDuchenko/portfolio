@@ -47,6 +47,8 @@ function nav() {
   const hero = document.getElementById('intro');
   if (!bar || !hero) return;
   new IntersectionObserver(([e]) => bar.classList.toggle('on', !e.isIntersecting), { threshold: .35 }).observe(hero);
+  const scrolled = () => bar.classList.toggle('scrolled', scrollY > 8);
+  addEventListener('scroll', scrolled, { passive: true }); scrolled();
   const links = new Map($$<HTMLAnchorElement>('.bar ul a').map(a => [a.hash.slice(1), a]));
   const spy = new IntersectionObserver(entries => {
     for (const e of entries) {

@@ -42,7 +42,11 @@ body.landed .bar{transform:none}
 .bar:not(.on) ul a{color:var(--ink-soft)}
 .bar:not(.on) ul a:hover{color:var(--ink)}
 .bar:not(.on) ul a::after{background:var(--ink-soft)}
-.bar.on{background-color:rgba(12,9,6,.88);backdrop-filter:blur(8px);border-bottom-color:rgba(217,168,78,.14)}
+.bar.on{background-color:rgba(12,9,6,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom-color:rgba(217,168,78,.14)}
+/* scrolling inside the hero: a frosted parchment plate, so the sheet's text passes under
+   the links instead of through them (none at the very top: ink straight on the poster) */
+.bar.scrolled:not(.on){background-color:rgba(228,208,164,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  border-bottom-color:rgba(90,60,25,.22)}
 .bar ul{display:flex;gap:clamp(12px,2.4vw,30px);margin:0;padding:0;list-style:none;overflow-x:auto;scrollbar-width:none}
 .bar a{color:var(--muted);text-decoration:none;font-family:var(--fell);font-size:16px;letter-spacing:.04em;
   position:relative;padding:4px 0;white-space:nowrap;transition:color .25s}
