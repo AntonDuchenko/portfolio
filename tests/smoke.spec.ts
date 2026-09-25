@@ -119,7 +119,7 @@ test('replaying the scene silences the innkeeper until the next landing', async 
 test('linked files exist', async ({ request }) => {
   for (const [path, type] of [
     ['Anton-Duchenko-CV.pdf', 'application/pdf'], ['og.jpg', 'image/jpeg'],
-    ['icon.svg', 'image/svg+xml'], ['apple-touch-icon.png', 'image/png'],
+    ['icon.svg', 'image/svg+xml'], ['apple-touch-icon.png', 'image/png'], ['sitemap.xml', 'xml'],
     ['models/forest.glb', ''], ['models/low/forest.glb', ''], ['models/narrator.glb', ''],
     ['audio/forest.mp3', ''], ['audio/voice/line0.mp3', ''], ['audio/narrator/intro.mp3', '']
   ]) {

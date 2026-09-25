@@ -92,6 +92,15 @@ Repository:
   the flight, not on the first fade frame); the avatar compiles its shaders with
   `compileAsync` and mounts ~1.5 s after landing (was a 0.3 s frame on the phone).
 - All user-facing content is in English (any audience).
+- SEO (`index.html` head): canonical URL, description, Open Graph, JSON-LD (`ProfilePage` →
+  `Person`: job, employer, schools, skills, profiles) — keep it in step with the CV text.
+  `public/sitemap.xml` (update `lastmod` on content changes; submit it in Search Console).
+  No robots.txt: crawlers only read one at the domain root, which this project site
+  (a sub-path of antonduchenko.github.io) does not own. One `<h1>` (the hero name); the
+  poster is `aria-hidden`. Without JavaScript `<noscript>` styles show the CV directly
+  (it sat at opacity 0 behind the gate) — `tests/no-js.spec.ts` guards it.
+- Analytics (`src/analytics.ts`): GoatCounter page views — no cookies, no personal data,
+  no consent banner. Off while `GOATCOUNTER` is empty, in dev and on localhost (tests).
 - Sound control (`ui/sound.ts`): one control in two places with one state — the scene's
   top corner (`#volume`) and the site nav (`#sound`; phones show the speaker only). The
   speaker mutes/unmutes, the slider sets the master level (moving it unmutes), `M` toggles;

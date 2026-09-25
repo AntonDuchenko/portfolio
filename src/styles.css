@@ -106,7 +106,7 @@ input[type=range]{width:100%;height:16px;margin:0;accent-color:#c98a3c;backgroun
   color:#3a2a14;font-family:var(--display);
   display:grid;align-content:center;justify-items:center;gap:1.5cqh;padding:4cqh 3cqh}
 #poster .top{font-size:1.9cqh;letter-spacing:.34em;color:#6b5330;margin-right:-.34em}
-#poster h1{font-size:9cqh;font-weight:700;letter-spacing:.04em;margin:0;line-height:.86;
+#poster .title{font-size:9cqh;font-weight:700;letter-spacing:.04em;margin:0;line-height:.86;
   color:#33240f;text-shadow:0 1px 0 rgba(255,245,220,.5)}
 #poster .face{width:52%;aspect-ratio:1/1.12;border:.5cqh solid #6b5330;
   background:linear-gradient(160deg,#c9b287,#a68f66);display:grid;place-items:center;
