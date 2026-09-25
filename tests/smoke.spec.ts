@@ -6,7 +6,7 @@ import { collectErrors, step, virtualClock } from './helpers';
 
 test('gate explains the scene and becomes enterable', async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto('./?noguard&quality=low');
+  await page.goto('./?noguard&quality=low&seed=1');
   await expect(page.locator('#gate h2')).toHaveText('Anton Duchenko');
   await expect(page.locator('#gate .what')).toContainText('skip it any time');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
@@ -17,7 +17,7 @@ test('gate explains the scene and becomes enterable', async ({ page }) => {
 test('the scene hands over to the page', async ({ page }) => {
   const errors = collectErrors(page);
   await virtualClock(page);
-  await page.goto('./?noguard&quality=low');
+  await page.goto('./?noguard&quality=low&seed=1');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);                               // a second of the walk
@@ -48,7 +48,7 @@ test('the scene hands over to the page', async ({ page }) => {
 test('replaying the scene silences the innkeeper until the next landing', async ({ page }) => {
   const errors = collectErrors(page);
   await virtualClock(page);
-  await page.goto('./?noguard&quality=low');
+  await page.goto('./?noguard&quality=low&seed=1');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);

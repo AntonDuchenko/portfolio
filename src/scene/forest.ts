@@ -3,7 +3,7 @@ import {
 } from 'three';
 import { GATE_Z } from '../config';
 import { Q } from '../quality';
-import { rand, side } from '../random';
+import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { type GlowSprite, mistTex, sprite } from './sprites';
 import { scene } from './stage';
@@ -52,7 +52,7 @@ function field(name: string, count: number, place: (z: number, size: Size) => Pl
   for (let i = 0; i < count; i++) {
     // spread over SPREAD metres from just behind the start; anything that would land
     // past GATE_Z + 4 (inside the tavern) is kept at scale 0 and never re-placed
-    const z = startZ + 10 - Math.random() * SPREAD;
+    const z = startZ + 10 - random() * SPREAD;
     f.data[i] = f.place(z);
     if (z < GATE_Z + 4) f.data[i].w = f.data[i].h = 0;
     write(f, i);
@@ -88,7 +88,7 @@ export function buildForest(start: number) {
   for (let i = 0; i < Q.mist; i++) {
     const sp = sprite(mistTex, rand(14, 26), rand(.1, .22));
     sp.material.blending = NormalBlending;
-    const z = startZ + 10 - Math.random() * SPREAD;
+    const z = startZ + 10 - random() * SPREAD;
     sp.position.set(rand(-16, 16), rand(.3, 1.6), z);
     sp.visible = z > GATE_Z + 4;
     scene.add(sp); mists.push({ sp, drift: rand(-.25, .25), phase: rand(0, 10) });
@@ -112,7 +112,7 @@ export function updateForest(camZ: number) {
     let dirty = false;
     for (let i = 0; i < f.count; i++) {
       if (f.data[i].z > camZ + BEHIND) {
-        const nz = camZ - AHEAD + Math.random() * 12;
+        const nz = camZ - AHEAD + random() * 12;
         if (nz > GATE_Z + 4) { f.data[i] = f.place(nz); write(f, i); dirty = true; }
       }
     }

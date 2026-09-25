@@ -13,7 +13,8 @@ Geometry is placeholder and gets replaced by real assets.
 Detailed numbers and reasoning: `docs/scene-spec.md`. Read it before touching the scene.
 
 The port lives in `src/` (Vite + TypeScript, three 0.186, ES modules): `npm install`,
-`npm run dev`, `npm run build` (typecheck + bundle), `npm run assets` (rebuild models).
+`npm run dev`, `npm run build` (typecheck + bundle), `npm run lint`, `npm run typecheck`
+(app + tests), `npm test` (after a build), `npm run assets` (rebuild models).
 
 Repository:
 
@@ -27,10 +28,18 @@ Repository:
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
   `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `ground` (path dressing), `tavern` (facade + hall), `post`.
-- `camera/` — `timeline` (walk → hold → open → fly → done), `easing`.
+- `camera/` — `timeline` (walk → hold → open → fly → done), `easing`. The timeline only
+  moves the camera and advances phases; what a phase does to the page, sound and door is
+  wired in `app.ts` (`TimelineHooks`). Keep DOM and audio out of it.
 - `portal/` — DOM projection of the poster, door mask, resume crossfade.
-- `audio/` — loading from `public/audio`, beds, positional sources, one-shots.
+- `audio/` — `engine` (context, master/mute, bed bus + ducking, one-shots, voice),
+  `scene` (typed sound names, loading, beds, positional sources, script events, walk
+  narration), `narration` (the site innkeeper).
 - `ui/` — DOM refs, voice lines, tune panel (dev only, or `?debug` in a build).
+- `state.ts` — the run state; `resetRun()` is the one place a replay resets it.
+- `random.ts` — the scene's own seeded generator (`random`, `rand`, `side`); `?seed=<n>`
+  pins it. Never use `Math.random` for layout or variation: three.js draws from it for
+  every object's uuid, so the forest moved whenever the code created more objects.
 - `loaders/gltf.ts` — `GLTFLoader` with meshopt (no Draco: nothing uses it, 1.3 MB of wasm).
 - `scripts/assets/build.mjs` — packs the kits into `public/models/{forest,village,props}.glb`
   (one file per kit, models as named root nodes): simplification to budget, 1K WebP
@@ -91,6 +100,12 @@ Decisions (keep them unless the look is retuned on purpose):
 - **Tests:** swiftshader in the cloud container needs ~1–3 s per frame; drive the timeline
   with a virtual clock (replace `performance.now`/`requestAnimationFrame`, 50 ms steps —
   the `dt` clamp) rather than Playwright's clock, which can run `performance.now` backwards.
+  Pin the layout with `?seed=1` (the smoke test does). Compare frames against a build of
+  the previous commit, never against numbers from an older session (narration length
+  moves the walk). A Python `http.server` keeps serving its directory — rebuild in place.
+- **Lint:** ESLint 9 + typescript-eslint (type-aware) + `@stylistic` pinned to the house
+  style (single quotes, semicolons, 2-space indent); no Prettier — it would reflow the
+  compact scene code. Runs in CI before the build; `npm run lint -- --fix` for style.
 
 ## Hard rules (each one cost a debugging round)
 
