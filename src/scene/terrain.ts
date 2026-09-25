@@ -26,7 +26,6 @@ export function buildTerrain() {
     for (let v = 0; v < p.count; v++) p.setZ(v, terrainY(p.getX(v), z - p.getY(v)));
     p.needsUpdate = true; m.geometry.computeVertexNormals();
   }
-  M.path.polygonOffset = true; M.path.polygonOffsetFactor = -2; M.path.polygonOffsetUnits = -4;
   const path = new Mesh(new PlaneGeometry(3.4, 181), M.path);
   path.rotation.x = -Math.PI / 2; path.position.set(0, .05, -40.5); scene.add(path);  // ends at GATE_Z+1
 }

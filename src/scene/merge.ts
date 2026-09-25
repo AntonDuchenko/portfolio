@@ -41,15 +41,13 @@ export function mergeStatic(root: Object3D, keep: Object3D[] = []) {
   let before = 0, after = 0;
   for (const { material, geos, meshes } of groups.values()) {
     before += meshes.length;
-    if (meshes.length < 2) continue;
-    const merged = mergeGeometries(geos, false);
-    if (!merged) continue;                                 // incompatible attributes: leave as is
+    const merged = meshes.length > 1 ? mergeGeometries(geos, false) : null;
+    if (!merged) { after += meshes.length; continue; }     // single, or incompatible attributes
     for (const m of meshes) m.removeFromParent();
     const mesh = new Mesh(merged, material);
     mesh.name = `merged:${material.name || material.type}`;
     root.add(mesh);
     after++;
   }
-  for (const { meshes } of groups.values()) if (meshes.length < 2) after += meshes.length;
   return { before, after };
 }

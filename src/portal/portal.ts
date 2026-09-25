@@ -12,7 +12,7 @@ import { el } from '../ui/dom';
 export const fitDist = () => SHEET_H / (2 * Math.tan(MathUtils.degToRad(camera.fov) / 2));
 // The sheet is portrait: to cover a wide frame its height must exceed the screen height
 // 1.9·(width/height) times. That is where the flight goes.
-export const coverSc = () => Math.max(1.9 * (innerWidth / innerHeight), 1.06);
+const coverSc = () => Math.max(1.9 * (innerWidth / innerHeight), 1.06);
 export const endSc = () => coverSc() * 1.42;
 
 const v3 = new Vector3();

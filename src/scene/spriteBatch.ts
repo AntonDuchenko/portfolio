@@ -42,6 +42,8 @@ void main() {
   #include <fog_fragment>
 }`;
 
+const scratchW = new Vector3(), scratchS = new Vector3();
+
 class SpriteBatch {
   readonly mesh: Mesh<InstancedBufferGeometry, ShaderMaterial>;
   private pos: InstancedBufferAttribute; private size: InstancedBufferAttribute; private op: InstancedBufferAttribute;
@@ -62,7 +64,7 @@ class SpriteBatch {
     for (const p of proxies) p.layers.set(HIDDEN_LAYER);
   }
   update() {
-    const w = new Vector3(), s = new Vector3();
+    const w = scratchW, s = scratchS;
     this.proxies.forEach((p, i) => {
       p.updateWorldMatrix(true, false);
       const e = p.matrixWorld.elements;

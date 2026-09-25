@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Color, Vector3 } from 'three';
-import { listener, loadAudio, resetAudio, resumeAndStart, setOnSite, sfxPaperOnce, updateAudio, voiceName } from './audio/audio';
+import { listener, loadAudio, resetAudio, resumeAndStart, setOnSite, sfxPaper, updateAudio, voiceName } from './audio/audio';
 import { camera } from './camera/camera';
 import { advance, footsteps, placeCamera } from './camera/timeline';
 import * as C from './config';
@@ -16,7 +16,7 @@ import { mergeStatic } from './scene/merge';
 import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
 import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/tavern';
 import { buildTerrain } from './scene/terrain';
-import { state } from './state';
+import { resetRun, state } from './state';
 import { el } from './ui/dom';
 import { inkHero } from './site/site';
 import { initSoundToggle } from './ui/sound';
@@ -56,7 +56,7 @@ el.again.addEventListener('click', () => {
   el.again.classList.remove('on');
   chrome.forEach(e => e.classList.remove('hidden'));
   document.body.classList.add('scene-locked');
-  Object.assign(state, { phase: 'walk', walked: 0, pt: 0, torchLeft: null, doorAngle: 0, inside: 0, lastStep: -1 });
+  resetRun();
   resetLines();
   resetAudio();
   resetNarrator();
@@ -120,7 +120,8 @@ function frame() {
   let hidden3d = false;
   if (state.phase === 'open' || state.phase === 'fly') {
     const sc = layoutPane();
-    if (crossfade(sc)) { sfxPaperOnce(); inkHero(); }   // entered the paper: the page takes over
+    // the sheet covers the screen: the page takes over (once per run)
+    if (crossfade(sc) && !state.handedOver) { state.handedOver = true; sfxPaper(); inkHero(); }
     if (camZ > GATE_Z + .3) maskDoor(state.doorAngle);
     else { el.portal.style.clipPath = 'none'; hidden3d = posterCoversScreen(); }
   }

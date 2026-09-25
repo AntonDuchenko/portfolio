@@ -4,10 +4,10 @@
           mist, models from public/models/low (512 textures, no normal maps).
    high — everything else: pixel ratio up to 2, MSAA, full forest, 1K textures.
 
-   Override with ?quality=low|high. The FPS guard in main.ts can still lower the pixel
+   Override with ?quality=low|high. The FPS guard in app.ts can still lower the pixel
    ratio at run time, and falls back straight to the site if even that is not enough. */
 
-export type Tier = 'low' | 'high';
+type Tier = 'low' | 'high';
 
 function detect(): Tier {
   const q = new URLSearchParams(location.search).get('quality');
@@ -19,7 +19,7 @@ function detect(): Tier {
   return (touch && small) || weak ? 'low' : 'high';
 }
 
-export const tier: Tier = detect();
+const tier: Tier = detect();
 
 export const Q = tier === 'low'
   ? { tier, pixelRatio: 1, antialias: false, forest: .5, mist: 7, models: 'models/low/' }

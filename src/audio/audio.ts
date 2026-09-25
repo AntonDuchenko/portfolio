@@ -34,7 +34,7 @@ let musicBed: { f: BiquadFilterNode; g: GainNode } | null = null;
 let windGain: GainNode | null = null;
 let torchSnd: PositionalAudio | null = null, hearthSnd: PositionalAudio | null = null;
 let signSnd: PositionalAudio | null = null, doorSnd: PositionalAudio | null = null;
-let stepLeft = false, lastStepIdx = -1, nextSign = 4, nextOwl = 9, owlsLeft = 3, paperPlayed = false;
+let stepLeft = false, lastStepIdx = -1, nextSign = 4, nextOwl = 9, owlsLeft = 3;
 let forestCut = 3500;
 let voiceSrc: AudioBufferSourceNode | null = null;
 export const mix = { torch: 1, wind: 1, forest: 1, music: 1 };   // layer switches, for listening checks
@@ -169,8 +169,8 @@ export function sfxStep() {
 export function sfxDoor() { if (audioReady && doorSnd) { if (doorSnd.isPlaying) doorSnd.stop(); doorSnd.play(); } }
 // whoosh peaks at 0.48 s, camera speed peaks about 1 s after the fly starts
 export function sfxWhoosh() { oneShot(B.whoosh, { gain: .85, delay: .55 }); }
-/** once, when the sheet first covers the viewport */
-export function sfxPaperOnce() { if (!paperPlayed) { paperPlayed = true; oneShot(B.paper, { gain: .9 }); } }
+/** when the sheet first covers the viewport */
+export function sfxPaper() { oneShot(B.paper, { gain: .9 }); }
 
 /** Narration: dry, centred, not positional. One line at a time. */
 export function playVoice(i: number) {
@@ -258,6 +258,6 @@ export function updateAudio(dt: number, camZ: number) {
 }
 
 export function resetAudio() {
-  nextSign = 4; nextOwl = 9; owlsLeft = 3; paperPlayed = false; lastStepIdx = -1;
+  nextSign = 4; nextOwl = 9; owlsLeft = 3; lastStepIdx = -1;
   if (audioReady && doorSnd?.isPlaying) doorSnd.stop();
 }

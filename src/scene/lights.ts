@@ -18,7 +18,7 @@ import { scene } from './stage';
    ──────────────────────────────────────────────────────────────────── */
 export const LEGACY = Math.PI;
 
-export const legacyColor = (hex: number) =>
+const legacyColor = (hex: number) =>
   new Color().setRGB((hex >> 16 & 255) / 255, (hex >> 8 & 255) / 255, (hex & 255) / 255, LinearSRGBColorSpace);
 
 export class RescaledPointLight extends PointLight {
@@ -29,16 +29,13 @@ export class RescaledPointLight extends PointLight {
     this.k = Math.PI * dRef * dRef * (1 - q) ** 2 / (1 - q ** 4) ** 2;
   }
   /** intensity in prototype (r128 legacy) units */
-  setLegacy(v: number) { this.intensity = v * this.k * LOOK.points; }
+  setLegacy(v: number) { this.intensity = v * this.k; }
 }
 
-/** global look knobs, tuned against the prototype frames */
-export const LOOK = { points: 1, ambient: 1 };
-
 /* ── global lights ───────────────────────────────────────────────── */
-export const moon = new DirectionalLight(legacyColor(0x8aa4e0), 1.5 * LEGACY); moon.position.set(-6, 14, 5);
-export const sky = new HemisphereLight(legacyColor(0x33477a), legacyColor(0x0b0d10), .55 * LEGACY);
-export const ambient = new AmbientLight(legacyColor(0x18233d), .5 * LEGACY);
+const moon = new DirectionalLight(legacyColor(0x8aa4e0), 1.5 * LEGACY); moon.position.set(-6, 14, 5);
+const sky = new HemisphereLight(legacyColor(0x33477a), legacyColor(0x0b0d10), .55 * LEGACY);
+const ambient = new AmbientLight(legacyColor(0x18233d), .5 * LEGACY);
 export const warmAmb = new AmbientLight(legacyColor(0x4a2e18), 0);          // inside the tavern
 export const torch = new RescaledPointLight(0xff8c33, 24, 2); torch.setLegacy(2.8);
 
