@@ -1,3 +1,4 @@
+import { track } from '../analytics';
 import { audioStarted } from '../audio/engine';
 import { loadNarration, narrate } from '../audio/narration';
 import data from './narration.json';
@@ -89,7 +90,10 @@ export function startNarrator() {
   avatar?.pause(false);
   if (!started) {
     started = true;
-    r.querySelector('.keeper')!.addEventListener('click', () => { current?.stop(); current = null; hide(); });
+    r.querySelector('.keeper')!.addEventListener('click', () => {
+      if (current) track('narrator_skipped');
+      current?.stop(); current = null; hide();
+    });
     whenIdle(() => {
       mountAvatar(r.querySelector<HTMLElement>('.portrait')!)
         .then(a => { avatar = a; a.pause(!landed); r.classList.add('has-avatar'); })

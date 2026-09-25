@@ -99,8 +99,11 @@ Repository:
   (a sub-path of antonduchenko.github.io) does not own. One `<h1>` (the hero name); the
   poster is `aria-hidden`. Without JavaScript `<noscript>` styles show the CV directly
   (it sat at opacity 0 behind the gate) — `tests/no-js.spec.ts` guards it.
-- Analytics (`src/analytics.ts`): GoatCounter page views — no cookies, no personal data,
-  no consent banner. Off while `GOATCOUNTER` is empty, in dev and on localhost (tests).
+- Analytics (`src/analytics.ts`): PostHog, EU cloud — page views, the scene → page funnel
+  (`track()` events, listed in the file), chapters reached, conversion clicks (CV, contacts,
+  projects), autocapture + heatmaps. No cookies or storage (`persistence: 'memory'`), no
+  session recordings, no consent banner. Off in dev and on localhost; loaded on idle. PostHog
+  ignores headless browsers — to check events locally, mask `navigator.webdriver` and the UA.
 - Sound control (`ui/sound.ts`): one control in two places with one state — the scene's
   top corner (`#volume`) and the site nav (`#sound`; phones show the speaker only). The
   speaker mutes/unmutes, the slider sets the master level (moving it unmutes), `M` toggles;

@@ -1,3 +1,5 @@
+import { track, trackChapters } from '../analytics';
+
 /** Skip the scene entirely and show the site as the landing page would. */
 export function showSiteOnly(reason: string) {
   console.warn(`scene skipped: ${reason}`);
@@ -7,4 +9,5 @@ export function showSiteOnly(reason: string) {
   for (const id of ['gate', 'scene', 'vignette', 'skip', 'tune', 'line', 'portal', 'again'])
     $(id)?.classList.add('hidden');
   const site = $('site'); if (site) site.style.opacity = '1';
+  track('landed', { via: 'no_webgl', replay: false }); trackChapters();
 }

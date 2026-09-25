@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Color } from 'three';
+import { track, trackChapters } from './analytics';
 import { listener, setOnSite } from './audio/engine';
 import {
   loadAudio, resetAudio, resumeAndStart, sfxDoor, sfxPaper, sfxStep, sfxWhoosh, updateAudio, voiceName
@@ -40,9 +41,9 @@ const NOTICE_GLOW = 2.86;
 
 /* ── landing, skip, replay ───────────────────────────────────────── */
 const chrome = [el.scene, el.vignette, el.skip, ...(tuneEnabled ? [el.tune] : [])];
-let withSound = false;
+let withSound = false, replays = 0;
 
-function land() {
+function land(via: 'scene' | 'fps_guard') {
   state.phase = 'done';
   document.body.classList.add('landed'); el.portal.style.clipPath = 'none';
   chrome.forEach(e => e.classList.add('hidden')); el.volume.classList.add('hidden'); el.fullscreen.classList.add('hidden');
@@ -52,14 +53,17 @@ function land() {
   inkHero();                              // skip lands without the crossfade
   setOnSite(true);                        // the visitor's mute choice applies from here
   startNarrator();
+  track('landed', { via, replay: replays > 0 }); trackChapters();
 }
 // Skip shortens the walk only: the door and the flight into the poster always play.
 el.skip.addEventListener('click', () => {
   if (state.phase !== 'walk') return;
+  track('walk_skipped', { at_s: Math.round(state.t) });
   state.walked = state.walkLen; state.phase = 'hold'; state.pt = T_HOLD - .35;
   resetLines(); setLine(null); el.skip.classList.add('hidden');
 });
 el.again.addEventListener('click', () => {
+  replays++; track('replay');
   document.body.classList.remove('landed'); el.portal.classList.remove('on');
   el.again.classList.remove('on');
   chrome.forEach(e => e.classList.remove('hidden')); el.volume.classList.toggle('hidden', !withSound);
@@ -79,9 +83,9 @@ el.again.addEventListener('click', () => {
 const phases: TimelineHooks = {
   walk: updateLines,
   arrive() { el.skip.classList.add('hidden'); },
-  open() { setLine(null); el.portal.classList.add('on'); sfxDoor(); },
+  open() { setLine(null); el.portal.classList.add('on'); sfxDoor(); track('door_opened'); },
   fly() { state.torchLeft = torch.position.clone(); sfxWhoosh(); },
-  land() { el.site.style.opacity = '1'; land(); }
+  land() { el.site.style.opacity = '1'; land('scene'); }
 };
 
 /* ── loop ────────────────────────────────────────────────────────── */
@@ -109,7 +113,7 @@ function fpsGuard(raw: number) {
     console.info(`fps ${fps.toFixed(1)}: pixel ratio ${pr.toFixed(2)} → ${next.toFixed(2)}`);
   } else if (fps < 12) {
     console.warn(`fps ${fps.toFixed(1)} at pixel ratio ${pr}: skipping to the site`);
-    guard.on = false; land();
+    guard.on = false; land('fps_guard');
   }
 }
 
@@ -195,7 +199,9 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   el.enter.disabled = false;
   el.enter.textContent = bufs ? 'Take the trail' : 'Take the trail (no sound)';
   if (!bufs) document.querySelector('#gate .hint')?.classList.add('hidden');
+  track('scene_ready', { sound: !!bufs, load_s: Math.round(performance.now() / 100) / 10 });
   el.enter.addEventListener('click', () => {
+    track('trail_started', { sound: !!bufs });
     resumeAndStart(bufs);
     if (bufs) { initSoundControls(); withSound = true; }
     initFullscreen();

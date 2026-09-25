@@ -1,3 +1,4 @@
+import { track } from '../analytics';
 import { getMaster, isMuted, onMasterChange, onMuteChange, setMaster, setMuted } from '../audio/engine';
 
 /* The sound control, in two places with one state: the scene's top corner (#volume, next
@@ -17,7 +18,7 @@ function bind(root: HTMLElement) {
     btn.setAttribute('aria-label', m ? 'Unmute' : 'Mute');
     btn.title = (m ? 'Unmute' : 'Mute') + ' (M)';
   };
-  btn.addEventListener('click', () => setMuted(!isMuted()));
+  btn.addEventListener('click', () => { setMuted(!isMuted()); track('sound_muted', { muted: isMuted() }); });
   input.addEventListener('input', () => {
     setMaster(+input.value / 100);
     if (isMuted()) setMuted(false);
