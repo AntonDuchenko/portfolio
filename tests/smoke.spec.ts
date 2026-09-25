@@ -10,7 +10,7 @@ test('gate explains the scene and becomes enterable', async ({ page }) => {
   await expect(page.locator('#gate h2')).toHaveText('Anton Duchenko');
   await expect(page.locator('#gate .what')).toContainText('skip it any time');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
-  await expect(page.locator('#enter')).toHaveText(/^Enter (the tavern|without sound)$/);
+  await expect(page.locator('#enter')).toHaveText(/^Take the trail( \(no sound\))?$/);
   expect(errors()).toEqual([]);
 });
 

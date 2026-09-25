@@ -181,7 +181,7 @@ Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   return bufs;
 }).then(bufs => {
   el.enter.disabled = false;
-  el.enter.textContent = bufs ? 'Enter the tavern' : 'Enter without sound';
+  el.enter.textContent = bufs ? 'Take the trail' : 'Take the trail (no sound)';
   if (!bufs) document.querySelector('#gate .hint')?.classList.add('hidden');
   el.enter.addEventListener('click', () => {
     resumeAndStart(bufs);

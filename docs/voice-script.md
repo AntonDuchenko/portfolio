@@ -9,15 +9,16 @@ the durations of the walk lines, and the narrator waits for each line to finish.
 
 ## Walk — the narrator on the forest path
 
-Source `src/ui/voice-lines.json` → `public/audio/voice/line<i>.mp3`. First person, calm,
-unhurried; there are ~1.6 s of footsteps between lines.
+Source `src/ui/voice-lines.json` → `public/audio/voice/line<i>.mp3`. A stranger on the road,
+talking to the visitor — the bounty hunter — about the wanted developer: low, knowing, a
+little amused. ~1.6 s of footsteps between lines.
 
 | File | Line |
 |---|---|
-| `line0.mp3` | Evening, traveller. Mind the roots — the path is longer than it looks. |
-| `line1.mp3` | My name is Anton. I build things for the web, from the database up to the last pixel. |
-| `line2.mp3` | These days it's TypeScript, Node and React — and a habit of seeing work through to production. |
-| `line3.mp3` | The tavern is just ahead. My notice is pinned up inside. |
+| `line0.mp3` | Evening. You're out late — looking for someone, I'd wager. |
+| `line1.mp3` | Word is there's a developer in these parts who takes every job all the way to production. |
+| `line2.mp3` | Front end, back end, the database in between — he doesn't leave a task half-done. |
+| `line3.mp3` | The tavern's just ahead. His notice is on the wall. Wanted alive, mind — he's more useful that way. |
 
 ## Site — the innkeeper
 

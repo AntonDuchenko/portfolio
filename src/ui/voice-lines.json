@@ -1,10 +1,13 @@
 {
-  "_comment": "Narration. The app reads this for subtitles; scripts/voice/generate.mjs synthesises public/audio/voice/line<i>.mp3 from it. Placeholder copy — the tone is an open decision.",
-  "voice": { "speaker": 9, "speed": 0.95 },
+  "_comment": "Narration on the path: a stranger on the road, talking to the visitor (the bounty hunter) about the wanted developer. The app reads this for subtitles; scripts/voice/generate.mjs synthesises public/audio/voice/line<i>.mp3 from it. Placeholder voice until a real recording exists.",
+  "voice": {
+    "speaker": 9,
+    "speed": 0.95
+  },
   "lines": [
-    "Evening, traveller. Mind the roots — the path is longer than it looks.",
-    "My name is Anton. I build things for the web, from the database up to the last pixel.",
-    "These days it's TypeScript, Node and React — and a habit of seeing work through to production.",
-    "The tavern is just ahead. My notice is pinned up inside."
+    "Evening. You're out late — looking for someone, I'd wager.",
+    "Word is there's a developer in these parts who takes every job all the way to production.",
+    "Front end, back end, the database in between — he doesn't leave a task half-done.",
+    "The tavern's just ahead. His notice is on the wall. Wanted alive, mind — he's more useful that way."
   ]
 }
