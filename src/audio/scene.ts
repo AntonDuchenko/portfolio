@@ -125,13 +125,16 @@ export function sfxWhoosh() { oneShot(B.whoosh, { gain: .85, delay: .55 }); }
 /** when the sheet first covers the viewport */
 export function sfxPaper() { oneShot(B.paper, { gain: .9 }); }
 
-/** Walk narration: dry, centred, not positional. One line at a time. */
+/** Walk narration: dry, centred, not positional. One line at a time.
+ *  Anton's own recordings (−24.8 LUFS) sit as loud on paper as the synthesised placeholder
+ *  did, but a natural voice has more dynamics and the forest bed masked it: +5 dB. */
+const WALK_VOICE_BOOST = 10 ** (5 / 20);
 let voiceSrc: AudioBufferSourceNode | null = null;
 export function playVoice(i: number) {
   stopVoice();
   const buf = B[voiceName(i)] as AudioBuffer | undefined;
   if (!snd || !buf) return;
-  const { s } = voice(buf);
+  const { s } = voice(buf, WALK_VOICE_BOOST);
   s.start();
   s.onended = () => { if (voiceSrc === s) voiceSrc = null; };
   voiceSrc = s;

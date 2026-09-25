@@ -1,7 +1,8 @@
 # Voice script
 
-Lines to record. Today they are synthesised placeholders (`scripts/voice/generate.mjs`);
-the source of truth is the JSON — change the text there, then record.
+The texts of the recorded lines. The walk is Anton's own voice, the innkeeper is ElevenLabs;
+the source of truth for the wording is the JSON (the subtitles and bubbles read it) —
+change the text there, then re-record that line.
 
 Delivery: mono, any sample rate (the files are re-encoded to 24 kHz MP3), a little room
 tone before and after. Timing adapts to the recording: the walk length is computed from

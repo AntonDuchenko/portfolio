@@ -56,9 +56,10 @@ Repository:
   (one file per kit, models as named root nodes): simplification to budget, 1K WebP
   textures, meshopt. Fails the build if a budget is exceeded. Writes `manifest.json`
   (tris + bounds per model) — use it for placement numbers.
-- `scripts/voice/` — synthesises the narration placeholder (Kokoro, offline) into
-  `public/audio/voice/line<i>.mp3` from `src/ui/voice-lines.json`. Own `package.json`, so
-  CI never installs the native addon or the model: `cd scripts/voice && npm i && npm run generate`.
+- `scripts/voice/` — `generate.mjs` synthesised the placeholder voices (Kokoro, offline);
+  `elevenlabs.mjs` voices the innkeeper through the ElevenLabs API. Own `package.json`, so
+  CI never installs them. **Both overwrite the real recordings** (`generate` writes the walk
+  AND the innkeeper files) — do not run them unless a line is being replaced on purpose.
 - `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds, runs the smoke
   test and publishes `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a
   branch → gh-pages). A failing test stops the deploy (report uploaded as an artifact).
@@ -97,8 +98,19 @@ Repository:
   shown when the visitor entered with sound; level and mute remembered in localStorage.
   The scene always STARTS with sound (reload, "Back to the tavern"): the remembered mute
   applies from landing (`setOnSite`); a mute clicked during the walk carries onto the page.
-- The innkeeper's lines are ElevenLabs recordings (−18…−20 LUFS); `INNKEEPER_TRIM`
-  (−6.5 dB, `audio/narration.ts`) levels them with the walk narration.
+- Voices are real recordings now, not placeholders (texts: `docs/voice-script.md`):
+  - Walk (`public/audio/voice/line0–3.mp3`): Anton's own voice — SteelSeries headset,
+    Audacity, levelled by him to −24.8 LUFS, silence trimmed to 0.16 s before the first word
+    and 0.3–0.4 s after the last (short fades). Mono 24 kHz. `WALK_VOICE_BOOST` (+5 dB,
+    `audio/scene.ts`): a natural voice sits under the forest bed at the level the TTS
+    placeholder sounded fine at. The walk length follows the recordings' durations.
+  - Innkeeper (`public/audio/narrator/*.mp3`): ElevenLabs (Eleven v3, audio tags like
+    `[warmly]` in the prompt text only), −18…−20 LUFS; `INNKEEPER_TRIM` (−6.5 dB,
+    `audio/narration.ts`) levels him with the walk narration.
+  - Every voice goes through a safety limiter (`engine.ts`, −3 dBFS, the spec's makeup
+    gain taken back): nothing below the threshold changes, boosted peaks don't clip.
+  - Replacing a recording: same file name, mono; check LUFS/peaks and trim the silence
+    (ffmpeg `ebur128` + an RMS envelope), then balance with the constants above.
 
 Decisions (keep them unless the look is retuned on purpose):
 
@@ -147,7 +159,7 @@ Decisions (keep them unless the look is retuned on purpose):
 2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
    textures 1K; building on the kit grid). Path dressed with kit stones, pebbles and grass
    (`scene/ground.ts`, 4 draw calls, ~50k tris on the low tier); the ground itself is flat colour.
-3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; placeholder TTS voice).
+3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; real recordings now — see Voices).
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
    and ¼ texture memory; FPS guard; no-WebGL fallback; sprites instanced). Not measured on
    a real phone — check FPS on a device.
@@ -160,7 +172,7 @@ Decisions (keep them unless the look is retuned on purpose):
    IntersectionObserver fallback (`html.no-sda`); transform/opacity/filter only;
    `prefers-reduced-motion` turns it all off. Section ids are hooks for the narrator.
 6. ~~Avatar narrating site sections~~ (done).
-   `src/site/narrator.ts`: the innkeeper (third person, voice `bm_lewis`, lines in
+   `src/site/narrator.ts`: the innkeeper (third person, ElevenLabs recordings, lines in
    `src/site/narration.json` → `public/audio/narrator/<chapter>.mp3`) speaks when a chapter
    crosses the middle of the screen, once per visit; a newer chapter interrupts; a click
    on him skips. Beds duck to ⅓ while he talks. Without audio: bubbles only.

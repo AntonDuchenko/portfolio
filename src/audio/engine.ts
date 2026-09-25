@@ -78,11 +78,24 @@ export function oneShot(buf: AudioBuffer | undefined, o: ShotOpts = {}) {
   s.start(actx.currentTime + (o.delay ?? 0));
 }
 
+// a safety limiter on the voice path: only peaks near full scale touch it (boosted
+// recordings at 100 % volume), everything below passes unchanged
+let limiter: DynamicsCompressorNode | null = null;
+const voiceLimiter = () => limiter ??= (() => {
+  const c = actx.createDynamicsCompressor();
+  c.threshold.value = -3; c.knee.value = 0; c.ratio.value = 20; c.attack.value = .002; c.release.value = .12;
+  // the spec's compressor adds makeup gain, (1 / curve(1))^0.6 = +1.7 dB here: take it
+  // back so nothing below the threshold changes level
+  const curve1 = 10 ** ((-3 + 3 / 20) / 20), undo = actx.createGain();
+  undo.gain.value = curve1 ** .6;
+  c.connect(undo).connect(listener.getInput()); return c;
+})();
+
 /** Dry, centred voice (walk narration and the innkeeper); returns the source and its gain. */
 export const VOICE_GAIN = 1.1;
-export function voice(buf: AudioBuffer) {
+export function voice(buf: AudioBuffer, gain = 1) {
   const s = actx.createBufferSource(); s.buffer = buf;
-  const g = actx.createGain(); g.gain.value = VOICE_GAIN;
-  s.connect(g).connect(listener.getInput());
+  const g = actx.createGain(); g.gain.value = VOICE_GAIN * gain;
+  s.connect(g).connect(voiceLimiter());
   return { s, g };
 }
