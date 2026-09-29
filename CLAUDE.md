@@ -94,6 +94,10 @@ Repository:
 - All user-facing content is in English (any audience).
 - SEO (`index.html` head): canonical URL, description, Open Graph, JSON-LD (`ProfilePage` →
   `Person`: job, employer, schools, skills, profiles) — keep it in step with the CV text.
+  The name is findable in Cyrillic too: `Антон Дученко` in the title, description,
+  `alternateName` and visibly in the footer (search engines match only text they can see).
+  The `google-site-verification` meta tag verifies the Search Console property
+  (`https://antonduchenko.github.io/portfolio/`, URL prefix) — never remove it.
   `public/sitemap.xml` (update `lastmod` on content changes; submit it in Search Console).
   No robots.txt: crawlers only read one at the domain root, which this project site
   (a sub-path of antonduchenko.github.io) does not own. One `<h1>` (the hero name); the
