@@ -104,7 +104,10 @@ export function startNarrator() {
     });
   }
   if (audioStarted()) preloadNarrator(true);            // skipped early, or entered straight
-  void (lines ?? Promise.resolve()).then(() => { if (landed) watch(Object.keys(LINES)); });
+  // landing always shows the hero at the top, so the intro starts at once rather than on
+  // the observer's first callback — that waits for a rendering frame, which a still page
+  // may not draw for seconds (headless Chrome on CI: over 30 s)
+  void (lines ?? Promise.resolve()).then(() => { if (landed) { speak('intro'); watch(Object.keys(LINES)); } });
 }
 
 // a chapter "arrives" when it crosses the middle band of the screen. The observer lives
