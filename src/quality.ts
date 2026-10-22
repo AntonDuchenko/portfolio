@@ -32,3 +32,24 @@ export function webglAvailable() {
     return !!c.getContext('webgl2');
   } catch { return false; }
 }
+
+/** 'gpu' — the scene can run; 'software' — WebGL2 exists but is drawn by the CPU (graphics
+ *  acceleration off, a blocklisted driver, a remote desktop): the scene crawls at a few fps
+ *  and the flight stalls, so the visitor goes straight to the site, as without WebGL2.
+ *  Two checks: the unmasked renderer name, and a context that refuses a "major performance
+ *  caveat" (browsers return null for software rendering). ?softgl lets a software renderer
+ *  through — the tests run on SwiftShader. */
+export type GLSupport = 'gpu' | 'software' | 'none';
+const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render/i;
+export function webglSupport(): GLSupport {
+  if (!webglAvailable()) return 'none';
+  if (new URLSearchParams(location.search).has('softgl')) return 'gpu';
+  try {
+    const gl = document.createElement('canvas').getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+    if (!gl) return 'software';
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+    gl.getExtension('WEBGL_lose_context')?.loseContext();   // free it before three makes its own
+    return SOFTWARE.test(name) ? 'software' : 'gpu';
+  } catch { return 'none'; }
+}

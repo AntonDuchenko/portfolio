@@ -15,7 +15,7 @@ import { Q } from './quality';
      trail_started   "Take the trail"                    { sound }
      walk_skipped    "Skip the walk"                     { at_s }
      door_opened     the door phase begins
-     landed          the page is shown                   { via: scene | skip_fps | no_webgl, replay }
+     landed          the page is shown                   { via: scene | fps_guard | no_webgl | software_gl, replay }
      chapter_view    a chapter reached mid-screen, once  { chapter }
      cv_download / contact_click { channel } / project_open { project } / email_copied
                      the conversions, each with { place } — the chapter it was clicked in

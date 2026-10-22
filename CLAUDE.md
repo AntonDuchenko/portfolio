@@ -66,7 +66,10 @@ Repository:
 - `tests/` — Playwright smoke test (`npm test`, after `npm run build`; runs `vite preview`):
   gate, scene → page with the virtual clock (`helpers.ts`), no-WebGL fallback, linked files.
 - `main.ts` is a tiny bootstrap: checks WebGL2, then lazy-loads `app.ts` (the scene and
-  three.js). Without WebGL2 the site is shown directly (`ui/fallback.ts`).
+  three.js). Without WebGL2 the site is shown directly (`ui/fallback.ts`), and also with a
+  software renderer (`webglSupport()` in `quality.ts`: `failIfMajorPerformanceCaveat` +
+  the renderer name) — with graphics acceleration off the scene ran at a few fps and the
+  flight stalled. `?softgl` lets software rendering through (the tests: SwiftShader).
 - `quality.ts` — tier `low` (touch + small screen, or ≤ 4 GB / ≤ 4 cores) or `high`;
   override `?quality=low|high`. Low: pixel ratio 1, no MSAA, half forest and mist,
   `public/models/low/` (512 textures, no normal maps — built by `npm run assets`).

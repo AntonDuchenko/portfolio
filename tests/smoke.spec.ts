@@ -6,7 +6,7 @@ import { collectErrors, step, virtualClock } from './helpers';
 
 test('gate explains the scene and becomes enterable', async ({ page }) => {
   const errors = collectErrors(page);
-  await page.goto('./?noguard&quality=low&seed=1');
+  await page.goto('./?softgl&noguard&quality=low&seed=1');
   await expect(page.locator('#gate h2')).toHaveText('Anton Duchenko');
   await expect(page.locator('#gate .what')).toContainText('skip the walk');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
@@ -17,7 +17,7 @@ test('gate explains the scene and becomes enterable', async ({ page }) => {
 test('the scene hands over to the page', async ({ page }) => {
   const errors = collectErrors(page);
   await virtualClock(page);
-  await page.goto('./?noguard&quality=low&seed=1');
+  await page.goto('./?softgl&noguard&quality=low&seed=1');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);                               // a second of the walk
@@ -103,7 +103,7 @@ test('replaying the scene silences the innkeeper until the next landing', async 
   const errors = collectErrors(page);
   await virtualClock(page);
   // ?noavatar: under swiftshader the avatar's shader compile blocks the page for 30 s+
-  await page.goto('./?noguard&noavatar&quality=low&seed=1');
+  await page.goto('./?softgl&noguard&noavatar&quality=low&seed=1');
   await expect(page.locator('#enter')).toBeEnabled({ timeout: 120_000 });
   await page.locator('#enter').click();
   await step(page, 20);
