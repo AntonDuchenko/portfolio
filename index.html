@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Anton Duchenko (Антон Дученко) — Full-stack developer</title>
-<meta name="description" content="Anton Duchenko (Антон Дученко) — full-stack developer building web products end to end with TypeScript, React and Node.js. Selected work: Releaf, The Levels, Phone Catalog.">
+<meta name="description" content="Anton Duchenko (Антон Дученко) — full-stack developer building web products end to end with TypeScript, React and Node.js: e-commerce, payments and integrations. Selected work: Releaf, The Levels, Phone Catalog.">
 <link rel="canonical" href="https://antonduchenko.github.io/portfolio/">
 <meta name="author" content="Anton Duchenko">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -45,8 +45,9 @@
         "name": "Kherson State Maritime Academy"
       }
     ],
-    "knowsAbout": ["TypeScript", "JavaScript", "React", "Node.js", "NestJS", "GraphQL", "PostgreSQL", "SQL",
-      "Tailwind CSS", "OpenAI API", "Full-stack web development"],
+    "knowsAbout": ["TypeScript", "JavaScript", "React", "Astro", "Node.js", "NestJS", "GraphQL", "oRPC", "tRPC",
+      "PostgreSQL", "MySQL", "Drizzle ORM", "SQL", "Stripe", "Algolia", "Inngest", "Tailwind CSS", "OpenAI API",
+      "E-commerce", "Full-stack web development"],
     "sameAs": [
       "https://www.linkedin.com/in/anton-duchenko-471369252/",
       "https://github.com/AntonDuchenko",
@@ -221,16 +222,16 @@
       <h1 class="name" data-ink>Anton Duchenko</h1>
       <p class="role">Full-stack developer</p>
       <p class="standfirst">I build web products end to end — from the database schema and the API
-        to the interface people actually touch. Two years of shipping TypeScript, React and Node.js
-        in product teams, most recently on a content-heavy platform with a 10,000-item admin
-        and on an AI-powered language-learning app.</p>
+        to the server-rendered interface people actually touch. Almost three years of shipping
+        TypeScript, React and Node.js in product teams, now on a regulated German healthcare
+        marketplace: checkout and payments, search, logistics and third-party integrations.</p>
       <dl class="reward" aria-label="Highlights">
-        <div><dt>2+ years</dt><dd>shipping to production</dd></div>
+        <div><dt>~3 years</dt><dd>shipping to production</dd></div>
+        <div><dt>290+</dt><dd>pull requests, 2nd top contributor</dd></div>
         <div><dt>+45%</dt><dd>session time, AI features</dd></div>
         <div><dt>60%</dt><dd>faster queries on 1M+ rows</dd></div>
-        <div><dt>10,000+</dt><dd>entities in one admin</dd></div>
       </dl>
-      <p class="meta">Ukraine · works remotely · English: upper-intermediate</p>
+      <p class="meta">Ukraine · works remotely · English: upper-intermediate (B2)</p>
       <ul class="seals">
         <li><a class="wax" href="mailto:anton.duchenko2@gmail.com">Email</a></li>
         <li><a class="wax" href="https://www.linkedin.com/in/anton-duchenko-471369252/" rel="noopener" target="_blank">LinkedIn</a></li>
@@ -282,12 +283,11 @@
           <span class="pin" aria-hidden="true"></span>
           <p class="where">Binary Studio · 2025 — now</p>
           <h3>Releaf</h3>
-          <p>Customer-facing site and internal admin for Releaf’s German market. I work across the
-            stack: a data layer on Drizzle ORM with caching that cut page load times by 30%; a Sanity
-            CMS setup that lets non-technical colleagues publish product information, blog posts and
-            compliance documents on their own; and an inventory admin on TanStack Table and Router
-            that filters, sorts and pages through 10,000+ records.</p>
-          <ul class="tags"><li>TypeScript</li><li>React</li><li>TanStack</li><li>Drizzle ORM</li><li>Sanity</li><li>Tailwind CSS</li><li>shadcn/ui</li></ul>
+          <p>Patient storefront and admin panel of a regulated German medical e-commerce platform —
+            290+ pull requests in a team of ~10, the second-highest contributor. I rebuilt the
+            multi-step checkout on Stripe, built Algolia search over products, pharmacies and FAQ,
+            and shipped logistics from same-day courier and DHL labels to click and collect.</p>
+          <ul class="tags"><li>TypeScript</li><li>Astro</li><li>React</li><li>TanStack</li><li>oRPC</li><li>Drizzle ORM</li><li>Stripe</li><li>Inngest</li><li>Algolia</li></ul>
           <a class="go" href="https://releaf.com/de" rel="noopener" target="_blank">Visit releaf.com<span aria-hidden="true"> ↗</span></a>
         </article>
 
@@ -327,17 +327,20 @@
           <p class="when">Aug 2025 — now</p>
           <h3>Full-stack developer <span>· Binary Studio</span></h3>
           <ul>
-            <li>Drizzle ORM queries with smarter fetching and caching — page loads 30% faster.</li>
-            <li>A responsive, mobile-first design system on Tailwind CSS and shadcn/ui.</li>
-            <li>Sanity CMS so the team edits products, blog posts and compliance docs without developers.</li>
-            <li>Admin tables on TanStack Table and Router: filtering, sorting and pagination over 10,000+ entities.</li>
+            <li>290+ pull requests across ~280 tickets in a team of ~10 — the second-highest contributor.</li>
+            <li>Rebuilt the multi-step checkout: price and margin sync with change confirmation, Stripe PaymentIntent recalculation, live stock checks before payment, coupons and partial refunds reflected in invoices.</li>
+            <li>Algolia search for products, pharmacies and FAQ, with change-gated sync and Inngest reindex jobs.</li>
+            <li>Logistics: same-day courier delivery, DHL shipments and labels, order tracking, click and collect, SMS notifications.</li>
+            <li>Marketing and analytics behind consent: TikTok Events API, Meta Pixel without PII, Awin, Klaviyo, PostHog.</li>
+            <li>Migration to an external pharmacy ERP API: new product schema, database migrations, inventory-based pricing.</li>
+            <li>SEO, performance and security: hreflang, faceted SEO pages and sitemap, SQL tuning, CSP and security headers, RBAC for the admin.</li>
           </ul>
         </li>
         <li class="stop" data-reveal>
           <p class="when">Mar — Aug 2025</p>
           <h3>Full-stack developer <span>· Nitrix Soft</span></h3>
           <ul>
-            <li>Backend APIs built for performance, uptime and fast responses.</li>
+            <li>REST APIs on Node.js, NestJS and PostgreSQL, built for performance and reliability.</li>
             <li>OpenAI and Azure Speech in a language-learning platform — session time +45%, retention +25%.</li>
             <li>Indexes and query tuning on 1M+ record datasets — 60% faster queries.</li>
             <li>React front ends for major, AI-driven product releases.</li>
@@ -349,8 +352,8 @@
           <ul>
             <li>Launched a peer-to-peer marketplace on the TON blockchain — 200+ active users in its first month.</li>
             <li>TON Connect payments: 500+ secure transactions a day at 99.9% uptime.</li>
-            <li>Leaner API integration and data flow — 20% faster loads, +15% conversion, lower bounce rate.</li>
-            <li>A library of reusable React components — features delivered 30% faster.</li>
+            <li>Leaner API integration and data flow — 20% faster loads, +15% conversion.</li>
+            <li>A library of reusable React components — features delivered ~30% faster.</li>
           </ul>
         </li>
       </ol>
@@ -364,20 +367,20 @@
       </header>
       <div class="armoury">
         <div class="shelf" data-reveal style="--tier:var(--gold)">
-          <h3>Languages</h3>
-          <ul class="slots"><li>TypeScript</li><li>JavaScript</li><li>SQL</li></ul>
+          <h3>Languages &amp; tooling</h3>
+          <ul class="slots"><li>TypeScript</li><li>JavaScript</li><li>SQL</li><li>HTML5</li><li>CSS3</li><li>Git</li><li>GitHub Actions</li><li>Vercel</li><li>Cloudflare</li><li>Vite</li><li>pnpm monorepo</li><li>Sentry</li></ul>
         </div>
         <div class="shelf" data-reveal style="--tier:var(--ember)">
           <h3>Front end</h3>
-          <ul class="slots"><li>React</li><li>Astro</li><li>TanStack Start</li><li>TanStack Router</li><li>TanStack Table</li><li>Redux</li><li>Tailwind CSS</li><li>shadcn/ui</li><li>Sass</li><li>Bulma</li><li>BEM</li></ul>
+          <ul class="slots"><li>React 19</li><li>Astro</li><li>SSR</li><li>TanStack Start</li><li>TanStack Router</li><li>TanStack Query</li><li>TanStack Table</li><li>Redux</li><li>nanostores</li><li>React Hook Form</li><li>Zod</li><li>Tailwind CSS</li><li>shadcn/ui</li><li>Sass</li></ul>
         </div>
         <div class="shelf" data-reveal style="--tier:var(--moss)">
           <h3>Back end &amp; data</h3>
-          <ul class="slots"><li>Node.js</li><li>NestJS</li><li>Express</li><li>REST</li><li>GraphQL</li><li>tRPC / oRPC</li><li>PostgreSQL</li><li>MySQL</li><li>Drizzle ORM</li></ul>
+          <ul class="slots"><li>Node.js</li><li>NestJS</li><li>Express</li><li>REST</li><li>GraphQL</li><li>oRPC</li><li>tRPC</li><li>Inngest</li><li>PostgreSQL</li><li>MySQL</li><li>PlanetScale</li><li>Drizzle ORM</li><li>Query tuning &amp; indexing</li></ul>
         </div>
         <div class="shelf" data-reveal style="--tier:var(--arcane)">
-          <h3>AI &amp; integrations</h3>
-          <ul class="slots"><li>OpenAI API</li><li>Azure AI Speech</li><li>Prompt engineering</li><li>Sanity CMS</li><li>TON Connect</li><li>Git &amp; GitHub</li></ul>
+          <h3>Integrations &amp; AI</h3>
+          <ul class="slots"><li>Stripe</li><li>Algolia</li><li>Sanity CMS</li><li>Klaviyo</li><li>Intercom</li><li>DHL API</li><li>PostHog</li><li>Meta Pixel</li><li>TikTok Events API</li><li>Awin</li><li>Persona KYC</li><li>OpenAI API</li><li>Azure AI Speech</li><li>TON Connect</li></ul>
         </div>
       </div>
     </section>
