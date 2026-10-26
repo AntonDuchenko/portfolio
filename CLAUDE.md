@@ -20,7 +20,8 @@ Repository:
 
 - `src/` — the app (below). `public/` — only files the page loads (models, audio, CV, icons).
 - `assets-src/` — raw sources, committed but never shipped: `kits/` (Quaternius glTF
-  exports incl. `Character/`), `audio/` (original freesound recordings). See its README.
+  exports incl. `Character/`; two KayKit rocks), `audio/` (original freesound recordings).
+  See its README.
 - `scripts/` — build tools (`assets/`, `voice/`). `docs/` — spec, prototype, voice script.
 
 `src/` layout:
@@ -29,8 +30,8 @@ Repository:
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
   `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
   (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
-  static grove around the tavern), `ground` (path dressing), `undergrowth` (ferns,
-  tall grass, glowing mushrooms), `fireflies`, `tavern` (facade with the jettied upper
+  static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes,
+  ferns, tall grass, glowing mushrooms), `fireflies`, `tavern` (facade with the jettied upper
   storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard, hall), `post`.
   Anything placed near the tavern (trees, undergrowth, terrain yard) checks `WING` too.
   Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
@@ -86,8 +87,9 @@ Repository:
   quad per texture/blending; the `Sprite`s stay as invisible proxies (layer 31) that the
   rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31. After the
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
-  427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards) and
-  no bushes or stepping stones: 55 calls, 705k / 414k — check FPS on a phone.
+  427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards),
+  whole (unsimplified) bushes and KayKit path rocks: 60 calls, 763k / 452k — check FPS on
+  a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
@@ -197,8 +199,8 @@ Decisions (keep them unless the look is retuned on purpose):
 
 1. ~~Port (above).~~
 2. ~~Assets — Quaternius CC0 kits~~ (done: forest 6 draw calls, tree ≤ 1200, rock ≤ 250,
-   textures 1K; building on the kit grid). Path edges dressed with kit pebbles and grass
-   (`scene/ground.ts`, 2 draw calls); the track is painted by the terrain shader.
+   textures 1K; building on the kit grid). Path edges dressed with kit pebbles, KayKit
+   rocks and grass (`scene/ground.ts`, 4 draw calls); the track is painted by the terrain shader.
 3. ~~Voiceover + timeline inversion~~ (done: narration length sets the walk; real recordings now — see Voices).
 4. ~~Mobile/perf~~ (done: draw calls walk 356 → 86, hall 167 → 37; low tier 278k tris
    and ¼ texture memory; FPS guard; no-WebGL fallback; sprites instanced). Not measured on

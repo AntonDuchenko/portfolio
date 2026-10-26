@@ -41,15 +41,23 @@ The path is painted by the terrain shader, not a mesh: dark dirt, two ruts, moss
 middle, ragged edges, a meander `pathX(z)` (≤ 0.6 m, straight for the last 16 m) around the
 camera line. Pebbles, grass and rocks follow `pathX`. No stepping stones on the track: the
 kit's pale `RockPath_*` slabs read as a cartoon pavement on the dark ruts (removed on review);
-the edge pebbles are tinted dark (`PathRocks` 0x6c6a70).
+the edge pebbles are tinted dark (`PathRocks` 0x6c6a70). Just off the track: two faceted
+boulders from KayKit's Forest Nature Pack (CC0; `Rock_3_A`, `Rock_3_E`, made to sit half
+sunk — laid by their origin, not their lowest point), night-tinted and matte (the pack's
+atlas is semi-gloss 0.6 and read wet). Its rounded bushes were tried and rejected: smooth
+toy blobs next to the textured kits.
 
 Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z + 4`; a
 static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
 `Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls), and
-undergrowth: `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 3 draw
-calls. No bushes: the kit's are alpha-cut leaf cards that go black at night (`Bush_Common`
-repainted green and `Bush_Common_Flowers` leaves both looked like paper cut-outs; removed on
-review). Pines stand at least their crown
+undergrowth: `Bush_Common` (its red leaves repainted night green), `Bush_Common_Flowers`
+(30 %), `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 6 draw calls.
+The bushes once read as black paper cut-outs, for two reasons: the build simplified them
+(900 → 247 tris) until the leaf cards fused into flat stretched sheets — now kept whole —
+and the cards facing away from the moon went black — now lit as if every leaf faced up (the
+normal 85 % towards world up), matte. The two bush materials share one `onBeforeCompile`
+source: three keys programs by that source, so each sets `customProgramCacheKey` (they
+silently shared one shader, recolour included). Pines stand at least their crown
 reach + 1.2 m from the camera line, so branches never cross the path.
 
 ## Camera timeline

@@ -5,6 +5,8 @@ Raw material the build is made from. Kept in the repo, never shipped: Vite only 
 
 - `kits/` — Quaternius CC0 packs (glTF exports only, see `.gitignore`):
   Stylized Nature, Medieval Village, Fantasy Props, Ultimate Animated Character Pack.
+  Plus two rocks and the atlas from KayKit's Forest Nature Pack (CC0, Kay Lousberg,
+  kaylousberg.itch.io/kaykit-forest — free tier; `License.txt` beside them).
   `npm run assets` (`scripts/assets/build.mjs`) packs them into `public/models/`.
 - `audio/` — the original CC recordings from freesound.org (`<id>__<author>__<name>`).
   Edited and denoised copies live in `public/audio/`. The 144 MB forest field recording

@@ -9,11 +9,11 @@ import { fireTex, sprite } from './sprites';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
 
-/* Undergrowth from the Nature kit: ferns and tall wispy grass along the walk and in
+/* Undergrowth from the Nature kit: bushes, ferns and tall wispy grass along the walk and in
    the tavern's yard, and small clusters of glowing mushrooms at the path's edge — warm
    points that lead the eye to the door (the "lit path" reference), in the forest's own
    vocabulary rather than garden lamps. Static, laid from just behind the start to the
-   tavern; one draw call per model (3). Bases sink into the ground (hard rule 1). */
+   tavern; one draw call per model part (6). Bases sink into the ground (hard rule 1). */
 
 interface Item { x: number; z: number; s: number; sy?: number }
 
@@ -38,6 +38,35 @@ const yard = (x: number, z: number) => (Math.abs(x) < TAV_HW + .6 && z > TAV_END
   || (x > 0 && x < WING.x1 + .8 && z > WING.z1 - .8 && z < WING.z0 + .8)
   || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 6.5);
 
+// Bushes are alpha-cut leaf cards: lit by their own normals, the cards facing away from
+// the moon went black and the bushes read as paper cut-outs. Lit as if every leaf faced up
+// (85 %), they shade like one leafy mass and keep the texture's detail.
+const LIT_FROM_ABOVE = '#include <normal_fragment_maps>\nnormal = normalize(mix(normal, (viewMatrix * vec4(0., 1., 0., 0.)).xyz, .85));';
+function foliage(m: Material, recolor = '') {
+  const g = (m as MeshStandardMaterial).clone();
+  g.roughness = 1;                                   // facing up, a gloss caught the moon: grey haze
+  g.metalness = 0;
+  g.customProgramCacheKey = () => 'foliage' + recolor;   // the default key is the hook's source, alike for all
+  g.onBeforeCompile = sh => {
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <map_fragment>', '#include <map_fragment>\n' + recolor)
+      .replace('#include <normal_fragment_maps>', LIT_FROM_ABOVE);
+  };
+  return g;
+}
+// the plain bush wears the twisted tree's red leaves: keep their pattern (the texture's
+// brightness) in a dark night green, a little darker than the ferns (lit from above, the
+// whole bush catches the sky light)
+const greenBush = (m: Material) =>
+  foliage(m, 'diffuseColor.rgb = vec3(dot(diffuseColor.rgb, vec3(.75, .2, .05))) * vec3(.08, .11, .065);');
+// the flowering bush: leaves a shade darker than the ferns' night tint (a copy — the window
+// boxes keep the untinted leaves under their lanterns), the flowers dimmed and cooled
+const flowerBush = (m: Material) => {
+  const g = foliage(m);
+  g.color.multiply(new Color(m.name === 'Flowers' ? 0x707690 : 0x3a4a46));
+  return g;
+};
+
 // the mushrooms' caps glow warm: the texture drives the emission, so the pale caps light
 // up and the stems stay dark
 function glowing(m: Material) {
@@ -51,16 +80,18 @@ function glowing(m: Material) {
 export function buildUndergrowth(startZ: number) {
   const z0 = startZ + 10, z1 = GATE_Z + 2, len = z0 - z1;
   const n = (per: number) => Math.round(len * per * Q.forest);
-  const fern: Item[] = [], tall: Item[] = [], shroom: Item[] = [];
+  const bush: Item[] = [], bloom: Item[] = [], fern: Item[] = [], tall: Item[] = [], shroom: Item[] = [];
+  const shrub = (it: Item) => (random() < .3 ? bloom : bush).push(it);
   const along = (min: number, max: number) => { const z = rand(z1, z0); return { x: pathX(z) + side() * rand(min, max), z }; };
 
+  for (let i = n(.45); i--;) shrub({ ...along(3, 15), s: rand(.9, 1.6) });
   for (let i = n(.7); i--;) fern.push({ ...along(2, 11), s: rand(.5, .9) });
   for (let i = n(.9); i--;) { const p = along(1.6, 7); tall.push({ ...p, s: rand(.45, .75), sy: rand(.35, .7) }); }
 
-  // the yard: grass at the wall foot. (No bushes: the kit's are alpha-cut leaf cards that go
-  // dark at night and read as black paper cut-outs — the plain bush repainted green and the
-  // flowering bush's leaves alike.)
+  // the yard: bushes at the corners and along the side walls, grass at the wall foot
   for (const s of [-1, 1]) {
+    shrub({ x: s * (TAV_HW + 1.9), z: GATE_Z + .9, s: rand(1, 1.3) });              // beyond the corner barrels
+    for (let i = 0; i < Math.round(4 * Q.forest); i++) shrub({ x: s * (TAV_HW + rand(1, 3.5)), z: GATE_Z - rand(1, 13), s: rand(.9, 1.4) });
     for (let i = 0; i < Math.round(6 * Q.forest); i++) {
       const x = s * (TAV_HW + rand(.35, 1)), z = GATE_Z + rand(.25, .9) - (random() < .5 ? rand(1, 13) : 0);
       if (!yard(x, z)) tall.push({ x, z, s: rand(.35, .55), sy: rand(.3, .5) });
@@ -78,6 +109,8 @@ export function buildUndergrowth(startZ: number) {
     lights.push({ x: cx, y: surfaceY(cx, z) + .22, z });
   }
 
+  lay('bush', bush.filter(p => !yard(p.x, p.z)), greenBush);
+  lay('flowers', bloom.filter(p => !yard(p.x, p.z)), flowerBush);
   lay('fern', fern.filter(p => !yard(p.x, p.z)));
   lay('tallgrass', tall);
   lay('mushroom', shroom, glowing);

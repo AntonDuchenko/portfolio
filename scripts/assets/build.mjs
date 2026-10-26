@@ -31,8 +31,12 @@ const VARIANTS = [
 const NATURE = 'assets-src/kits/Stylized Nature MegaKit[Standard]/glTF';
 const VILLAGE = 'assets-src/kits/Medieval Village MegaKit[Standard]/Medieval Village MegaKit[Standard]/glTF';
 const PROPS = 'assets-src/kits/Fantasy Props MegaKit[Standard]/Exports/glTF';
+// two rocks from KayKit's Forest Nature Pack (CC0, Kay Lousberg): solid faceted boulders
+// made to sit half sunk, one gradient atlas — the Nature kit's path slabs read as a cartoon
+// pavement on the dark track
+const KAYKIT = 'assets-src/kits/KayKit Forest Nature Pack/glTF';
 
-/* key: { src, tris: {material: target triangles}, budget } */
+/* key: { src, tris: {material: target triangles}, budget, dir? (another kit's folder) } */
 const KITS = {
   forest: {
     dir: NATURE,
@@ -42,16 +46,21 @@ const KITS = {
       pine_b: { src: 'Pine_2', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
       snag: { src: 'DeadTree_3', tris: { Bark_DeadTree: 1180 }, budget: 1200 },
       rock: { src: 'Rock_Medium_2', budget: 250 },
-      // the path's edges (src/scene/ground.ts): pebbles and grass — many instances each, so
-      // they are cut hard; they are seen at walking pace
+      // the path's edges (src/scene/ground.ts): pebbles, rocks and grass — many instances
+      // each, so they are cut hard; they are seen at walking pace
       pebble: { src: 'Pebble_Round_1', tris: { PathRocks: 40 }, budget: 50 },
+      edge_rock: { dir: KAYKIT, src: 'Rock_3_A_Color1', budget: 100 },
+      edge_slab: { dir: KAYKIT, src: 'Rock_3_E_Color1', budget: 100 },
       grass: { src: 'Grass_Common_Short', tris: { Grass: 90 }, budget: 100 },
       // undergrowth along the walk and around the tavern (src/scene/undergrowth.ts)
+      // bushes are hundreds of leaf cards: simplified (900 → 247) the cards fused into flat,
+      // stretched sheets that read as grey film — kept whole, a few dozen copies
+      bush: { src: 'Bush_Common', budget: 900 },
       fern: { src: 'Fern_1', tris: { Leaves: 220 }, budget: 240 },
       tallgrass: { src: 'Grass_Wispy_Tall', tris: { Grass: 300 }, budget: 320 },
       mushroom: { src: 'Mushroom_Common', tris: { Mushrooms: 240 }, budget: 260 },
-      // the tavern's window boxes (src/scene/tavern.ts): seen up close, a handful of copies
-      flowers: { src: 'Bush_Common_Flowers', tris: { Leaves_NormalTree: 380, Flowers: 300 }, budget: 700 }
+      // flowering bushes in the undergrowth and the tavern's window boxes (tavern.ts)
+      flowers: { src: 'Bush_Common_Flowers', budget: 1368 }
     }
   },
   village: {
@@ -133,7 +142,7 @@ async function buildKit(name, kit, v) {
   const main = target.createScene(name);
   target.getRoot().setDefaultScene(main);
   for (const [key, item] of Object.entries(kit.items)) {
-    const src = await loadItem(kit.dir, key, item);
+    const src = await loadItem(item.dir ?? kit.dir, key, item);
     mergeDocuments(target, src);
   }
   // collect every merged scene's roots into the main scene
