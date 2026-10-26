@@ -28,14 +28,23 @@ inside the tavern past the facade, `D(d) = GATE_Z − d`.
 Kit placement numbers (bounds, tris) are in `scripts/assets/manifest.json`.
 The chosen models and their budgets are listed in `scripts/assets/build.mjs`.
 
-Terrain: `terrainY(x, z)` is one global function. Flat for |x| < 2.2 (the path),
-hills beyond (amplitude 1.1), flattens to 0 within 20 m of the facade and sinks up to
-−1.8 m under the building. Trees and rocks sample the same function.
+Terrain: `heightAt(x, z)` is one global function (`src/scene/terrain.ts`); things stand on
+`surfaceY`, the rendered triangles. Flat for |x| < 2.2 in front of the door (the path),
+hills beyond (amplitude 1.1), a flat yard around the building (relief returns over 10 m),
+a rise behind it (0.07 per metre from 25 m back) and −0.5 under the building only — it
+used to sink across the whole width behind the facade, which left the tavern on an empty
+plain with a straight horizon. 4 static segments of 80 m, to 108 m past the facade.
 
-Forest is finite (route is 0 → GATE_Z), terrain is 3 static segments of 80 m.
-No trees past `GATE_Z + 4`. Nature kit: `Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2`,
-simplified to ≤ 1200 / ≤ 250 tris, 6 instanced draw calls in total. Pines stand at least
-their crown reach + 1.2 m from the camera line, so branches never cross the path.
+The path is painted by the terrain shader, not a mesh: dark dirt, two ruts, moss along the
+middle, ragged edges, a meander `pathX(z)` (≤ 0.6 m, straight for the last 16 m) around the
+camera line. Stones, pebbles, grass and rocks follow `pathX`.
+
+Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z + 4`; a
+static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
+`Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls), and
+undergrowth: `Bush_Common` (its red leaves repainted green), `Fern_1`, `Grass_Wispy_Tall`,
+`Mushroom_Common` (emissive caps + halos), 4 draw calls. Pines stand at least their crown
+reach + 1.2 m from the camera line, so branches never cross the path.
 
 ## Camera timeline
 
@@ -81,12 +90,21 @@ The poster and the resume are DOM, not textures.
 ## Lighting and atmosphere
 
 - Outside: moon (directional `#8aa4e0`, 1.5), hemisphere, cold ambient.
-  Fog `FogExp2 #0d1626`, density 0.028.
+  Fog `FogExp2`, moonlit mist: linear (0.036, 0.046, 0.066), density 0.032 — lighter than
+  the trees, so the forest fades in layers and the far end of the path glows (it was
+  `#0d1626` / 0.028: everything faded to black). Retuned on purpose against references.
+- Sky (`src/scene/sky.ts`): a dome at the far plane — fog colour at the horizon to a dark
+  zenith, hashed twinkling stars, a moon disc with a halo ahead-right of the walk (it hides
+  behind branches). Replaces the flat clear colour and the additive moon sprite.
+- Warm cues: lantern glass emissive (the atlas' pale glass), halos in front of the lit
+  windows, glowing mushrooms along the path edge, fireflies, a dim attic window behind the
+  gable lattice, barrels, a crate and a bench in the yard.
 - A variable `inside` (0 → 1) drives the transition as the doors open and the camera enters:
   fog → `#1a1209` at 0.005, moon down 85 %, warm ambient up, tavern fires up,
   street lanterns and mist out.
 - Torch is carried at camera-space `(−0.34, +0.34, −1.15)`. On `fly` it detaches and
-  stays at the threshold.
+  stays at the threshold. Its glow sprite is drawn low-left `(−0.62, −0.46, −1)`, orange
+  and faint: at the light's own spot and size it hung in the sky as a second moon.
 - Prototype light values are r128 legacy units. The code keeps them as written and converts
   at the light (`src/scene/lights.ts`): ×π for ambient/hemisphere/directional; point lights
   are physical (1/d²) and match the prototype's brightness at a reference distance `dRef`
@@ -119,7 +137,7 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
 
 ## Known placeholders
 
-- Ground and path are still procedural flat-colour meshes (no kit ground tiles).
+- Ground and path are procedural (terrain shader), no kit ground tiles.
 - Custom boxes wearing kit materials (`src/scene/kitbox.ts`): door lintel filler, sill,
   notice post, hearth, bar top. The kits have no fireplace or notice board.
 - Poster copy. (The resume content behind it is real, from the CV.)

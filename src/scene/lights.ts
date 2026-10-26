@@ -43,16 +43,18 @@ export const warmAmb = new AmbientLight(legacyColor(0x4a2e18), 0);          // i
 export const torch = new RescaledPointLight(0xff8c33, 24, 2); torch.setLegacy(2.8);
 
 export const flame = sprite(fireTex, .78, .8, false);
-export const moonDisc = sprite(fireTex, 24, .55, false);
-moonDisc.material.color.set(0xc3d4ff);
+flame.material.color.setRGB(1, .55, .22);          // fire-orange: untinted, its core burned to white
 
 export function addGlobalLights() {
-  scene.add(moon, sky, ambient, warmAmb, torch, flame, moonDisc);
+  scene.add(moon, sky, ambient, warmAmb, torch, flame);
 }
 
 /** The torch in the visitor's hand: carried at camera-space (−0.34, +0.34, −1.15) with a
  *  small sway; on `fly` it stays at the threshold (state.torchLeft). Dims inside. */
 const HAND = new Vector3(-.34, .34, -1.15), hand = new Vector3();
+// the flame's glow is drawn low at the left edge of view, where a carried torch would show;
+// at the light's own spot (up-left) it hung in the sky next to the moon and the roof
+const GLOW = new Vector3(-.62, -.46, -1), glow = new Vector3();
 export function updateTorch(t: number, inside: number) {
   const flick = .86 + .09 * Math.sin(t * 14.3) + .06 * Math.sin(t * 6.1) + .05 * Math.sin(t * 23.7) + .04 * jitter();
   if (state.torchLeft) torch.position.copy(state.torchLeft);
@@ -60,10 +62,13 @@ export function updateTorch(t: number, inside: number) {
     hand.copy(HAND).applyQuaternion(camera.quaternion).add(camera.position);
     torch.position.set(hand.x + Math.sin(t * 8.3) * .02, hand.y + Math.sin(t * 11.7) * .018, hand.z);
   }
-  flame.position.copy(torch.position);
+  if (state.torchLeft) flame.position.copy(torch.position);
+  else flame.position.copy(glow.copy(GLOW).applyQuaternion(camera.quaternion).add(camera.position));
   torch.setLegacy(2.8 * flick * (1 - inside * .7));
-  flame.material.opacity = (.45 + .28 * flick) * (1 - inside * .6);
-  flame.scale.set(.76 * flick, .98 * flick, 1);
+  // a hint of the carried flame at the edge of view, not a lamp in the frame
+  flame.material.opacity = (.25 + .15 * flick) * (1 - inside * .6);
+  // 1 m from the eye: at .76 the glow covered a quarter of the frame
+  flame.scale.set(.42 * flick, .55 * flick, 1);
 }
 
 /** moon slider and the `inside` fade both go through here */

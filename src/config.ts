@@ -24,10 +24,12 @@ export const SHEET_Y = 1.81, SHEET_H = 1.95, POSTER_Z = POST_Z + POST_W / 2 + .0
 // timeline
 export const SPEED = 2.3, STOP_AT = GATE_Z + 6, T_HOLD = 1.3, T_OPEN = 3.6, MAX_ANGLE = 1.75;
 
-export const FOG_OUT = new Color(0x0d1626), FOG_IN = new Color(0x1a1209);
+// FOG_OUT: moonlit mist, lighter than the trees, so the forest fades in layers and the far
+// end of the path glows (was 0x0d1626: everything faded to black). Linear values.
+export const FOG_OUT = new Color().setRGB(.036, .046, .066), FOG_IN = new Color(0x1a1209);
 
 // values driven by the tune panel; lights are in prototype (r128 legacy) units here
 // hall .75 (was 1.3): with the kit's textured walls the hall read ~25 % brighter than the prototype
-export const cfg = { moon: 1.5, fog: .028, hall: .75, fly: 4.2 };
+export const cfg = { moon: 1.5, fog: .032, hall: .75, fly: 4.2 };
 
 export const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;

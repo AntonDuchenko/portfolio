@@ -5,16 +5,16 @@ import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { night } from './forest';
 import { scene } from './stage';
-import { surfaceY } from './terrain';
+import { pathX, surfaceY } from './terrain';
 
-/* The path dressed with the Nature kit: flat stepping stones along the trodden middle,
-   pebbles and short grass along the edges. Static — the walk only looks ahead, so it is
-   laid from just behind the start to the tavern. Four draw calls (one per model),
-   ~35k triangles on a ~70 m walk (stones are clusters of cobbles, 230–350 tris each).
-   Everything sinks 2 cm into the ground: bases never lie on the path plane (hard rule 1). */
+/* The path dressed with the Nature kit: flat stepping stones here and there along the
+   trodden middle, pebbles and short grass along the edges, all following the path's
+   meander (pathX). The path itself is painted on the terrain (terrain.ts). Static — the
+   walk only looks ahead, so it is laid from just behind the start to the tavern. Four
+   draw calls (one per model). Everything sinks 2 cm into the ground (hard rule 1). */
 
-const PATH_HW = 1.7, PATH_Y = .05, SINK = .02;
-const groundY = (x: number, z: number) => Math.abs(x) < PATH_HW ? PATH_Y : surfaceY(x, z);
+const SINK = .02;
+const groundY = (x: number, z: number) => surfaceY(x, z);
 
 interface Item { x: number; z: number; s: number; sy?: number }
 
@@ -34,16 +34,19 @@ function lay(name: string, items: Item[]) {
 export function buildGround(startZ: number) {
   const z0 = startZ + 12, z1 = GATE_Z + 1.4;               // the path ends at GATE_Z + 1
   const stones: [Item[], Item[]] = [[], []], pebbles: Item[] = [], grass: Item[] = [];
-  // stepping stones: one every ~0.9 m, wandering a little around the middle, sometimes
-  // a smaller one beside it
+  // stepping stones: runs of them with bare dirt between (a solid line of stones read as
+  // a pavement), wandering a little around the middle, sometimes a smaller one beside it
   for (let z = z0; z > z1; z -= rand(.7, 1.1)) {
-    stones[random() < .6 ? 0 : 1].push({ x: rand(-.7, .7), z, s: rand(.6, .85) });
-    if (random() < .4 * Q.forest) stones[1].push({ x: side() * rand(.9, 1.25), z: z - rand(.2, .5), s: rand(.4, .55) });
+    const keep = random() < .55, big = random() < .6, small = random() < .4 * Q.forest;
+    const px = pathX(z);
+    if (keep) stones[big ? 0 : 1].push({ x: px + rand(-.6, .6), z, s: rand(.55, .8) });
+    if (keep && small) stones[1].push({ x: px + side() * rand(.85, 1.1), z: z - rand(.2, .5), s: rand(.4, .5) });
   }
   const len = z0 - z1, n = (per: number) => Math.round(len * per * Q.forest);
-  for (let i = n(1.4); i--;) pebbles.push({ x: side() * rand(1.2, 2.6), z: rand(z1, z0), s: rand(.5, 1.1) });
-  for (let i = n(3); i--;) {
-    const z = rand(z1 + .5, z0), x = side() * rand(1.55, 5);
+  for (let i = n(1.4); i--;) { const z = rand(z1, z0); pebbles.push({ x: pathX(z) + side() * rand(1.1, 2.6), z, s: rand(.5, 1.1) }); }
+  // grass reaches into the ragged edge of the path
+  for (let i = n(3.4); i--;) {
+    const z = rand(z1 + .5, z0), x = pathX(z) + side() * rand(1.2, 5);
     grass.push({ x, z, s: rand(.35, .6), sy: rand(.2, .45) });
   }
   lay('stone_a', stones[0]); lay('stone_b', stones[1]); lay('pebble', pebbles); lay('grass', grass);

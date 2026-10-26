@@ -9,6 +9,7 @@ function glowTexture(a: string, b: string, c0: string) {
 export const fireTex = glowTexture('rgba(255,240,200,1)', 'rgba(255,170,70,.8)', 'rgba(120,40,0,0)');
 export const mistTex = glowTexture('rgba(150,175,215,.30)', 'rgba(130,155,200,.16)', 'rgba(110,135,180,0)');
 export const smokeTex = glowTexture('rgba(90,95,105,.22)', 'rgba(80,85,95,.12)', 'rgba(70,75,85,0)');
+export const fireflyTex = glowTexture('rgba(255,250,190,1)', 'rgba(220,230,90,.45)', 'rgba(150,200,40,0)');
 
 export type GlowSprite = Sprite & { material: SpriteMaterial; userData: { base: number } };
 

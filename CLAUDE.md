@@ -27,7 +27,10 @@ Repository:
 
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
-  `kitbox` (boxes wearing kit materials), `terrain`, `forest`, `ground` (path dressing), `tavern` (facade + hall), `post`.
+  `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
+  (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
+  static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes, ferns,
+  tall grass, glowing mushrooms), `fireflies`, `tavern` (facade + yard + hall), `post`.
   Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
   height function: on the old 5 m grid ~40 % of stones and grass floated (up to 0.8 m) and
   the ground rose through the path. The grid is dense along the path and flat under it.
@@ -60,9 +63,11 @@ Repository:
   `elevenlabs.mjs` voices the innkeeper through the ElevenLabs API. Own `package.json`, so
   CI never installs them. **Both overwrite the real recordings** (`generate` writes the walk
   AND the innkeeper files) — do not run them unless a line is being replaced on purpose.
-- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds, runs the smoke
-  test and publishes `dist/` to the `gh-pages` branch (GitHub Pages, Source: Deploy from a
-  branch → gh-pages). A failing test stops the deploy (report uploaded as an artifact).
+- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds and runs the
+  smoke test. `main` publishes `dist/` to the root of `gh-pages` (the live site; GitHub
+  Pages, Source: Deploy from a branch → gh-pages); a `claude/**` branch publishes a preview
+  to `preview/<branch>/` (noindex, analytics off) and never touches the live page. A
+  failing test stops the deploy (report uploaded as an artifact).
 - `tests/` — Playwright smoke test (`npm test`, after `npm run build`; runs `vite preview`):
   gate, scene → page with the virtual clock (`helpers.ts`), no-WebGL fallback, linked files.
 - `main.ts` is a tiny bootstrap: checks WebGL2, then lazy-loads `app.ts` (the scene and
@@ -77,7 +82,9 @@ Repository:
   (door leaves, sprites, the sign and mirrored meshes excluded).
 - `scene/spriteBatch.ts` — glow sprites (flames, candles, mist, smoke) drawn as one instanced
   quad per texture/blending; the `Sprite`s stay as invisible proxies (layer 31) that the
-  rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31.
+  rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31. After the
+  night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
+  427k low (was 49, 539k / 333k) — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
@@ -136,6 +143,10 @@ Decisions (keep them unless the look is retuned on purpose):
 - **Scale:** the building follows the Village kit grid 1:1 (chosen over scaling the kit
   up to the prototype's 3.6 × 4.6 door). Door 1.79 × 2.4, hall 6 × 14 × 6.24, post at
   `d = 10`. Timeline durations are unchanged; the flight is simply shorter in metres.
+- **Night look (retuned on purpose, from references):** moonlit mist lighter than the
+  trees (`FOG_OUT`, `cfg.fog` .032), a sky dome with stars and a moon, the path a dark
+  rutted track close to the ground's value, warm points leading to the door (lanterns,
+  mushrooms, fireflies, window halos). Numbers and reasons: `docs/scene-spec.md`.
 - **Colour:** sRGB pipeline (three defaults) — the kit textures need it. The prototype's
   hex values were linear numbers; light colours keep those linear values (`legacyColor`),
   ground/path are ×3, forest materials get a cold night tint (the kit is painted for day).
@@ -153,6 +164,9 @@ Decisions (keep them unless the look is retuned on purpose):
   draws them rarely once the page is still (3–9 s locally, 30 s+ on CI) — move the pointer
   while polling. The intro line starts on landing without the observer for that reason
   (CI once waited 30 s+ for its first callback). `?noavatar` skips the avatar, whose shader compile blocks swiftshader 30 s+.
+  A fresh container may ship a different Chromium build than the pinned Playwright: point
+  `launchOptions.executablePath` at `/opt/pw-browsers/chromium` in a throwaway config
+  (CI installs its own). `?softgl` is needed for the scene there (SwiftShader).
 - **Lint:** ESLint 9 + typescript-eslint (type-aware) + `@stylistic` pinned to the house
   style (single quotes, semicolons, 2-space indent); no Prettier — it would reflow the
   compact scene code. Runs in CI before the build; `npm run lint -- --fix` for style.

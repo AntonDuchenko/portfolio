@@ -1,6 +1,6 @@
 import {
-  Box3, BoxGeometry, CanvasTexture, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
-  NormalBlending, type Object3D
+  Box3, BoxGeometry, CanvasTexture, Color, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  NormalBlending, type Object3D, PlaneGeometry
 } from 'three';
 import {
   D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, MOD, STOREY, TAV_END, TAV_H, TAV_HW, TAV_LEN, WALL_IN
@@ -63,10 +63,26 @@ function signTexture() {
   const t = new CanvasTexture(c); t.colorSpace = 'srgb'; return t;
 }
 
+// Lantern_Wall is one atlas material: the glass is the pale part of the texture, so the
+// flame inside never showed through it and the lanterns read as unlit. Emission driven by
+// the texture lights the glass warm and leaves the dark iron dark. One shared copy.
+let litLantern: MeshStandardMaterial | null = null;
+function lightUp(o: Object3D) {
+  o.traverse(c => {
+    if (!(c instanceof Mesh)) return;
+    litLantern ??= (() => {
+      const m = (c.material as MeshStandardMaterial).clone();
+      m.emissive = new Color().setRGB(1, .5, .18); m.emissiveMap = m.map; m.emissiveIntensity = .6;
+      return m;
+    })();
+    c.material = litLantern;
+  });
+}
+
 /** street lantern / post lantern: Lantern_Wall with its light and flame at the head */
 export function lantern(parent: Object3D, x: number, y: number, z: number, ry: number,
   light: { color: number; range: number; power: number; outside?: boolean }, worldOffset = { x: 0, y: 0, z: 0 }) {
-  prop('Lantern_Wall', x, y, z, ry, parent);
+  lightUp(prop('Lantern_Wall', x, y, z, ry, parent));
   const hx = x + Math.sin(ry) * LANTERN_HEAD.z, hz = z + Math.cos(ry) * LANTERN_HEAD.z, hy = y + LANTERN_HEAD.y;
   const l = new RescaledPointLight(light.color, light.range);
   l.position.set(hx + worldOffset.x, hy + worldOffset.y, hz + worldOffset.z); scene.add(l);
@@ -102,6 +118,10 @@ export function buildFacade() {
     village('Window_Wide_Round1', s * MOD, STOREY, 0, 0, front);
   }
   village('Wall_Plaster_WoodGrid', 0, STOREY, 0, 0, front);
+  // behind its open lattice: a dimly lit attic window instead of a hole into the roof space.
+  // Inside the wall's thickness (faces at +0.09 / −0.31), front side only.
+  const attic = new Mesh(new PlaneGeometry(1.9, 2.9), new MeshBasicMaterial({ color: 0x6b3f1a }));
+  attic.position.set(0, STOREY + 1.56, -.1); front.add(attic);
   village('Roof_Front_Brick6', 0, TAV_H, 0, 0, front);
   // corner posts cover the wall ends; 10–12 cm proud of both faces (hard rule 1)
   for (const s of [-1, 1]) for (const y of [0, STOREY]) {
@@ -123,6 +143,20 @@ export function buildFacade() {
   // street lanterns on the door posts: back plate 5 cm inside the post face (hard rule 3)
   for (const s of [-1, 1])
     lantern(front, s * 1, 1.55, .07, 0, { color: 0xffa348, range: 14, power: 1.5, outside: true }, { x: 0, y: 0, z: GATE_Z });
+
+  // window light spilling into the mist: soft halos in front of the lit windows (batched
+  // with the other glows, no draw call of their own)
+  for (const s of [-1, 1]) for (const [y, z, size] of [[1.73, .6, 2.3], [STOREY + 1.88, .5, 2]]) {
+    const g = sprite(fireTex, size, .1); g.position.set(s * MOD, y, z); front.add(g);
+  }
+
+  // the yard: barrels and a crate at the corners (outside the corner posts), a bench under
+  // the right window, shortened so it stays clear of the doorway. Bases 2 cm into the ground.
+  prop('Barrel', -3.45, -.02, .58, .4, front);
+  prop('Crate_Wooden', -3.55, -.02, 1.45, .25, front);
+  prop('Barrel', 3.45, -.02, .58, 1.3, front);
+  prop('Barrel', 3.95, -.02, 1.3, 2.1, front);
+  const bench = prop('Bench', 2.1, -.01, .5, 0, front); bench.scale.x = .75;            // 1.06…3.14
 
   // sign: bar out of the wall → crossbar resting on it → two hangers → sign
   const barY = 3.35, signW = 1.1, signH = .55;

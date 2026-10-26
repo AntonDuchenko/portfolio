@@ -13,7 +13,10 @@ import { crossfade, layoutPane, maskDoor, posterCoversScreen } from './portal/po
 import { loadKits } from './scene/assets';
 import { buildForest, updateForest, updateMists } from './scene/forest';
 import { buildGround } from './scene/ground';
-import { addGlobalLights, LEGACY, moonDisc, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
+import { buildUndergrowth } from './scene/undergrowth';
+import { buildFireflies, updateFireflies } from './scene/fireflies';
+import { addGlobalLights, LEGACY, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
+import { buildSky, updateSky } from './scene/sky';
 import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
@@ -32,6 +35,7 @@ import { buildSchedule, LINES, resetLines, setLine, updateLines } from './ui/voi
 /* ── build: procedural parts now, kit models once they are loaded ── */
 el.scene.appendChild(renderer.domElement);
 addGlobalLights();
+buildSky();
 buildTerrain();
 initTune();
 setMoon(1);
@@ -155,7 +159,8 @@ function frame() {
   noticeGlow.setLegacy(inside * NOTICE_GLOW);          // not tied to the hall: the poster hands over to the page
   warmAmb.intensity = inside * cfg.hall * .5 * LEGACY;
 
-  moonDisc.position.set(camera.position.x - 52, 70, camZ - 170);
+  updateSky(t, inside);
+  updateFireflies(t, inside);
   updateMists(dt, t, camZ, inside);
   updateSmoke(dt);
   updateForest(camZ);
@@ -182,6 +187,8 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   state.startZ = STOP_AT + state.walkLen;
   buildForest(state.startZ);
   buildGround(state.startZ);
+  buildUndergrowth(state.startZ);
+  buildFireflies(state.startZ);
   const front = buildFacade();
   const hall = buildHall();
   buildPost(hall);

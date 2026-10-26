@@ -47,7 +47,12 @@ const KITS = {
       stone_a: { src: 'RockPath_Round_Small_1', tris: { PathRocks: 360 }, budget: 380 },
       stone_b: { src: 'RockPath_Square_Small_1', tris: { PathRocks: 300 }, budget: 320 },
       pebble: { src: 'Pebble_Round_1', tris: { PathRocks: 40 }, budget: 50 },
-      grass: { src: 'Grass_Common_Short', tris: { Grass: 90 }, budget: 100 }
+      grass: { src: 'Grass_Common_Short', tris: { Grass: 90 }, budget: 100 },
+      // undergrowth along the walk and around the tavern (src/scene/undergrowth.ts)
+      bush: { src: 'Bush_Common', tris: { Leaves_TwistedTree: 520 }, budget: 540 },
+      fern: { src: 'Fern_1', tris: { Leaves: 220 }, budget: 240 },
+      tallgrass: { src: 'Grass_Wispy_Tall', tris: { Grass: 300 }, budget: 320 },
+      mushroom: { src: 'Mushroom_Common', tris: { Mushrooms: 240 }, budget: 260 }
     }
   },
   village: {

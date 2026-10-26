@@ -53,6 +53,8 @@ body.scene-locked{overflow:hidden;height:100%}
 
 /* top right during the scene: volume, then skip */
 #corner{position:fixed;right:18px;top:16px;z-index:10;display:flex;align-items:center;gap:10px}
+/* the scene's controls wait for the trail: under the gate they showed through as a ghost */
+#gate:not(.off) ~ #corner{visibility:hidden}
 #skip,#volume,#fullscreen{color:#a9a091;background:rgba(8,10,16,.55);border:1px solid rgba(201,123,46,.3);
   border-radius:2px;backdrop-filter:blur(4px)}
 #skip{padding:8px 15px;cursor:pointer;font-family:var(--body);font-size:13px}
