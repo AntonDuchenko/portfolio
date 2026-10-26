@@ -49,9 +49,13 @@ toy blobs next to the textured kits.
 
 Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z + 4`; a
 static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
-`Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls), and
+`Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls). The dead
+trees branch only from ~2/3 of their height: within a few metres of the path the frame cut
+them into thick bare poles that read as broken trees (review), so the walk keeps 30 of them
+(was 80) 10–24 m off the camera line, where the whole silhouette shows in the mist. And
 undergrowth: `Bush_Common` (its red leaves repainted night green), `Bush_Common_Flowers`
-(30 %), `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 7 draw calls
+(30 %), `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (night-tinted; the glowing caps and
+their halo sprites read as odd blobs and were removed on review), 7 draw calls
 (with the bushes' contact shadows).
 The bushes once read as black paper cut-outs, for two reasons: the build simplified them
 (900 → 247 tris) until the leaf cards fused into flat stretched sheets — now kept whole —
@@ -122,7 +126,7 @@ The poster and the resume are DOM, not textures.
   zenith, hashed twinkling stars, a moon disc with a halo ahead-right of the walk (it hides
   behind branches). Replaces the flat clear colour and the additive moon sprite.
 - Warm cues: lantern glass emissive (the atlas' pale glass), halos in front of the lit
-  windows, glowing mushrooms along the path edge, fireflies, a dim attic window behind the
+  windows, fireflies, a dim attic window behind the
   gable lattice, barrels, a crate and a bench in the yard.
 - Exterior (references: a dark stone tavern with gold lettering, a jettied half-timbered
   house with a lower annex, a cluttered western porch): the jettied upper storey, a

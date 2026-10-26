@@ -30,7 +30,7 @@ function write(f: Field, i: number) {
 // (bark 0x1d1f26). Multiply the kit colours down into a cold night tone.
 const NIGHT_TINT: Record<string, number> = {
   Leaves_Pine: 0x4f6166, Bark_NormalTree: 0x5d5a66, Bark_DeadTree: 0x6e6e78, Rocks: 0x565c66,
-  PathRocks: 0x6c6a70, Grass: 0x3f4d4a, Leaves: 0x4a5c58,
+  PathRocks: 0x6c6a70, Grass: 0x3f4d4a, Leaves: 0x4a5c58, Mushrooms: 0x50555e,
   forest: 0x4c4e52            // KayKit's one atlas material (the path-edge rocks)
 };
 const tinted = new Set<Material>();
@@ -100,9 +100,11 @@ export function buildForest(start: number) {
     if (x > 0 && z - r < GATE_Z + 6) x = Math.max(x, WING.x1 + 2.5 + r);
     return { x, z, y: surfaceY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
   }, m => grove(n(45), m, 7, 15));
-  // bare snags: slim trunk, branches only high up, so they may stand close to the path
-  field('snag', n(80), (z, m) => {
-    const x = side() * rand(2.3, 18), s = rand(6, 12) / m.height;
+  // bare snags: branches only from ~2/3 of their height, so near the path all one saw was a
+  // thick bare trunk cut by the frame — a broken pole (review). A few, 10–24 m off the
+  // camera line, where the whole dead silhouette shows in the mist.
+  field('snag', n(30), (z, m) => {
+    const x = side() * rand(10, 24), s = rand(6, 12) / m.height;
     return { x, z, y: surfaceY(x, z) - .1, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.07, .07) };
   }, m => grove(n(20), m, 7, 13, .1));
   field('rock', n(170), (z, m) => {

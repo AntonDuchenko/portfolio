@@ -7,17 +7,14 @@ import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { night } from './forest';
-import { fires } from './lights';
-import { fireTex, sprite } from './sprites';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
 
 /* Undergrowth from the Nature kit: bushes, ferns and tall wispy grass along the walk and in
-   the tavern's yard, and small clusters of glowing mushrooms at the path's edge — warm
-   points that lead the eye to the door (the "lit path" reference), in the forest's own
-   vocabulary rather than garden lamps. Static, laid from just behind the start to the
-   tavern; one draw call per model part (6) and one for the bushes' contact shadows. Bases
-   sink into the ground (hard rule 1). */
+   the tavern's yard, and small clusters of mushrooms at the path's edge (no glow: the warm
+   caps and their halos read as odd blobs, removed on review). Static, laid from just behind
+   the start to the tavern; one draw call per model part (6) and one for the bushes' contact
+   shadows. Bases sink into the ground (hard rule 1). */
 
 interface Item { x: number; z: number; s: number; sy?: number }
 
@@ -115,16 +112,6 @@ const flowerBush = (m: Material) => {
   return g;
 };
 
-// the mushrooms' caps glow warm: the texture drives the emission, so the pale caps light
-// up and the stems stay dark
-function glowing(m: Material) {
-  const g = (m as MeshStandardMaterial).clone();
-  g.emissive = new Color().setRGB(1, .5, .2);
-  g.emissiveMap = g.map;
-  g.emissiveIntensity = 1.4;
-  return g;
-}
-
 export function buildUndergrowth(startZ: number) {
   const z0 = startZ + 10, z1 = GATE_Z + 2, len = z0 - z1;
   const n = (per: number) => Math.round(len * per * Q.forest);
@@ -149,24 +136,15 @@ export function buildUndergrowth(startZ: number) {
   // grass along the foot of the side wing's outer wall
   for (let i = 0; i < Math.round(5 * Q.forest); i++) tall.push({ x: WING.x1 + rand(.3, .9), z: rand(WING.z1, WING.z0), s: rand(.35, .55), sy: rand(.3, .5) });
 
-  // glowing mushrooms: a cluster every ~6–9 m at the path's edge, denser near the door
-  const lights: { x: number; y: number; z: number }[] = [];
-  for (let z = z1 + 1; z < z0; z += rand(5.5, 9) * (z < GATE_Z + 25 ? .7 : 1)) {
+  // mushrooms: a small cluster every ~6–9 m at the path's edge
+  for (let z = z1 + 1; z < z0; z += rand(5.5, 9)) {
     const cx = pathX(z) + side() * rand(1.5, 2.6), k = 2 + Math.floor(random() * 3);
     for (let j = 0; j < k; j++) shroom.push({ x: cx + rand(-.3, .3), z: z + rand(-.3, .3), s: rand(.35, .6) });
-    lights.push({ x: cx, y: surfaceY(cx, z) + .22, z });
   }
 
   contactShadows([...lay('bush', bush.filter(p => !yard(p.x, p.z)), greenBush, true),
     ...lay('flowers', bloom.filter(p => !yard(p.x, p.z)), flowerBush, true)], 1.6);
   lay('fern', fern.filter(p => !yard(p.x, p.z)));
   lay('tallgrass', tall);
-  lay('mushroom', shroom, glowing);
-
-  // their glow: small flickering halos, batched with the other flames (no extra draw call)
-  for (const l of lights) {
-    const sp = sprite(fireTex, .45, .35);
-    sp.position.set(l.x, l.y, l.z); scene.add(sp);
-    fires.push({ light: null, sp, phase: rand(0, 10), outside: true });
-  }
+  lay('mushroom', shroom);
 }

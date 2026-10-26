@@ -31,7 +31,7 @@ Repository:
   `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
   (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
   static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes,
-  ferns, tall grass, glowing mushrooms), `fireflies`, `tavern` (facade with the jettied upper
+  ferns, tall grass, mushrooms), `fireflies`, `tavern` (facade with the jettied upper
   storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard, hall), `post`.
   Anything placed near the tavern (trees, undergrowth, terrain yard) checks `WING` too.
   Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
@@ -88,8 +88,8 @@ Repository:
   rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31. After the
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
   427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards),
-  whole (unsimplified) bushes with contact shadows and KayKit path rocks: 61 calls,
-  762k / 452k — check FPS on a phone.
+  whole (unsimplified) bushes with contact shadows, KayKit path rocks and 30 dead trees
+  (was 80): 61 calls, 706k / 420k — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
@@ -151,7 +151,7 @@ Decisions (keep them unless the look is retuned on purpose):
 - **Night look (retuned on purpose, from references):** moonlit mist lighter than the
   trees (`FOG_OUT`, `cfg.fog` .032), a sky dome with stars and a moon, the path a dark
   rutted track close to the ground's value, warm points leading to the door (lanterns,
-  mushrooms, fireflies, window halos). Numbers and reasons: `docs/scene-spec.md`.
+  fireflies, window halos; glowing mushrooms were tried and removed). Numbers and reasons: `docs/scene-spec.md`.
 - **Colour:** sRGB pipeline (three defaults) — the kit textures need it. The prototype's
   hex values were linear numbers; light colours keep those linear values (`legacyColor`),
   ground/path are ×3, forest materials get a cold night tint (the kit is painted for day).
