@@ -23,7 +23,7 @@ import { scene } from './stage';
    - Roof_RoundTiles_6x14: ridge ≈ +4.9 above the wall top, eaves −0.78 at x ±4.12 */
 
 const SIGN_X = -2, SIGN_Y = 2.8, SIGN_Z = 1.1;
-const CHIMNEY = { x: -2.2, d: 6 };                       // above the hearth
+const CHIMNEY = { x: -1, d: 6 };                         // above the hearth (x −2.1), near the ridge
 const HEARTH_D = 6;
 const LANTERN_HEAD = { y: .34, z: .8 };                   // Lantern_Wall head centre, model space
 
@@ -186,13 +186,15 @@ export function buildFacade() {
     const p = village('Corner_Exterior_Wood', s * TAV_HW, STOREY, 0, 0, up); p.scale.y = STOREY / 3;
   }
 
-  // chimney over the hearth: its base sits below the roof surface at its low edge
+  // chimney over the hearth. The kit chimney's base is cut for a roof falling to its −x
+  // (1.21 over 0.95, this roof 1.38): its low edge sits 10 cm under the roof surface, the
+  // high edge 20 cm. Close to the ridge, so its top (12.2) shows above it (11.1) from the
+  // path — at x −2.2 the gable hid it. (Stretching it instead steepened the cut base and
+  // lifted its high edge 0.4 m off the tiles.)
   const ridge = TAV_H + 4.89, slope = 5.67 / 4.12;
-  // Stretched ×1.5 so its top (12.1) clears the ridge (11.1): at kit height it hid behind
-  // the gable all the way down the path.
   const cx = CHIMNEY.x, lowEdge = Math.abs(cx) + .475, base = ridge - lowEdge * slope - .1;
-  village('Prop_Chimney', cx, base, -CHIMNEY.d, 0, front).scale.y = 1.5;
-  smoke(cx, base + 3.18 * 1.5 + .1, GATE_Z - CHIMNEY.d, 7);
+  village('Prop_Chimney', cx, base, -CHIMNEY.d, 0, front);
+  smoke(cx, base + 3.28, GATE_Z - CHIMNEY.d, 7);
 
   // street lanterns on the door posts: back plate 5 cm inside the post face (hard rule 3)
   for (const s of [-1, 1])
@@ -295,11 +297,15 @@ function buildWing(front: Group) {
   const roof = village('Roof_RoundTiles_4x4', (WING_ROOF.x0 * 2.82 + WING_ROOF.x1 * 2.74) / 5.56, WING.h, zc, Math.PI / 2, front);
   roof.scale.set(1, WING_ROOF.sy, (WING_ROOF.x1 - WING_ROOF.x0) / 5.56);
   village('Roof_Front_Brick4', WING.x1, WING.h, zc, Math.PI / 2, front).scale.y = WING_ROOF.sy;
-  // a kitchen chimney astride the ridge, base below the roof where the slopes fall away
-  // (0.49 either side of the ridge: 0.47 lower)
-  const cx = WING.x1 - 1.1, base = WING_RIDGE - .6;
-  village('Prop_Chimney2', cx, base, zc, 0, front);
-  smoke(cx, base + 3.2, GATE_Z + zc, 5);
+  // a kitchen chimney on the back slope, its high edge just behind the ridge. Its cut base
+  // falls to its −x (1.21 over 0.95): turned so that side faces down the back slope and
+  // widened ×1.25 along it to this flatter roof (pitch 0.96); low edge 10 cm under the
+  // tiles, high edge 2 cm. On the ridge, across the cut, its wedge hung over the roof.
+  const pitch = (3.73 + .52) * WING_ROOF.sy / 2.76, wide = 1.25;
+  const cx = WING.x1 - 1.2, hi = zc - .05, cz = hi - .45 * wide, lo = cz - .5 * wide;
+  const base = WING_RIDGE - (zc - lo) * pitch - .1;
+  village('Prop_Chimney2', cx, base, cz, -Math.PI / 2, front).scale.x = wide;
+  smoke(cx, base + 3.1, GATE_Z + cz, 5);
   // light at the door: a lantern on the wall between door and window, glass lit, no light
   // source of its own (the facade lanterns light the yard); back plate in the stone
   const lx = WING.x0 + 2.05, ly = 1.2;

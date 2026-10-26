@@ -30,8 +30,7 @@ function write(f: Field, i: number) {
 // (bark 0x1d1f26). Multiply the kit colours down into a cold night tone.
 const NIGHT_TINT: Record<string, number> = {
   Leaves_Pine: 0x4f6166, Bark_NormalTree: 0x5d5a66, Bark_DeadTree: 0x6e6e78, Rocks: 0x565c66,
-  PathRocks: 0xa4a2a6, Grass: 0x3f4d4a, Leaves: 0x4a5c58
-  // Leaves_TwistedTree (the bush) is red in the kit: undergrowth.ts repaints it night green
+  PathRocks: 0x6c6a70, Grass: 0x3f4d4a, Leaves: 0x4a5c58
 };
 const tinted = new Set<Material>();
 export function night(m: Material) {

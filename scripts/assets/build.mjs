@@ -42,14 +42,11 @@ const KITS = {
       pine_b: { src: 'Pine_2', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
       snag: { src: 'DeadTree_3', tris: { Bark_DeadTree: 1180 }, budget: 1200 },
       rock: { src: 'Rock_Medium_2', budget: 250 },
-      // the path (src/scene/ground.ts): flat stepping stones, pebbles and grass along the
-      // edges — many instances each, so they are cut hard; they are seen at walking pace
-      stone_a: { src: 'RockPath_Round_Small_1', tris: { PathRocks: 360 }, budget: 380 },
-      stone_b: { src: 'RockPath_Square_Small_1', tris: { PathRocks: 300 }, budget: 320 },
+      // the path's edges (src/scene/ground.ts): pebbles and grass — many instances each, so
+      // they are cut hard; they are seen at walking pace
       pebble: { src: 'Pebble_Round_1', tris: { PathRocks: 40 }, budget: 50 },
       grass: { src: 'Grass_Common_Short', tris: { Grass: 90 }, budget: 100 },
       // undergrowth along the walk and around the tavern (src/scene/undergrowth.ts)
-      bush: { src: 'Bush_Common', tris: { Leaves_TwistedTree: 520 }, budget: 540 },
       fern: { src: 'Fern_1', tris: { Leaves: 220 }, budget: 240 },
       tallgrass: { src: 'Grass_Wispy_Tall', tris: { Grass: 300 }, budget: 320 },
       mushroom: { src: 'Mushroom_Common', tris: { Mushrooms: 240 }, budget: 260 },

@@ -39,13 +39,17 @@ plain with a straight horizon. 4 static segments of 80 m, to 108 m past the faca
 
 The path is painted by the terrain shader, not a mesh: dark dirt, two ruts, moss along the
 middle, ragged edges, a meander `pathX(z)` (≤ 0.6 m, straight for the last 16 m) around the
-camera line. Stones, pebbles, grass and rocks follow `pathX`.
+camera line. Pebbles, grass and rocks follow `pathX`. No stepping stones on the track: the
+kit's pale `RockPath_*` slabs read as a cartoon pavement on the dark ruts (removed on review);
+the edge pebbles are tinted dark (`PathRocks` 0x6c6a70).
 
 Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z + 4`; a
 static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
 `Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls), and
-undergrowth: `Bush_Common` (its red leaves repainted green), `Fern_1`, `Grass_Wispy_Tall`,
-`Mushroom_Common` (emissive caps + halos), 4 draw calls. Pines stand at least their crown
+undergrowth: `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 3 draw
+calls. No bushes: the kit's are alpha-cut leaf cards that go black at night (`Bush_Common`
+repainted green and `Bush_Common_Flowers` leaves both looked like paper cut-outs; removed on
+review). Pines stand at least their crown
 reach + 1.2 m from the camera line, so branches never cross the path.
 
 ## Camera timeline
@@ -105,10 +109,15 @@ The poster and the resume are DOM, not textures.
   house with a lower annex, a cluttered western porch): the jettied upper storey, a
   gold-lettered board over the door between the lanterns (bottom 7 cm above the opening —
   never over the doorway, the poster mask stays exact), the hanging sign rehung from the
-  jetty, window boxes with flowers, open shutters upstairs, ivy, a main chimney stretched
-  ×1.5 so it shows above the ridge (at kit height the gable hid it), and the side wing with
+  jetty, window boxes with flowers, open shutters upstairs, ivy, and the side wing with
   an arched door, a small lit window, a lantern without a light of its own, a kitchen
-  chimney with smoke and a hand cart. The sign and the board share one canvas (one merged
+  chimney with smoke and a hand cart.
+- Kit chimneys have a base cut for a roof slope falling to their −x (1.21 over 0.95). Seat
+  them across a slope, never on a ridge (the wedge hangs over the tiles), and never stretch
+  them in height (the cut steepens and its high edge lifts off the roof). The wing's chimney
+  is turned down its back slope and widened ×1.25 along the cut to that roof's pitch (0.96).
+  The hall's chimney sits near its ridge (x −1, d 6); from the path no chimney behind the
+  front gable can show — the ridge's near end hides it. The sign and the board share one canvas (one merged
   face mesh; the old multi-material sign box was 6 draw calls). Walk pines on the right and
   undergrowth keep clear of the wing and the yard in front of it.
 - A variable `inside` (0 → 1) drives the transition as the doors open and the camera enters:
