@@ -49,7 +49,9 @@ toy blobs next to the textured kits.
 
 Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z + 4`; a
 static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
-`Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls). The dead
+`Pine_5`, `Pine_2` (trunk only: its 14 low bare branches, cut to budget, turned into crooked
+sticks at eye level — the build keeps the bark's largest piece, `trunkOnly`), `DeadTree_3`,
+`Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls). The dead
 trees branch only from ~2/3 of their height: within a few metres of the path the frame cut
 them into thick bare poles that read as broken trees (review), so the walk keeps 30 of them
 (was 80) 10–24 m off the camera line, where the whole silhouette shows in the mist. And

@@ -36,14 +36,18 @@ const PROPS = 'assets-src/kits/Fantasy Props MegaKit[Standard]/Exports/glTF';
 // pavement on the dark track
 const KAYKIT = 'assets-src/kits/KayKit Forest Nature Pack/glTF';
 
-/* key: { src, tris: {material: target triangles}, budget, dir? (another kit's folder) } */
+/* key: { src, tris: {material: target triangles}, budget, dir? (another kit's folder),
+   trunkOnly? (a material whose largest connected piece alone is kept) } */
 const KITS = {
   forest: {
     dir: NATURE,
     dropNormalMaps: true,          // night + fog: normal maps are invisible at forest distance
     items: {
       pine_a: { src: 'Pine_5', tris: { Bark_NormalTree: 140, Leaves_Pine: 1040 }, budget: 1200 },
-      pine_b: { src: 'Pine_2', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
+      // Pine_2's bark is the trunk plus 14 bare branch pieces under the lowest needles
+      // (y 0.9–2.3): cut to budget they turned into long crooked sticks poking out at eye
+      // level (review) — only the trunk is kept
+      pine_b: { src: 'Pine_2', trunkOnly: 'Bark_NormalTree', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
       snag: { src: 'DeadTree_3', tris: { Bark_DeadTree: 1180 }, budget: 1200 },
       rock: { src: 'Rock_Medium_2', budget: 250 },
       // the path's edges (src/scene/ground.ts): pebbles, rocks and grass — many instances
@@ -115,9 +119,32 @@ function simplifyTo(prim, target) {
   prim.getIndices().setArray(pos.length / 3 > 65535 ? out : new Uint16Array(out));
 }
 
+// Keeps only the largest connected piece of a primitive (vertices joined by triangles or
+// by sharing a position — UV seams split welded vertices).
+function keepLargestPiece(prim) {
+  const pos = prim.getAttribute('POSITION'), idx = prim.getIndices().getArray(), n = pos.getCount();
+  const parent = Int32Array.from({ length: n }, (_, i) => i);
+  const find = i => { while (parent[i] !== i) i = parent[i] = parent[parent[i]]; return i; };
+  const join = (a, b) => { parent[find(a)] = find(b); };
+  const at = new Map();
+  for (let i = 0; i < n; i++) {
+    const k = pos.getElement(i, []).map(x => x.toFixed(4)).join();
+    if (at.has(k)) join(i, at.get(k)); else at.set(k, i);
+  }
+  for (let t = 0; t < idx.length; t += 3) { join(idx[t + 1], idx[t]); join(idx[t + 2], idx[t]); }
+  const size = new Map();
+  for (let t = 0; t < idx.length; t += 3) size.set(find(idx[t]), (size.get(find(idx[t])) ?? 0) + 1);
+  const main = [...size].sort((a, b) => b[1] - a[1])[0][0];
+  const out = [];
+  for (let t = 0; t < idx.length; t += 3) if (find(idx[t]) === main) out.push(idx[t], idx[t + 1], idx[t + 2]);
+  prim.getIndices().setArray(n > 65535 ? new Uint32Array(out) : new Uint16Array(out));
+}
+
 async function loadItem(dir, key, item) {
   const doc = await io.read(join(ROOT, dir, `${item.src}.gltf`));
   await doc.transform(weld());
+  if (item.trunkOnly) for (const mesh of doc.getRoot().listMeshes())
+    for (const prim of mesh.listPrimitives()) if (prim.getMaterial()?.getName() === item.trunkOnly) keepLargestPiece(prim);
   if (item.tris) {
     await MeshoptSimplifier.ready;
     for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) {
