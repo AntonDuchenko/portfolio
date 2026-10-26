@@ -39,7 +39,8 @@ export function track(event: string, props?: Props) {
 }
 
 export function initAnalytics() {
-  on = !import.meta.env.DEV && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+  on = !import.meta.env.DEV && !/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)
+    && !location.pathname.includes('/preview/');          // branch previews (deploy.yml) stay out of the stats
   if (!on) return;
   const load = () => void import('posthog-js').then(({ default: posthog }) => {
     posthog.init(KEY, {

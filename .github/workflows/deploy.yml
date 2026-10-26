@@ -5,9 +5,10 @@
 #   Branch: gh-pages / (root).
 # Pages on a free plan needs a public repository.
 #
-# Every push to main or to a claude/** working branch redeploys the site, so the live
-# page always shows the latest pushed work. Run it by hand from the Actions tab for any
-# other branch.
+# A push to main publishes the live site (the root of gh-pages). A push to a claude/**
+# working branch publishes a preview at preview/<branch>/ instead — the live page never
+# shows unmerged work. Previews are noindex and send no analytics; the next main deploy
+# keeps them. Run it by hand from the Actions tab for any other branch.
 
 name: Deploy to GitHub Pages
 
@@ -52,8 +53,23 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      - uses: JamesIves/github-pages-deploy-action@v4
+      - name: Publish the live site (main)
+        if: github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
           branch: gh-pages
           single-commit: true       # keep gh-pages to one commit, no history bloat
+          clean-exclude: preview    # branch previews survive a main deploy
+
+      # a branch preview: hidden from search engines (it duplicates the live page)
+      - name: Mark the preview noindex
+        if: github.ref != 'refs/heads/main'
+        run: sed -i 's/content="index, follow, max-image-preview:large"/content="noindex, nofollow"/' dist/index.html && grep -q 'noindex' dist/index.html
+      - name: Publish a branch preview
+        if: github.ref != 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          target-folder: preview/${{ github.ref_name }}
