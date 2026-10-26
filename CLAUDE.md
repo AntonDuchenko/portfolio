@@ -88,8 +88,8 @@ Repository:
   rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31. After the
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
   427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards),
-  whole (unsimplified) bushes and KayKit path rocks: 60 calls, 763k / 452k — check FPS on
-  a phone.
+  whole (unsimplified) bushes with contact shadows and KayKit path rocks: 61 calls,
+  762k / 452k — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.

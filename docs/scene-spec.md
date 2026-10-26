@@ -51,13 +51,24 @@ Forest: the walk's trees are recycled ahead of the camera and never pass `GATE_Z
 static grove (same instanced meshes) frames the tavern and stands behind it. Nature kit:
 `Pine_5`, `Pine_2`, `DeadTree_3`, `Rock_Medium_2` (≤ 1200 / ≤ 250 tris, 6 draw calls), and
 undergrowth: `Bush_Common` (its red leaves repainted night green), `Bush_Common_Flowers`
-(30 %), `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 6 draw calls.
+(30 %), `Fern_1`, `Grass_Wispy_Tall`, `Mushroom_Common` (emissive caps + halos), 7 draw calls
+(with the bushes' contact shadows).
 The bushes once read as black paper cut-outs, for two reasons: the build simplified them
 (900 → 247 tris) until the leaf cards fused into flat stretched sheets — now kept whole —
 and the cards facing away from the moon went black — now lit as if every leaf faced up (the
 normal 85 % towards world up), matte. The two bush materials share one `onBeforeCompile`
 source: three keys programs by that source, so each sets `customProgramCacheKey` (they
-silently shared one shader, recolour included). Pines stand at least their crown
+silently shared one shader, recolour included).
+Then they looked like they floated (review), for four reasons, each fixed:
+- they stood on their lowest vertex, 0.23 below the origin (1 % of the leaves): now on
+  their origin, sunk 6 % of their height;
+- on a slope the downhill edge hung: now at the lowest ground of five footprint samples;
+- lit from above, the base was as bright as the crown: now it darkens to 30 % towards the
+  roots (model height 0 → 0.8);
+- they were the ground's value (~55 of 255 on a frame) next to ferns and pines at 25–30:
+  now 32–35;
+- and nothing was under them: a soft contact shadow disc (radius 1.6 × scale, tilted to the
+  ground, one instanced draw call) — at 1.05 the bush hid its own shadow. Pines stand at least their crown
 reach + 1.2 m from the camera line, so branches never cross the path.
 
 ## Camera timeline

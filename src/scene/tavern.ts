@@ -205,13 +205,14 @@ export function buildFacade() {
   board(BOARD.over, 1.68, .38, 0, DOOR_H + .07 + .19, .13, front);
 
   // window boxes under the ground-floor windows: planks 2 cm into the stone, under the
-  // sill (0.94), each with three flowering bushes sunk into the soil
+  // sill (0.94), each with three flowering bushes standing in the soil (their stray low
+  // leaves go into the box)
   for (const s of [-1, 1]) {
     front.add(kitBox(1.5, .2, .28, wood, s * MOD, .83, .16));
     for (const dx of [-.48, 0, .48]) {
       const f = model('forest', 'flowers'), k = rand(.3, .36);
       f.traverse(c => { if (c instanceof Mesh) night(c.material as Material); });
-      f.scale.setScalar(k); f.position.set(s * MOD + dx, .93 - .02 + .23 * k, .16); f.rotation.y = rand(0, 6.28);
+      f.scale.setScalar(k); f.position.set(s * MOD + dx, .93 - .03, .16); f.rotation.y = rand(0, 6.28);   // origin = its ground
       front.add(f);
     }
   }
