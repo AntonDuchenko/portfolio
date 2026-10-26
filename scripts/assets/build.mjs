@@ -52,7 +52,9 @@ const KITS = {
       bush: { src: 'Bush_Common', tris: { Leaves_TwistedTree: 520 }, budget: 540 },
       fern: { src: 'Fern_1', tris: { Leaves: 220 }, budget: 240 },
       tallgrass: { src: 'Grass_Wispy_Tall', tris: { Grass: 300 }, budget: 320 },
-      mushroom: { src: 'Mushroom_Common', tris: { Mushrooms: 240 }, budget: 260 }
+      mushroom: { src: 'Mushroom_Common', tris: { Mushrooms: 240 }, budget: 260 },
+      // the tavern's window boxes (src/scene/tavern.ts): seen up close, a handful of copies
+      flowers: { src: 'Bush_Common_Flowers', tris: { Leaves_NormalTree: 380, Flowers: 300 }, budget: 700 }
     }
   },
   village: {
@@ -63,7 +65,12 @@ const KITS = {
       'Wall_Plaster_WoodGrid', 'Corner_Exterior_Wood', 'Wall_BottomCover', 'Door_8_Flat',
       'Window_Wide_Flat1', 'Window_Wide_Round1',
       'Roof_RoundTiles_6x14', 'Roof_Front_Brick6',
-      'Prop_Chimney', 'Floor_WoodDark', 'HoleCover_Straight'
+      'Prop_Chimney', 'Floor_WoodDark', 'HoleCover_Straight',
+      // the exterior (src/scene/tavern.ts): jetty brackets, shutters, vines; the side wing
+      'Roof_Support2', 'WindowShutters_Wide_Round_Open', 'Prop_Vine1', 'Prop_Vine2',
+      'Wall_UnevenBrick_Door_Round', 'DoorFrame_Round_Brick', 'Door_4_Round',
+      'Wall_UnevenBrick_Window_Thin_Round', 'Window_Thin_Round1', 'Roof_RoundTiles_4x4', 'Roof_Front_Brick4',
+      'Prop_Chimney2', 'Prop_Wagon'
     ].map(n => [n, { src: n }]))
   },
   props: {

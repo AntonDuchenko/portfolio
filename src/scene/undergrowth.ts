@@ -1,5 +1,5 @@
 import { Color, type Material, type MeshStandardMaterial, Object3D } from 'three';
-import { GATE_Z, TAV_END, TAV_HW } from '../config';
+import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
@@ -32,8 +32,11 @@ function lay(name: string, items: Item[], material?: (m: Material) => Material) 
   for (const m of meshes) { m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere(); scene.add(m); }
 }
 
-/** clear of the building and its doorstep */
-const yard = (x: number, z: number) => Math.abs(x) < TAV_HW + .6 && z > TAV_END - .6 && z < GATE_Z + 1.2;
+/** clear of the building and its doorstep, the side wing, and the yard in front of the wing (its
+ *  cart and the view of it from the path) */
+const yard = (x: number, z: number) => (Math.abs(x) < TAV_HW + .6 && z > TAV_END - .6 && z < GATE_Z + 1.2)
+  || (x > 0 && x < WING.x1 + .8 && z > WING.z1 - .8 && z < WING.z0 + .8)
+  || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 6.5);
 
 // the kit's bush wears the twisted tree's leaves, which are red: keep their pattern (the
 // texture's brightness) and paint it a dark night green, about as bright as the tinted pines
@@ -76,6 +79,9 @@ export function buildUndergrowth(startZ: number) {
     }
   }
 
+  // grass at the foot of the side wing: along its outer side and the front right of the door
+  for (let i = 0; i < Math.round(5 * Q.forest); i++) tall.push({ x: WING.x1 + rand(.3, .9), z: rand(WING.z1, WING.z0), s: rand(.35, .55), sy: rand(.3, .5) });
+
   // glowing mushrooms: a cluster every ~6–9 m at the path's edge, denser near the door
   const lights: { x: number; y: number; z: number }[] = [];
   for (let z = z1 + 1; z < z0; z += rand(5.5, 9) * (z < GATE_Z + 25 ? .7 : 1)) {
@@ -85,7 +91,7 @@ export function buildUndergrowth(startZ: number) {
   }
 
   lay('bush', bush.filter(p => !yard(p.x, p.z)), greened);
-  lay('fern', fern);
+  lay('fern', fern.filter(p => !yard(p.x, p.z)));
   lay('tallgrass', tall);
   lay('mushroom', shroom, glowing);
 

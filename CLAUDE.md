@@ -30,7 +30,9 @@ Repository:
   `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
   (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
   static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes, ferns,
-  tall grass, glowing mushrooms), `fireflies`, `tavern` (facade + yard + hall), `post`.
+  tall grass, glowing mushrooms), `fireflies`, `tavern` (facade with the jettied upper
+  storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard, hall), `post`.
+  Anything placed near the tavern (trees, undergrowth, terrain yard) checks `WING` too.
   Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
   height function: on the old 5 m grid ~40 % of stones and grass floated (up to 0.8 m) and
   the ground rose through the path. The grid is dense along the path and flat under it.
@@ -84,7 +86,8 @@ Repository:
   quad per texture/blending; the `Sprite`s stay as invisible proxies (layer 31) that the
   rest of the code moves and flickers. Walk 86 → 47 draw calls, hall 37 → 31. After the
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
-  427k low (was 49, 539k / 333k) — check FPS on a phone.
+  427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards)
+  58 calls, 735k / 443k — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.

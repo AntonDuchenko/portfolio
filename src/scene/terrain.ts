@@ -1,5 +1,5 @@
 import { Mesh, MeshStandardMaterial, PlaneGeometry } from 'three';
-import { GATE_Z, TAV_END, TAV_HW } from '../config';
+import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { scene } from './stage';
 
 /* The ground: four 170 × 80 m strips along the route and past the tavern, a height field
@@ -25,8 +25,8 @@ const noise = (x: number, z: number) => Math.sin(x * .13 + z * .07) + Math.sin(x
  *  door), flat in a yard around the building, rising into a wooded slope behind it. */
 function heightAt(x: number, z: number) {
   const band = z > GATE_Z - 2 ? Math.min(1, Math.max(0, (Math.abs(x) - 2.2) / 5)) : 1;
-  // the yard: flat around the building, the relief returns over ~10 m
-  const dx = Math.max(0, Math.abs(x) - (TAV_HW + 2)), dz = Math.max(0, z - (GATE_Z + 4), TAV_END - 3 - z);
+  // the yard: flat around the building and its side wing, the relief returns over ~10 m
+  const dx = Math.max(0, Math.abs(x) - (x > 0 ? WING.x1 : TAV_HW) - 2), dz = Math.max(0, z - (GATE_Z + 4), TAV_END - 3 - z);
   const yard = Math.min(1, Math.hypot(dx, dz) / 10);
   // behind the tavern the ground climbs, so the view ends in a wooded rise, not a horizon
   const rise = Math.max(0, GATE_Z - 25 - z) * .07;

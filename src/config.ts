@@ -12,6 +12,9 @@ export const DOOR_HINGE_Z = -.1;                    // hinge line, relative to G
 export const MOD = 2, STOREY = 3.12;
 export const TAV_HW = 3, TAV_H = 2 * STOREY, TAV_LEN = 14, TAV_END = GATE_Z - TAV_LEN;
 export const WALL_IN = .2;                          // inside face offset from the module line
+export const JETTY = .5;                            // the upper storey stands this far forward of the ground floor
+// the side wing on the right: one low storey, outside faces x0…x1 and z0…z1, walls h tall
+export const WING = { x0: 3, x1: 7, z0: GATE_Z - 1.2, z1: GATE_Z - 5.2, h: 2.6 };
 export const FLOOR_Y = .06;                         // hall floor top, flush with the sill
 export const D = (d: number) => GATE_Z - d;
 

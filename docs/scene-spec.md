@@ -14,6 +14,8 @@ inside the tavern past the facade, `D(d) = GATE_Z − d`.
 | Wall modules | 2 m wide, 3.12 per storey, solid from z 0 (outside) to −0.2 (inside) | — |
 | Door opening | 1.79 wide × 2.4 high between kit posts, two leaves, open **inward**, hinges mid-wall (−0.1) | 3.6 × 4.6 |
 | Facade | 3 modules = 6 wide, 2 storeys + gable; stone ground floor, plaster above | 18.8 × 9 |
+| Jetty | upper storey, gable and roof front 0.5 forward (`JETTY`) on a plank deck (y 3.0–3.12), joists (none at x ±1: lantern arms) and corner brackets | — |
+| Side wing | right, x 3…7, z `GATE_Z` −1.2…−5.2, walls 2.6 (kit ×0.83, sunk 0.1); `Roof_RoundTiles_4x4` ×0.62 high, ridge 4.91 along x, its left end at x 2.95 inside the hall wall; main eave above it ≥ 5.6 | — |
 | Tavern hall | 6 wide × 14 deep × 6.24 high (open to the roof), one `Roof_RoundTiles_6x14` | 16 × 20 × 5.6 |
 | Hall floor top | y = 0.06 (flush with the sill); floor starts at the inside face | same |
 | Threshold sill | dark wood, top at 0.06 | same |
@@ -99,6 +101,16 @@ The poster and the resume are DOM, not textures.
 - Warm cues: lantern glass emissive (the atlas' pale glass), halos in front of the lit
   windows, glowing mushrooms along the path edge, fireflies, a dim attic window behind the
   gable lattice, barrels, a crate and a bench in the yard.
+- Exterior (references: a dark stone tavern with gold lettering, a jettied half-timbered
+  house with a lower annex, a cluttered western porch): the jettied upper storey, a
+  gold-lettered board over the door between the lanterns (bottom 7 cm above the opening —
+  never over the doorway, the poster mask stays exact), the hanging sign rehung from the
+  jetty, window boxes with flowers, open shutters upstairs, ivy, a main chimney stretched
+  ×1.5 so it shows above the ridge (at kit height the gable hid it), and the side wing with
+  an arched door, a small lit window, a lantern without a light of its own, a kitchen
+  chimney with smoke and a hand cart. The sign and the board share one canvas (one merged
+  face mesh; the old multi-material sign box was 6 draw calls). Walk pines on the right and
+  undergrowth keep clear of the wing and the yard in front of it.
 - A variable `inside` (0 → 1) drives the transition as the doors open and the camera enters:
   fog → `#1a1209` at 0.005, moon down 85 %, warm ambient up, tavern fires up,
   street lanterns and mist out.
@@ -141,6 +153,6 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
 - Custom boxes wearing kit materials (`src/scene/kitbox.ts`): door lintel filler, sill,
   notice post, hearth, bar top. The kits have no fireplace or notice board.
 - Poster copy. (The resume content behind it is real, from the CV.)
-- The tavern sign is a canvas texture with the word «ТАВЕРНА».
+- The tavern sign and the board over the door are canvas textures («TAVERN», «ALE · STEW · BEDS»).
 - Narration is a synthesised placeholder (Kokoro `bm_george`); copy and voice are placeholders.
 - Owls: first at 9 s, then every 13–22 s — with the ~32 s walk only two of the three play.

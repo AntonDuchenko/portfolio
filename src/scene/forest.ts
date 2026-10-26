@@ -1,7 +1,7 @@
 import {
   Color, DynamicDrawUsage, type InstancedMesh, type Material, MeshStandardMaterial, NormalBlending, Object3D
 } from 'three';
-import { GATE_Z, TAV_END, TAV_HW } from '../config';
+import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
@@ -80,7 +80,8 @@ function grove(n: number, size: Size, minH: number, maxH: number, sink = 0): Pla
   for (let tries = 0; out.length < n && tries < n * 40; tries++) {
     const x = rand(-45, 45), z = rand(GATE_Z - 50, GATE_Z + 10);
     const h = rand(minH, maxH), s = h / size.height, reach = size.reach * s;
-    if (Math.abs(x) < TAV_HW + 3 + reach && z > TAV_END - 3 - reach && z < GATE_Z + 4 + reach) continue;
+    const hw = x > 0 ? WING.x1 + 2 : TAV_HW + 3;                       // the side wing on the right
+    if (Math.abs(x) < hw + reach && z > TAV_END - 3 - reach && z < GATE_Z + 4 + reach) continue;
     if (z > GATE_Z - 2 && Math.abs(x) < 7 + reach) continue;          // the approach sees the facade
     out.push({ x, z, y: surfaceY(x, z) - sink, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) });
   }
@@ -92,8 +93,10 @@ export function buildForest(start: number) {
   startZ = start;
   const n = (count: number) => Math.round(count * Q.forest);
   for (const name of ['pine_a', 'pine_b']) field(name, n(105), (z, m) => {
-    const h = rand(5, 13), s = h / m.height;
-    const x = side() * (m.reach * s + CLEAR + rand(0, 30));
+    const h = rand(5, 13), s = h / m.height, r = m.reach * s;
+    let x = side() * (r + CLEAR + rand(0, 30));
+    // by the yard, right-hand crowns stay beyond the side wing and the cart in front of it
+    if (x > 0 && z - r < GATE_Z + 6) x = Math.max(x, WING.x1 + 2.5 + r);
     return { x, z, y: surfaceY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
   }, m => grove(n(45), m, 7, 15));
   // bare snags: slim trunk, branches only high up, so they may stand close to the path
