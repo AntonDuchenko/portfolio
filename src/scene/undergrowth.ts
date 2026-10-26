@@ -36,7 +36,7 @@ function lay(name: string, items: Item[], material?: (m: Material) => Material) 
  *  cart and the view of it from the path) */
 const yard = (x: number, z: number) => (Math.abs(x) < TAV_HW + .6 && z > TAV_END - .6 && z < GATE_Z + 1.2)
   || (x > 0 && x < WING.x1 + .8 && z > WING.z1 - .8 && z < WING.z0 + .8)
-  || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 6.5);
+  || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 9);
 
 // Bushes are alpha-cut leaf cards: lit by their own normals, the cards facing away from
 // the moon went black and the bushes read as paper cut-outs. Lit as if every leaf faced up
