@@ -91,7 +91,7 @@ h1.name{font-family:var(--display);font-weight:700;font-size:clamp(54px,8.6vw,13
   letter-spacing:-.01em;margin:0;color:var(--ink);text-shadow:0 1px 0 rgba(255,246,222,.6)}
 .role{margin:18px 0 22px;font-family:var(--fell);font-size:clamp(18px,2.3vw,26px);letter-spacing:.14em;color:#8a3b1c}
 .standfirst{max-width:40em;margin:0;color:var(--ink-soft);font-size:clamp(16px,1.6vw,19px);line-height:1.75}
-.reward{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:34px 0 0;max-width:52rem;
+.reward{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:34px 0 0;max-width:52rem;
   border:1px solid rgba(90,60,25,.35);border-radius:2px;background:rgba(255,248,228,.28)}
 .reward div{padding:14px 18px;border-left:1px dashed rgba(90,60,25,.3)}
 .reward div:first-child{border-left:0}
@@ -338,7 +338,7 @@ a.wax.cv:hover{box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.7),0 8px 22px rgba(40
 }
 @media (max-width:760px){
   .reward{grid-template-columns:repeat(2,1fr)}
-  .reward div:nth-child(3){border-left:0}
+  .reward div:nth-child(3){border-left:0;grid-column:1/-1}     /* three stats: the last one spans the row */
   .reward div:nth-child(n+3){border-top:1px dashed rgba(90,60,25,.3)}
   .bar{gap:14px}
   .bar ul a{font-size:15px}
