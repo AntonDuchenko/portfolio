@@ -76,6 +76,21 @@ test('the scene hands over to the page', async ({ page }) => {
   await expect(nav.locator('.mute')).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.55');
   await expect.poll(fullscreen, { message: 'the page reads in the normal window' }).toBe(false);
+  // "Back to the tavern" (bottom left) steps aside while a row of buttons passes under it;
+  // the pointer moves ask headless Chrome for the frame the observer needs
+  const rowAt = (fromBottom: number) => page.evaluate(b => {
+    const r = document.querySelector('#intro .seals')!.getBoundingClientRect();
+    scrollBy({ top: r.top - (innerHeight - b), behavior: 'instant' });
+  }, fromBottom);
+  let x = 0;
+  const again = async () => {
+    await page.mouse.move(300 + (x ^= 1), 300);
+    return page.locator('#again').getAttribute('class');
+  };
+  await rowAt(40);
+  await expect.poll(again).toMatch(/tucked/);
+  await rowAt(360);
+  await expect.poll(again).not.toMatch(/tucked/);
   expect(errors()).toEqual([]);
 });
 

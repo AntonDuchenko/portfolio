@@ -256,8 +256,10 @@ a.wax.cv:hover{box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.7),0 8px 22px rgba(40
 
 #again{position:fixed;left:18px;bottom:18px;z-index:31;display:none;padding:9px 16px;cursor:pointer;
   background:rgba(12,9,6,.85);border:1px solid rgba(217,168,78,.3);border-radius:999px;color:var(--muted);
-  font-family:var(--fell);font-size:14px;letter-spacing:.06em;backdrop-filter:blur(6px);transition:color .25s,border-color .25s}
+  font-family:var(--fell);font-size:14px;letter-spacing:.06em;backdrop-filter:blur(6px);
+  transition:color .25s,border-color .25s,opacity .25s,visibility .25s}
 #again.on{display:block}
+#again.tucked{opacity:0;visibility:hidden}        /* a row of buttons is passing under it (site.ts) */
 #again:hover{color:var(--text);border-color:var(--gold)}
 
 /* sound control: right end of the nav, only when the visitor entered with sound. The shared
@@ -340,6 +342,9 @@ a.wax.cv:hover{box-shadow:inset 0 0 0 1.5px rgba(70,45,20,.7),0 8px 22px rgba(40
   .reward div:nth-child(n+3){border-top:1px dashed rgba(90,60,25,.3)}
   .bar{gap:14px}
   .bar ul a{font-size:15px}
+  /* the links scroll sideways on phones: the last one fades out instead of being cut off */
+  .bar ul{padding-right:24px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
 }
 @media (pointer: coarse){
   .notice,.notice:hover{transform:rotate(var(--r,0deg))}

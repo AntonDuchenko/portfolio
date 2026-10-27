@@ -60,6 +60,26 @@ function nav() {
   $$('.chapter').forEach(c => spy.observe(c));
 }
 
+/** "Back to the tavern" floats bottom left over the page: it steps aside while a row of
+ *  buttons passes under it (at 1280×720 it covered the hero's Email button on landing). */
+const AGAIN_LANE_PX = 64;                           // its bottom offset 18 + height 38 + air
+function tuckAgain() {
+  const again = document.getElementById('again');
+  if (!again) return;
+  const under = new Set<Element>();
+  let io: IntersectionObserver | null = null;
+  const watch = () => {
+    io?.disconnect(); under.clear();
+    io = new IntersectionObserver(entries => {
+      for (const e of entries) if (e.isIntersecting) under.add(e.target); else under.delete(e.target);
+      again.classList.toggle('tucked', under.size > 0);
+    }, { rootMargin: `${AGAIN_LANE_PX - innerHeight}px 0px 0px 0px` });   // the bottom lane only
+    for (const row of $$('.seals')) io.observe(row);
+  };
+  watch();
+  addEventListener('resize', watch);
+}
+
 /** Warm light that follows the pointer; mouse and pen only. */
 function candlelight() {
   const light = document.querySelector<HTMLElement>('.candlelight');
@@ -139,6 +159,7 @@ export function initSite() {
     observeIn($$('[data-reveal]'), .15);
   }
   nav();
+  tuckAgain();
   candlelight();
   tilt();
   magnetic();

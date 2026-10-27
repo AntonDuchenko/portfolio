@@ -35,7 +35,7 @@ body.scene-locked{overflow:hidden;height:100%}
 #line{position:fixed;left:0;right:0;bottom:12vh;z-index:9;text-align:center;padding:0 6vw;
   pointer-events:none;opacity:0;transition:opacity 1s ease}
 #line p{margin:0 auto;max-width:34em;color:#cbd4e6;font-size:clamp(15px,2.1vw,19px);
-  line-height:1.65;text-shadow:0 2px 20px #000}
+  line-height:1.65;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 20px #000}   /* a tight edge too: the lines sit on the pale path */
 #line.on{opacity:1}
 
 /* sound control, shared by the scene corner (#volume) and the site nav (#sound):
