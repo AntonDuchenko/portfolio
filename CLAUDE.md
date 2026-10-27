@@ -32,7 +32,8 @@ Repository:
   (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
   static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes,
   ferns, tall grass, mushrooms), `fireflies`, `tavern` (facade with the jettied upper
-  storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard, hall), `post`.
+  storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard), `hall` (the
+  room behind the door: timber bays, lanterns over the front tables, hearth, bar), `post`.
   Anything placed near the tavern (trees, undergrowth, terrain yard) checks `WING` too.
   Anything standing on the ground uses `surfaceY` (the rendered triangles), never the smooth
   height function: on the old 5 m grid ~40 % of stones and grass floated (up to 0.8 m) and

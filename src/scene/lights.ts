@@ -71,10 +71,12 @@ export function updateTorch(t: number, inside: number) {
   flame.scale.set(.42 * flick, .55 * flick, 1);
 }
 
-/** moon slider and the `inside` fade both go through here */
+/** moon slider and the `inside` fade both go through here; the cold night fill goes with
+ *  the moon (inside it greyed the lantern-lit hall) */
 export function setMoon(k: number) {
   moon.intensity = cfg.moon * k * LEGACY;
   sky.intensity = .37 * cfg.moon * k * LEGACY;
+  ambient.intensity = .5 * k * LEGACY;
 }
 
 /* ── everything that flickers ────────────────────────────────────── */

@@ -21,7 +21,8 @@ import { buildPost, noticeGlow } from './scene/post';
 import { fog, renderer, scene } from './scene/stage';
 import { mergeStatic } from './scene/merge';
 import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
-import { buildFacade, buildHall, leaves, setDoor, updateSmoke } from './scene/tavern';
+import { buildFacade, leaves, setDoor, updateSmoke } from './scene/tavern';
+import { buildHall } from './scene/hall';
 import { buildTerrain, surfaceY } from './scene/terrain';
 import { resetRun, state } from './state';
 import { el } from './ui/dom';
@@ -139,7 +140,8 @@ function frame() {
   fog.density = cfg.fog * (1 - inside) + .005 * inside;
   fogC.copy(FOG_OUT).lerp(FOG_IN, inside);
   fog.color.copy(fogC); renderer.setClearColor(fogC, 1);
-  setMoon(1 - inside * .85);
+  // all the way out inside: the moon has no shadows, it lit the hall through the roof like daylight
+  setMoon(1 - inside);
 
   if (stepDue()) sfxStep();
   updateAudio(dt, camZ);
@@ -157,7 +159,8 @@ function frame() {
   updateTorch(t, inside);
   updateFires(t, inside);
   noticeGlow.setLegacy(inside * NOTICE_GLOW);          // not tied to the hall: the poster hands over to the page
-  warmAmb.intensity = inside * cfg.hall * .5 * LEGACY;
+  // a low fill: the lanterns light the hall in pools (at .5 the walls read evenly lit)
+  warmAmb.intensity = inside * cfg.hall * .12 * LEGACY;
 
   updateSky(t, inside);
   updateFireflies(t, inside);

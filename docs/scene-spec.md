@@ -20,12 +20,14 @@ inside the tavern past the facade, `D(d) = GATE_Z − d`.
 | Hall floor top | y = 0.06 (flush with the sill); floor starts at the inside face | same |
 | Threshold sill | dark wood, top at 0.06 | same |
 | Tie beams | every 2 m (`d = 2 … 12`) at y 4.6, ends 0.2 m inside the side walls | ceiling beams every 2.5 |
+| Timber frame | a post under every tie-beam end (`Corner_Exterior_Wood`, on the module seams, 9 cm clear of the window frames), a curved brace (`Roof_Support2`) up to the beam; none behind the chimney breast | — |
 | Post | at `d = 10`, 1.1 × 1.1, floor to the tie beam | `d = 13`, 1.35 |
 | Poster | on the post's front face, centre y = 1.81, height 1.95, aspect 1 : 1.9 | same |
-| Bar | cabinets across the back at `d = 12.2`, bottle shelves on the back wall | `d ≈ 17.4` |
-| Hearth | left wall at `d = 6`, under the chimney | `d = 7` |
-| Chandeliers | `d = 4, 8`, chain end 1 cm into the tie beam | lanterns `d = 5, 10, 15` |
-| Tables | 4 long tables along the walls with benches, aisle `|x| < 0.83` clear | 6 round |
+| Bar | cabinets across the back at `d = 12.2`, bottle shelves on the back wall, kegs in holders at both ends | `d ≈ 17.4` |
+| Hearth | left wall at `d = 6`, under the chimney; a timber mantel shelf 0.3 above the opening | `d = 7` |
+| Chandeliers | `d = 4, 8`, chain end 1 cm into the tie beam; candle flames, no light of their own | lanterns `d = 5, 10, 15` |
+| Tables | 4 long tables along the walls with benches, aisle `|x| < 0.83` clear; candle, two plates, mugs | 6 round |
+| Wall lanterns | `Lantern_Wall` over the front tables: left `d = 1`, right `d = 3` (solid wall, not a window); arm 2 cm under the storey rail (y 2.9), lantern 0.8 m out | — |
 
 Kit placement numbers (bounds, tris) are in `scripts/assets/manifest.json`.
 The chosen models and their budgets are listed in `scripts/assets/build.mjs`.
@@ -146,19 +148,28 @@ The poster and the resume are DOM, not textures.
   face mesh; the old multi-material sign box was 6 draw calls). Walk pines on the right and
   undergrowth keep clear of the wing and the yard in front of it.
 - A variable `inside` (0 → 1) drives the transition as the doors open and the camera enters:
-  fog → `#1a1209` at 0.005, moon down 85 %, warm ambient up, tavern fires up,
-  street lanterns and mist out.
+  fog → `#1a1209` at 0.005, moon and the cold night fill out, warm ambient up, tavern fires
+  up, street lanterns and mist out. The moon went down only 85 % at first: a directional
+  light has no shadows here, so it lit the hall through the roof and the walls read as by day.
+- The hall is lit in pools (interior references: lanterns over the tables, warm walls): a
+  low warm fill (`0.12 · cfg.hall`, was 0.5), the hearth, the post's lanterns, the poster's
+  light and two wall lanterns. The chandeliers gave their lights to the wall lanterns —
+  lit from the middle of the room the walls read evenly, and every light costs every pixel
+  (forest included), so the count stays at 9.
 - Torch is carried at camera-space `(−0.34, +0.34, −1.15)`. On `fly` it detaches and
   stays at the threshold. Its glow sprite is drawn low-left `(−0.62, −0.46, −1)`, orange
   and faint: at the light's own spot and size it hung in the sky as a second moon.
 - Prototype light values are r128 legacy units. The code keeps them as written and converts
   at the light (`src/scene/lights.ts`): ×π for ambient/hemisphere/directional; point lights
   are physical (1/d²) and match the prototype's brightness at a reference distance `dRef`
-  (lanterns 1.5 m, hearth 2, chandeliers 1.6, torch 2).
+  (lanterns 1.5 m, hearth 2, torch 2).
 - Checked against prototype frames (mean luminance, 0–255): forest 43 vs 42, ground 58 vs
   55, path 108 vs 104, at the door 76 vs 81. The hall read ~87–101 vs ~70–80, so the hall
   level `cfg.hall` went 1.3 → 0.75: hall frame 93 → 78. The poster's own light keeps the
   old level (`NOTICE_GLOW` in `app.ts`), so the handover to the page is unchanged.
+  With the pooled light and the timber frame (GPU, 1280×720, `?seed=1`): the frame through
+  the door 90 → 85, mid-flight 87 → 64, at the poster 98 → 76; draw calls unchanged,
+  +12k tris.
 
 ## Audio
 
@@ -185,7 +196,7 @@ Entry requires a click (browser autoplay policy). The gate also hides decoding t
 
 - Ground and path are procedural (terrain shader), no kit ground tiles.
 - Custom boxes wearing kit materials (`src/scene/kitbox.ts`): door lintel filler, sill,
-  notice post, hearth, bar top. The kits have no fireplace or notice board.
+  notice post, hearth and its mantel, bar top. The kits have no fireplace or notice board.
 - Poster copy. (The resume content behind it is real, from the CV.)
 - The tavern sign and the board over the door are canvas textures («TAVERN», «ALE · STEW · BEDS»).
 - Narration is a synthesised placeholder (Kokoro `bm_george`); copy and voice are placeholders.

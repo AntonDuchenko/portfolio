@@ -1,9 +1,9 @@
 import {
-  Box3, CanvasTexture, Color, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  CanvasTexture, Color, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   NormalBlending, type Object3D, PlaneGeometry
 } from 'three';
 import {
-  D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, JETTY, MOD, STOREY, TAV_END, TAV_H, TAV_HW, TAV_LEN, WALL_IN, WING
+  D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, JETTY, MOD, STOREY, TAV_H, TAV_HW, WALL_IN, WING
 } from '../config';
 import { jitter, rand } from '../random';
 import { model } from './assets';
@@ -24,7 +24,7 @@ import { scene } from './stage';
 
 const SIGN_X = -2, SIGN_Y = 2.8, SIGN_Z = 1.1;
 const CHIMNEY = { x: -1, d: 6 };                         // above the hearth (x −2.1), near the ridge
-const HEARTH_D = 6;
+export const HEARTH_D = 6;                              // the hall's hearth (hall.ts), under the chimney
 const LANTERN_HEAD = { y: .34, z: .8 };                   // Lantern_Wall head centre, model space
 
 /** world positions that audio attaches to */
@@ -40,7 +40,7 @@ const smokes: { sp: GlowSprite; x: number; base: number; phase: number; speed: n
 
 // warm lit windows; front side only, so from inside the hall they show the night
 let glass: Material | null = null;
-function village(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
+export function village(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
   const o = model('village', name);
   o.position.set(x, y, z); o.rotation.y = ry;
   glass ??= new MeshBasicMaterial({ color: 0xffb45e, side: FrontSide });
@@ -49,7 +49,7 @@ function village(name: string, x: number, y: number, z: number, ry = 0, parent: 
   });
   parent.add(o); return o;
 }
-function prop(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
+export function prop(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
   const o = model('props', name);
   o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o;
 }
@@ -341,113 +341,4 @@ export function updateSmoke(dt: number) {
     s.sp.position.y = s.base + s.y;
     s.sp.material.opacity = Math.max(0, .26 * (1 - s.y / 12));
   }
-}
-
-/* ── hall ────────────────────────────────────────────────────────── */
-/** Returns the hall group; its floor top is at FLOOR_Y, flush with the sill. */
-export function buildHall() {
-  const tav = new Group(); scene.add(tav);
-  const n = TAV_LEN / MOD;
-
-  // side walls: stone ground floor, plaster upper floor, windows in every other module
-  // except where the hearth stands or the side wing covers the wall. The front upper
-  // module is stretched forward under the jettied gable.
-  for (let k = 0; k < n; k++) {
-    const z = GATE_Z - MOD / 2 - k * MOD, d = MOD / 2 + k * MOD;
-    for (const s of [-1, 1]) {
-      const ry = s * Math.PI / 2, x = s * TAV_HW;
-      const hearthHere = s < 0 && Math.abs(d - HEARTH_D) < MOD;
-      const winged = s > 0 && z + MOD / 2 > WING.z1 && z - MOD / 2 < WING.z0;
-      const win = k % 2 === 1 && !hearthHere && !winged;
-      village(win ? 'Wall_UnevenBrick_Window_Wide_Flat' : 'Wall_UnevenBrick_Straight', x, 0, z, ry, tav);
-      if (win) village('Window_Wide_Flat1', x, 0, z, ry, tav);
-      const ext = k === 0 ? JETTY : 0;
-      const upper = village(k % 2 === 1 && !winged ? 'Wall_Plaster_Window_Wide_Flat' : 'Wall_Plaster_Straight', x, STOREY, z + ext / 2, ry, tav);
-      upper.scale.x = (MOD + ext) / MOD;
-      if (k % 2 === 1 && !winged) village('Window_Wide_Flat1', x, STOREY, z, ry, tav);
-    }
-  }
-  // back wall, back gable, back corner posts
-  for (const x of [-MOD, 0, MOD]) {
-    village('Wall_UnevenBrick_Straight', x, 0, TAV_END, Math.PI, tav);
-    village('Wall_Plaster_Straight', x, STOREY, TAV_END, Math.PI, tav);
-  }
-  village('Roof_Front_Brick6', 0, TAV_H, TAV_END, Math.PI, tav);
-  for (const s of [-1, 1]) for (const y of [0, STOREY]) {
-    const p = village('Corner_Exterior_Wood', s * TAV_HW, y, TAV_END, 0, tav); p.scale.y = STOREY / 3;
-  }
-  // the roof runs out over the jettied gable: stretched by JETTY (3.6 %), front edge forward
-  const roof = village('Roof_RoundTiles_6x14', 0, TAV_H, GATE_Z - TAV_LEN / 2 + JETTY / 2, 0, tav);
-  roof.scale.z = (TAV_LEN + JETTY) / TAV_LEN;
-
-  // floor: 2×2 planks starting at the inside face of the facade (the sill covers the rest)
-  for (let k = 0; k < n; k++) for (const x of [-MOD, 0, MOD])
-    village('Floor_WoodDark', x, FLOOR_Y - .01, GATE_Z - WALL_IN - MOD / 2 - k * MOD, 0, tav);
-
-  // tie beams every 2 m; their ends go 0.2 m into the side walls (hard rule 3)
-  const BEAM_Y = 4.6;
-  for (let d = 2; d < TAV_LEN; d += MOD) for (const x of [-MOD, 0, MOD])
-    village('Wall_BottomCover', x, BEAM_Y, D(d), 0, tav);
-  const beamBottom = BEAM_Y - .12;
-
-  // hearth on the left wall, built as a real recess: back slab (0.1 m into the wall),
-  // two jambs and a lintel leave a 1.4 × 1.1 m opening 0.4 m deep. Faces that meet are
-  // buried inside the stone, none is exposed coplanar (hard rule 1).
-  const stone = { mat: 'MI_UnevenBrick', tile: 1.6 } as const, hz = D(HEARTH_D);
-  const back = -TAV_HW + WALL_IN - .1, face = back + .9, open = { w: 1.4, h: 1.1 };
-  tav.add(kitBox(.5, 3.4, 2.4, stone, back + .25, FLOOR_Y + 1.7, hz));                          // back slab
-  for (const s of [-1, 1])                                                                      // jambs
-    tav.add(kitBox(.4, open.h, (2.4 - open.w) / 2, stone, face - .2, FLOOR_Y + open.h / 2, hz + s * (open.w / 2 + (2.4 - open.w) / 4)));
-  tav.add(kitBox(.4, 3.4 - open.h, 2.4, stone, face - .2, FLOOR_Y + open.h + (3.4 - open.h) / 2, hz));   // lintel
-  // light 10 cm in front of the opening: lights the recess and the room, the stone
-  // front faces only get grazing light (a lit face this close blew out to white)
-  const hearth = new RescaledPointLight(0xff8a3c, 18, 2);
-  hearth.position.set(face + .1, .7, hz); tav.add(hearth);
-  const hearthFire = sprite(fireTex, .7, .9);
-  hearthFire.position.set(face - .22, .45, hz); tav.add(hearthFire);
-  fires.push({ light: hearth, sp: hearthFire, phase: rand(0, 10), power: 2.4 });
-
-  // bar at the back: cabinets as the counter, a plank top resting on them,
-  // bottle shelves on the back wall (1 cm into the wall), barrels in a holder
-  const BAR_D = 12.2;
-  for (const x of [-1.36, 0, 1.36]) prop('Cabinet', x, FLOOR_Y, D(BAR_D), 0, tav);
-  tav.add(kitBox(4.3, .06, .5, { mat: 'MI_WoodTrim', strip: 'dark' }, 0, FLOOR_Y + 1.03, D(BAR_D)));
-  const backIn = TAV_END + WALL_IN;
-  for (const x of [-1.2, 1.2]) for (const y of [1.5, 2.3]) prop('Shelf_Small_Bottles', x, y, backIn - .02, 0, tav);
-  prop('Barrel_Holder', -2.1, FLOOR_Y, D(13.2), 0, tav);
-  for (const x of [-1.5, -.5, .5, 1.5]) prop('Stool', x, FLOOR_Y, D(BAR_D - .7), rand(0, 6.28), tav);
-
-  // barrels and a crate by the door, clear of the opening leaves (free edge |x| ≤ 1.06)
-  for (const s of [-1, 1]) prop('Barrel', s * 2.3, FLOOR_Y, D(1), rand(0, 6.28), tav);
-  prop('Crate_Wooden', 2.2, FLOOR_Y, D(1.9), .3, tav);
-
-  // long tables along the walls, benches on the aisle side; the aisle stays clear
-  for (const [s, d] of [[-1, 2.9], [-1, 9.4], [1, 3.2], [1, 7.6]]) {
-    const x = s * 2.0, z = D(d);
-    prop('Table_Large', x, FLOOR_Y, z, Math.PI / 2, tav);
-    prop('Bench', s * 1.15, FLOOR_Y, z, Math.PI / 2, tav);
-    const top = FLOOR_Y + .81;
-    prop('CandleStick', x, top, z, rand(0, 6.28), tav);
-    prop('Candle_1', x, top + .1, z, 0, tav);
-    const f = sprite(fireTex, .16, .8); f.position.set(x, top + .27, z); tav.add(f);
-    fires.push({ light: null, sp: f, phase: rand(0, 10) });
-    for (let i = 0; i < 3; i++) prop('Mug', x + rand(-.3, .3), top, z + rand(-1.1, 1.1), rand(0, 6.28), tav);
-  }
-
-  // chandeliers over the aisle, hanging from the tie beams: top of the chain at the
-  // beam's underside (hard rule 3); candles ring at −1.1 below it
-  for (const d of [4, 8]) {
-    const c = prop('Chandelier', 0, 0, D(d), 0, tav);
-    const top = beamBottom + .01;                   // chain end 1 cm into the beam
-    c.position.y = top - new Box3().setFromObject(c).max.y;
-    const ringY = top - 1.1;
-    // dRef 1.6: at 2 the plaster walls read brighter than the prototype hall (94 vs ~70)
-    const l = new RescaledPointLight(0xffa348, 16, 1.6); l.position.set(0, ringY, D(d)); tav.add(l);
-    for (let i = 0; i < 8; i++) {
-      const a = i / 8 * Math.PI * 2;
-      const sp = sprite(fireTex, .18, .85); sp.position.set(Math.cos(a) * .55, ringY + .2, D(d) + Math.sin(a) * .55); tav.add(sp);
-      fires.push({ light: i === 0 ? l : null, sp, phase: rand(0, 10), power: 1.8 });
-    }
-  }
-  return { tav, beamBottom };
 }
