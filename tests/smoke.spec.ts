@@ -77,9 +77,11 @@ test('the scene hands over to the page', async ({ page }) => {
   expect(await page.evaluate(() => localStorage.getItem('tavern:volume'))).toBe('0.55');
   await expect.poll(fullscreen, { message: 'the page reads in the normal window' }).toBe(false);
   // "Back to the tavern" (bottom left) steps aside while a row of buttons passes under it;
-  // the pointer moves ask headless Chrome for the frame the observer needs
+  // the pointer moves ask headless Chrome for the frame the observer needs. The epilogue's
+  // row, deep in the page, can always be scrolled into its lane; the hero's could not on CI
+  // (fallback fonts: a short hero, its row above the lane at the top of the page)
   const rowAt = (fromBottom: number) => page.evaluate(b => {
-    const r = document.querySelector('#intro .seals')!.getBoundingClientRect();
+    const r = document.querySelector('#contact .seals')!.getBoundingClientRect();
     scrollBy({ top: r.top - (innerHeight - b), behavior: 'instant' });
   }, fromBottom);
   let x = 0;
