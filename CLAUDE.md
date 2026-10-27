@@ -22,7 +22,7 @@ Repository:
 - `assets-src/` — raw sources, committed but never shipped: `kits/` (Quaternius glTF
   exports incl. `Character/`; two KayKit rocks), `audio/` (original freesound recordings).
   See its README.
-- `scripts/` — build tools (`assets/`, `voice/`). `docs/` — spec, prototype, voice script.
+- `scripts/` — build tools (`assets/`, `voice/`, `portrait/`). `docs/` — spec, prototype, voice script.
 
 `src/` layout:
 
@@ -63,6 +63,12 @@ Repository:
   (one file per kit, models as named root nodes): simplification to budget, 1K WebP
   textures, meshopt. Fails the build if a budget is exceeded. Writes `manifest.json`
   (tris + bounds per model) — use it for placement numbers.
+- `scripts/portrait/engrave.mjs` — the WANTED portrait (`public/portrait.webp`: the poster's
+  face box and the hero frame, one file so the handover stays seamless) engraved from Anton's
+  photo: line hatching bent round the form, cross-hatching in the shadows, an oval vignette.
+  `node scripts/portrait/engrave.mjs <photo> [--preview <png>]`. The photo is never committed
+  or published (his choice: a drawing made from it, not the photo). `og.jpg` has no generator:
+  the same engraving was composited into its poster's frame by hand.
 - `scripts/voice/` — `generate.mjs` synthesised the placeholder voices (Kokoro, offline);
   `elevenlabs.mjs` voices the innkeeper through the ElevenLabs API. Own `package.json`, so
   CI never installs them. **Both overwrite the real recordings** (`generate` writes the walk

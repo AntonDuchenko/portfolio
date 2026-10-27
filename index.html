@@ -155,12 +155,8 @@
       <div id="poster">
         <div class="top">dead or alive</div>
         <p class="title">WANTED</p>
-        <div class="face">
-          <svg viewBox="0 0 64 64" fill="#3a2a14" aria-hidden="true">
-            <circle cx="32" cy="21" r="13"/>
-            <path d="M6 64c0-14 12-23 26-23s26 9 26 23z"/>
-          </svg>
-        </div>
+        <!-- engraved from a photo by scripts/portrait/engrave.mjs; the photo itself is not published -->
+        <div class="face"><img src="portrait.webp" alt="" decoding="async"></div>
         <p class="name">Anton Duchenko</p>
         <p class="role">full-stack developer</p>
         <div class="rule"></div>
@@ -244,9 +240,7 @@
      </div>
     <!-- the poster's sketch, carried over from the scene -->
     <figure class="mugshot" aria-hidden="true">
-      <div class="frame">
-        <svg viewBox="0 0 64 64"><circle cx="32" cy="21" r="13"/><path d="M6 64c0-14 12-23 26-23s26 9 26 23z"/></svg>
-      </div>
+      <div class="frame"><img src="portrait.webp" alt="" decoding="async"></div>
       <figcaption>Last seen shipping to production</figcaption>
     </figure>
     </div>
@@ -328,7 +322,6 @@
           <p class="when">Aug 2025 — now</p>
           <h3>Full-stack developer <span>· Binary Studio</span></h3>
           <ul>
-            <li>290+ pull requests across ~280 tickets in a team of ~10 — the second-highest contributor.</li>
             <li>Rebuilt the multi-step checkout: price and margin sync with change confirmation, Stripe PaymentIntent recalculation, live stock checks before payment, coupons and partial refunds reflected in invoices.</li>
             <li>Algolia search for products, pharmacies and FAQ, with change-gated sync and Inngest reindex jobs.</li>
             <li>Logistics: same-day courier delivery, DHL shipments and labels, order tracking, click and collect, SMS notifications.</li>
