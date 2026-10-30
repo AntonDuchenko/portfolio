@@ -5,6 +5,7 @@ import { torch } from '../scene/lights';
 import { scene } from '../scene/stage';
 import { DOOR_POS, HEARTH_POS, SIGN_POS } from '../scene/tavern';
 import { state } from '../state';
+import { active } from '../theme/themes';
 import voiceLines from '../ui/voice-lines.json';
 import { actx, bedInput, fetchDecode, listener, markStarted, oneShot, voice } from './engine';
 
@@ -106,6 +107,19 @@ function start(bufs: Buffers | null) {
     door: placed(B.door, DOOR_POS, 4, 1, 1.1, false)
   };
   markStarted();
+  startAmbience();
+}
+
+/* The theme's ambience (src/theme/themes.ts): extra loops for the season and the holiday,
+   fetched on their own after the rest — optional: a missing or failed file leaves the
+   scene as it is (hard rule 7). They follow the forest bed: outside only. */
+const ambience: { g: GainNode; gain: number }[] = [];
+function startAmbience() {
+  for (const a of active.map(d => d.ambience).filter(a => a !== undefined)) {
+    fetchDecode(a.file)
+      .then(buf => { ambience.push({ g: bed(buf, 20000).g, gain: a.gain }); })
+      .catch((e: unknown) => console.warn('audio: theme ambience —', e));
+  }
 }
 
 /* ── script events ───────────────────────────────────────────────── */
@@ -150,6 +164,7 @@ export function updateAudio(dt: number, camZ: number) {
   // forest and wind die out inside
   beds.forest.g.gain.value = .55 * out * mix.forest;
   beds.forest.f.frequency.value = forestCut;
+  for (const a of ambience) a.g.gain.value = a.gain * out * mix.forest;
   const gust = .55 + .45 * Math.sin(t * .13) * Math.sin(t * .041);
   beds.wind.gain.value = .06 * gust * out * mix.wind;
   // music: muffled from ~48 m, the door opens it up fully

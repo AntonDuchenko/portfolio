@@ -157,3 +157,13 @@ test('linked files exist', async ({ request }) => {
     if (type) expect(r.headers()['content-type'], path).toContain(type);
   }
 });
+
+test('the theme follows ?date and the overrides', async ({ page }) => {
+  await page.goto('./?date=2026-12-24');
+  await expect(page.locator('html')).toHaveAttribute('data-season', 'winter');
+  await expect(page.locator('html')).toHaveAttribute('data-holiday', 'xmas');
+  await page.goto('./?date=2026-12-24&season=summer&holiday=none&fools=1');
+  await expect(page.locator('html')).toHaveAttribute('data-season', 'summer');
+  await expect(page.locator('html')).toHaveAttribute('data-holiday', 'none');
+  await expect(page.locator('html')).toHaveAttribute('data-fools', 'true');
+});

@@ -53,6 +53,11 @@ Repository:
   where the browser does not allow it for a page (iPhone Safari).
 - Skip (`Skip the walk →`) shortens the walk only and then disappears: the door and the
   flight into the poster always play.
+- `theme/` — seasons and holidays (`docs/themes.md`): `calendar` (pure: date → season,
+  holiday, April 1; `tests/calendar.spec.ts`), `theme` (this visit's theme, overrides
+  `?date=YYYY-MM-DD`, `?season=`, `?holiday=…|none`, `?fools=1|0`, `data-*` on `<html>`),
+  `themes` (what each theme brings — scene and sound read it there, never the date; an
+  optional `ambience` loop per theme). Branch flow: `claude/theme-<name>` → `staging` → `main`.
 - `state.ts` — the run state; `resetRun()` is the one place a replay resets it.
 - `random.ts` — the scene's own seeded generators; `?seed=<n>` pins them. `random`/`rand`/
   `side` for placement, `jitter` for per-frame variation (flicker, sounds) so frame count
@@ -73,10 +78,10 @@ Repository:
   `elevenlabs.mjs` voices the innkeeper through the ElevenLabs API. Own `package.json`, so
   CI never installs them. **Both overwrite the real recordings** (`generate` writes the walk
   AND the innkeeper files) — do not run them unless a line is being replaced on purpose.
-- `.github/workflows/deploy.yml` — every push to `main` or `claude/**` builds and runs the
-  smoke test. `main` publishes `dist/` to the root of `gh-pages` (the live site; GitHub
-  Pages, Source: Deploy from a branch → gh-pages); a `claude/**` branch publishes a preview
-  to `preview/<branch>/` (noindex, analytics off) and never touches the live page. A
+- `.github/workflows/deploy.yml` — every push to `main`, `staging` or `claude/**` builds and
+  runs the smoke test. `main` publishes `dist/` to the root of `gh-pages` (the live site; GitHub
+  Pages, Source: Deploy from a branch → gh-pages); `staging` and `claude/**` publish a preview
+  to `preview/<branch>/` (noindex, analytics off) and never touch the live page. A
   failing test stops the deploy (report uploaded as an artifact).
 - `tests/` — Playwright smoke test (`npm test`, after `npm run build`; runs `vite preview`):
   gate, scene → page with the virtual clock (`helpers.ts`), no-WebGL fallback, linked files.

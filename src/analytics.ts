@@ -1,5 +1,6 @@
 import type { PostHog } from 'posthog-js';
 import { Q } from './quality';
+import { theme } from './theme/theme';
 
 /* Product analytics: PostHog (EU cloud). Page views, the scene → page funnel, how far down
    the page a visitor reads, and what they click (the conversions: CV, contacts, projects).
@@ -55,7 +56,7 @@ export function initAnalytics() {
       disable_surveys: true,
       respect_dnt: true
     });
-    posthog.register({ quality: Q.tier });
+    posthog.register({ quality: Q.tier, season: theme.season, holiday: theme.holiday ?? 'none', fools: theme.fools });
     ph = posthog;
     queue.splice(0).forEach(([e, p]) => posthog.capture(e, p));
   }).catch((e: unknown) => { on = false; console.warn('analytics:', e); });   // blocked: carry on
