@@ -5,16 +5,17 @@
 #   Branch: gh-pages / (root).
 # Pages on a free plan needs a public repository.
 #
-# A push to main publishes the live site (the root of gh-pages). A push to a claude/**
-# working branch publishes a preview at preview/<branch>/ instead — the live page never
-# shows unmerged work. Previews are noindex and send no analytics; the next main deploy
-# keeps them. Run it by hand from the Actions tab for any other branch.
+# Flow: claude/** working branch → staging → main. A push to main publishes the live site
+# (the root of gh-pages). A push to staging or a claude/** branch publishes a preview at
+# preview/<branch>/ instead (staging: preview/staging/) — the live page never shows
+# unmerged work. Previews are noindex and send no analytics; the next main deploy keeps
+# them. Run it by hand from the Actions tab for any other branch.
 
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main, staging, 'claude/**']
   workflow_dispatch:
 
 permissions:
