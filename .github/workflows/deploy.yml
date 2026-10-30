@@ -27,7 +27,8 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # pinned: ubuntu-latest moved to 26.04, where Playwright 1.56 cannot install Chromium
+    runs-on: ubuntu-24.04
     steps:
       # full checkout: the deploy action commits through a git worktree of this clone,
       # and a sparse checkout refuses the dist paths outside its cone
