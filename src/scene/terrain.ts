@@ -1,5 +1,6 @@
-import { Mesh, MeshStandardMaterial, PlaneGeometry } from 'three';
+import { Color, Mesh, MeshStandardMaterial, PlaneGeometry } from 'three';
 import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
+import { look } from '../theme/themes';
 import { scene } from './stage';
 
 /* The ground: four 170 × 80 m strips along the route and past the tavern, a height field
@@ -66,7 +67,8 @@ export function pathX(z: number) {
    the ground gets broad light/dark patches, moss, and a trodden verge by the path. */
 const PATH_GLSL = /* glsl */`
 varying vec3 vTerrW;
-uniform float uGate;
+uniform float uGate, uLitter;
+uniform vec3 uLeafA, uLeafB, uLeafC;
 float th(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float tn(vec2 p) {
   vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
@@ -93,13 +95,41 @@ const PAINT_GLSL = /* glsl */`
   ground = mix(ground, ground * vec3(.78, 1.12, .72), smoothstep(.5, .75, tn(w * .23 + 9.)));
   float verge = (1. - smoothstep(edge, edge + 1.2, ax)) * step(uGate, w.y);
   ground = mix(ground, dirt * .8, verge * .35);
-  diffuseColor.rgb = mix(ground, dirt, onPath);
+  vec3 col = mix(ground, dirt, onPath);
+  // fallen leaves (the theme's litter, 0 = none): three layers of leaf shapes — in each cell
+  // of a 0.3 m grid one leaf, an ellipse at a random spot and angle, kept with a chance that
+  // follows slow drifts; thick off the track, thin on it, none in the ruts
+  if (uLitter > 0.) {
+    float drift = smoothstep(.2, .7, tn(w * .17 + 4.) + uLitter * .5 - .25);
+    float keep = uLitter * drift * mix(1., .3 - .25 * rut, onPath);
+    for (int L = 0; L < 3; L++) {
+      // each layer on its own grid: turned and scaled, so no rows line up
+      float fl = float(L), ang = fl * 2.1 + .4, sc = 3.3 + fl * .9;
+      vec2 r = mat2(cos(ang), sin(ang), -sin(ang), cos(ang)) * w;
+      vec2 q = r * sc + fl * vec2(.37, .61), cell = floor(q), f = fract(q) - .5;
+      if (th(cell + 7.) > keep) continue;
+      vec2 c = vec2(th(cell + 1.), th(cell + 2.)) * .2 - .1;
+      float a = th(cell + 3.) * 6.283, s = sin(a), k = cos(a), size = .6 + .5 * th(cell + 4.);
+      vec2 d = (f - c) / size; d = vec2(k * d.x + s * d.y, -s * d.x + k * d.y);
+      // a leaf: pointed at both ends (narrower towards the tips)
+      float leafD = length(vec2(d.x / .36, d.y / (.17 * (1. - .7 * abs(d.x) / .36))));
+      if (leafD > 1. || abs(d.x) > .36) continue;
+      float pick = th(cell + 5.);
+      vec3 leaf = pick < .4 ? uLeafA : pick < .75 ? uLeafB : uLeafC;
+      col = mix(col, leaf * (.7 + .6 * th(cell + 9.)) * (1. - .25 * leafD), smoothstep(1., .85, leafD));
+    }
+  }
+  diffuseColor.rgb = col;
 }`;
 
 const earth = new MeshStandardMaterial({ roughness: 1 });
 earth.color.setRGB(.04, .048, .035);              // linear; darker than before — the mist is lighter now
 earth.onBeforeCompile = sh => {
   sh.uniforms.uGate = { value: GATE_Z };
+  // the theme's fallen leaves: their colours lit like the ground (×3, dimmed by night)
+  const leaf = (i: number) => ({ value: new Color(look.leaves?.[i] ?? 0).multiplyScalar(.09) });
+  sh.uniforms.uLitter = { value: look.litter ?? 0 };
+  sh.uniforms.uLeafA = leaf(0); sh.uniforms.uLeafB = leaf(2); sh.uniforms.uLeafC = leaf(3);
   sh.vertexShader = sh.vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec3 vTerrW;')
     .replace('#include <project_vertex>', '#include <project_vertex>\nvTerrW = (modelMatrix * vec4(transformed, 1.0)).xyz;');

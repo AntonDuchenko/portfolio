@@ -30,7 +30,8 @@ Repository:
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
   `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
   (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
-  static grove around the tavern), `ground` (path dressing), `undergrowth` (bushes,
+  static grove around the tavern; broadleaf trees where a theme colours them), `ground` (path
+  dressing), `foliage` (leaf-card materials lit from above), `leaves` (a theme's falling leaves), `undergrowth` (bushes,
   ferns, tall grass, mushrooms), `fireflies`, `tavern` (facade with the jettied upper
   storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard), `hall` (the
   room behind the door: timber bays, lanterns over the front tables, hearth, bar), `post`.
@@ -101,7 +102,7 @@ Repository:
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
   427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards),
   whole (unsimplified) bushes with contact shadows, KayKit path rocks and 30 dead trees
-  (was 80): 61 calls, 706k / 420k — check FPS on a phone.
+  (was 80): 61 calls, 706k / 420k; autumn theme 66 calls, 842k / 496k — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.

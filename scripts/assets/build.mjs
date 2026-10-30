@@ -48,6 +48,11 @@ const KITS = {
       // (y 0.9–2.3): cut to budget they turned into long crooked sticks poking out at eye
       // level (review) — only the trunk is kept
       pine_b: { src: 'Pine_2', trunkOnly: 'Bark_NormalTree', tris: { Bark_NormalTree: 420, Leaves_Pine: 760 }, budget: 1200 },
+      // broadleaf trees for the seasons that colour them (src/theme/themes.ts: autumn): the
+      // bark is mostly inside the crown and is cut hard; the leaves are cards and stay whole
+      // (cut, they fused into stretched sheets, like the bushes did)
+      oak_a: { src: 'CommonTree_3', tris: { Bark_NormalTree: 520 }, budget: 2350 },
+      oak_b: { src: 'CommonTree_5', tris: { Bark_NormalTree: 520 }, budget: 1850 },
       snag: { src: 'DeadTree_3', tris: { Bark_DeadTree: 1180 }, budget: 1200 },
       rock: { src: 'Rock_Medium_2', budget: 250 },
       // the path's edges (src/scene/ground.ts): pebbles, rocks and grass — many instances

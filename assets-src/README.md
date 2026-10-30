@@ -11,5 +11,7 @@ Raw material the build is made from. Kept in the repo, never shipped: Vite only 
 - `audio/` — the original CC recordings from freesound.org (`<id>__<author>__<name>`).
   Edited and denoised copies live in `public/audio/`. The 144 MB forest field recording
   (`410357__felixblume__*`) is not committed; its processed loop is `public/audio/forest.mp3`.
+  Theme loops (`docs/themes.md`) come from freesound previews (`<id>__<author>__<name>.mp3`),
+  e.g. `457318__stek59__*` → `public/audio/autumn.mp3`.
 
 The behavioural spec of the scene (the original prototype) is `docs/prototype/`.

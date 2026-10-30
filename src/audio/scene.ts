@@ -5,7 +5,7 @@ import { torch } from '../scene/lights';
 import { scene } from '../scene/stage';
 import { DOOR_POS, HEARTH_POS, SIGN_POS } from '../scene/tavern';
 import { state } from '../state';
-import { active } from '../theme/themes';
+import { active, sound } from '../theme/themes';
 import voiceLines from '../ui/voice-lines.json';
 import { actx, bedInput, fetchDecode, listener, markStarted, oneShot, voice } from './engine';
 
@@ -166,7 +166,7 @@ export function updateAudio(dt: number, camZ: number) {
   beds.forest.f.frequency.value = forestCut;
   for (const a of ambience) a.g.gain.value = a.gain * out * mix.forest;
   const gust = .55 + .45 * Math.sin(t * .13) * Math.sin(t * .041);
-  beds.wind.gain.value = .06 * gust * out * mix.wind;
+  beds.wind.gain.value = .06 * (sound.wind ?? 1) * gust * out * mix.wind;
   // music: muffled from ~48 m, the door opens it up fully
   const dist = Math.max(0, camZ - GATE_Z);
   const near = Math.pow(Math.min(1, Math.max(0, 1 - (dist - 6) / 42)), 1.6);

@@ -15,6 +15,7 @@ import { buildForest, updateForest, updateMists } from './scene/forest';
 import { buildGround } from './scene/ground';
 import { buildUndergrowth } from './scene/undergrowth';
 import { buildFireflies, updateFireflies } from './scene/fireflies';
+import { buildLeaves, updateLeaves } from './scene/leaves';
 import { addGlobalLights, LEGACY, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
 import { buildSky, updateSky } from './scene/sky';
 import { buildPost, noticeGlow } from './scene/post';
@@ -164,6 +165,7 @@ function frame() {
 
   updateSky(t, inside);
   updateFireflies(t, inside);
+  updateLeaves(t, camZ, inside);
   updateMists(dt, t, camZ, inside);
   updateSmoke(dt);
   updateForest(camZ);
@@ -192,6 +194,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   buildGround(state.startZ);
   buildUndergrowth(state.startZ);
   buildFireflies(state.startZ);
+  buildLeaves();
   const front = buildFacade();
   const hall = buildHall();
   buildPost(hall);

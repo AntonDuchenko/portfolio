@@ -1,14 +1,16 @@
 import {
-  CanvasTexture, Color, InstancedMesh, type Material, MeshBasicMaterial, type MeshStandardMaterial, Object3D,
+  CanvasTexture, Color, InstancedMesh, type Material, MeshBasicMaterial, Object3D,
   PlaneGeometry, Vector3
 } from 'three';
 import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
+import { foliage, tinted } from './foliage';
 import { night } from './forest';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
+import { look } from '../theme/themes';
 
 /* Undergrowth from the Nature kit: bushes, ferns and tall wispy grass along the walk and in
    the tavern's yard, and small clusters of mushrooms at the path's edge (no glow: the warm
@@ -77,38 +79,15 @@ const yard = (x: number, z: number) => (Math.abs(x) < TAV_HW + .6 && z > TAV_END
   || (x > 0 && x < WING.x1 + .8 && z > WING.z1 - .8 && z < WING.z0 + .8)
   || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 9);
 
-// Bushes are alpha-cut leaf cards: lit by their own normals, the cards facing away from
-// the moon went black and the bushes read as paper cut-outs. Lit as if every leaf faced up
-// (85 %), they shade like one leafy mass and keep the texture's detail.
-const LIT_FROM_ABOVE = '#include <normal_fragment_maps>\nnormal = normalize(mix(normal, (viewMatrix * vec4(0., 1., 0., 0.)).xyz, .85));';
-function foliage(m: Material, recolor = '') {
-  const g = (m as MeshStandardMaterial).clone();
-  g.roughness = 1;                                   // facing up, a gloss caught the moon: grey haze
-  g.metalness = 0;
-  g.customProgramCacheKey = () => 'foliage' + recolor;   // the default key is the hook's source, alike for all
-  g.onBeforeCompile = sh => {
-    // and darker towards the roots (the model's own height, 0 at its ground line): with the
-    // light from above the base was as bright as the crown and the bush sat on the ground
-    // like a cut-out laid over it
-    sh.vertexShader = 'varying float vFoliageY;\n' + sh.vertexShader
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFoliageY = position.y;');
-    sh.fragmentShader = 'varying float vFoliageY;\n' + sh.fragmentShader
-      .replace('#include <map_fragment>', '#include <map_fragment>\n' + recolor
-        + '\ndiffuseColor.rgb *= mix(.3, 1., smoothstep(-.05, .8, vFoliageY));')
-      .replace('#include <normal_fragment_maps>', LIT_FROM_ABOVE);
-  };
-  return g;
-}
 // the plain bush wears the twisted tree's red leaves: keep their pattern (the texture's
 // brightness) in a dark night green, a little darker than the ferns (lit from above, the
 // whole bush catches the sky light)
-const greenBush = (m: Material) =>
-  foliage(m, 'diffuseColor.rgb = vec3(dot(diffuseColor.rgb, vec3(.75, .2, .05))) * vec3(.05, .07, .042);');
+const greenBush = (m: Material) => foliage(m, tinted(...(look.bush ?? [.05, .07, .042])));
 // the flowering bush: leaves a shade darker than the ferns' night tint (a copy — the window
 // boxes keep the untinted leaves under their lanterns), the flowers dimmed and cooled
 const flowerBush = (m: Material) => {
   const g = foliage(m);
-  g.color.multiply(new Color(m.name === 'Flowers' ? 0x606680 : 0x27322f));
+  g.color.multiply(new Color(m.name === 'Flowers' ? 0x606680 : look.bloomLeaves ?? 0x27322f));
   return g;
 };
 

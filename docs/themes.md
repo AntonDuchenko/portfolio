@@ -50,6 +50,21 @@ overlap with this list; if one ever did, the nearer holiday would win.
 **Previews and tests:** `?date=2026-12-24` (as if it were that day), `?season=winter`,
 `?holiday=xmas|none`, `?fools=1|0`.
 
+## Done
+
+**Autumn** (`claude/theme-autumn`): broadleaf trees among the pines (`CommonTree_3` and
+`_5`, bark cut to 520 tris, leaves whole — cut, they fused into sheets; 24 + 5 of each on
+the high tier), each crown in one of five leaf colours (instance colour on the foliage
+material, lit from above like the bushes); rust bushes; ferns and grass repainted bracken
+and straw (`recolor`: the texture's brightness × a colour); fallen leaves painted by the
+terrain shader (three turned and scaled grids of pointed leaf shapes, in drifts, thin on
+the track, none in the ruts — no draw call); falling leaves in a band around the camera
+(`scene/leaves.ts`, one draw call). Sound: wind ×1.3 and a 40 s loop of wind in dry
+leaves (freesound 457318 by Stek59, CC0; cut below 250 Hz, seam crossfaded, −30 LUFS).
+Cost: 66 draw calls walking (summer 61), 842k tris high / 496k low (summer 723k / 420k).
+The broadleaf models sit in `forest.glb` (+125 KB) for every visitor — they are meant to be
+reused by spring and summer.
+
 ## Per theme (scene first)
 
 | Theme | Scene | Sound |
