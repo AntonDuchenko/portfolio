@@ -21,8 +21,10 @@ on:
 permissions:
   contents: write          # push the built site to gh-pages
 
+# one queue per branch: a newer push cancels that branch's older run only (a single queue
+# for all branches let a theme branch's push cancel the staging run)
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
