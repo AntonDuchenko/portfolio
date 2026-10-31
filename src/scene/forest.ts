@@ -10,6 +10,7 @@ import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
 import { look } from '../theme/themes';
 import { foliage, tinted as tintedLeaves } from './foliage';
+import { snowy } from './snow';
 
 // The forest is finite (route 0 → GATE_Z): instances behind the camera are
 // re-placed ahead of it, never past GATE_Z + 4.
@@ -49,6 +50,7 @@ export function night(m: Material) {
       sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + tintedLeaves(...recolor));
     };
   }
+  snowy(m);
   if (m.name === 'forest') m.roughness = 1;          // KayKit's atlas is semi-gloss (0.6): wet-looking rocks
 }
 

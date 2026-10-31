@@ -1,4 +1,5 @@
 import type { Material, MeshStandardMaterial } from 'three';
+import { snowy } from './snow';
 
 /* Foliage materials for leaf-card models (bushes, broadleaf crowns). Lit by their own
    normals, the cards facing away from the moon went black and the plants read as paper
@@ -23,6 +24,7 @@ export function foliage(m: Material, recolor = '', fade = .8) {
         + `\ndiffuseColor.rgb *= mix(.3, 1., smoothstep(-.05, ${fade.toFixed(2)}, vFoliageY));`)
       .replace('#include <normal_fragment_maps>', LIT_FROM_ABOVE);
   };
+  snowy(g);                                          // winter: snow on the crowns
   return g;
 }
 

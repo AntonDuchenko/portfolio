@@ -65,6 +65,19 @@ Cost: 66 draw calls walking (summer 61), 842k tris high / 496k low (summer 723k 
 The broadleaf models sit in `forest.glb` (+125 KB) for every visitor — they are meant to be
 reused by spring and summer.
 
+**Winter** (`claude/theme-winter`): snow on whatever faces up (`scene/snow.ts`: a shader
+addition on the night-tinted forest materials, the foliage and the roof tiles — white from
+a 60° slope up, roofs from 78°, as their tiles are stepped; the hall's materials never get
+it), a snow blanket in the terrain shader with thin patches and a trodden track whose ruts
+cut through to the mud, falling snowflakes (the falling-leaves module, `fall: 'snow'`),
+a colder and lighter mist. Left out: ferns, mushrooms, flowers (bushes and window boxes),
+fireflies. Sound: the forest bed's insects down to 35 %, wind ×1.2 and a 40 s loop of a
+storm in the pines (freesound 505999 by DBlover, CC0; its steadiest stretch, 240–283 s,
+−26.7 LUFS), footsteps in snow (freesound 611277 by xkeril, CC0; six steps cut at their
+onsets, levelled to the gravel ones' RMS) in `public/audio/snow/`. Cost: 55 draw calls,
+684k tris high / 407k low (less than summer: no ferns, flowers or fireflies). Summer
+frames are pixel-identical to before.
+
 ## Per theme (scene first)
 
 | Theme | Scene | Sound |

@@ -28,14 +28,27 @@ export interface Look {
   recolor?: Record<string, RGB>;
   /** fallen leaves on the ground, 0…1 (terrain shader) */
   litter?: number;
-  /** falling leaves around the walk at the high tier (low: half) */
+  /** things falling around the walk at the high tier (low: half): leaves or snow */
   falling?: number;
+  fall?: 'leaves' | 'snow';
+  /** snow on the ground and on whatever faces up, 0…1 */
+  snow?: number;
+  /** undergrowth left out (by model key: fern, mushroom, tallgrass, bush, flowers) */
+  hide?: string[];
+  /** no fireflies (winter) */
+  noFireflies?: boolean;
+  /** the outside mist, linear (default: config FOG_OUT) */
+  fog?: RGB;
   /** leaf colours (sRGB) for the litter and the falling leaves */
   leaves?: number[];
 }
 export interface Sound {
   /** the synthesised wind, × today's level */
   wind?: number;
+  /** the forest bed (night insects), × today's level */
+  forest?: number;
+  /** footsteps from public/audio/<steps>/step0–5.mp3 instead of the gravel ones */
+  steps?: string;
 }
 export interface ThemeData {
   look?: Look;
@@ -46,7 +59,24 @@ export interface ThemeData {
 const AUTUMN_LEAVES = [0xb5541c, 0x9c2f1c, 0xc8861f, 0x6e4426, 0xa8661e];
 
 export const SEASON_DATA: Record<Season, ThemeData> = {
-  winter: {},
+  winter: {
+    look: {
+      snow: 1,
+      hide: ['fern', 'mushroom', 'flowers'],         // flowers: the bushes and the window boxes
+      noFireflies: true,
+      falling: 260,
+      fall: 'snow',
+      bush: [.035, .045, .04],                      // the few leaves left: dark, under snow
+      fog: [.042, .05, .072]                        // colder, a touch lighter: snow light
+    },
+    // the forest bed's insects have no place in winter; a storm far off in the pines and
+    // snow underfoot instead. Wind: freesound 505999 by DBlover (CC0), 240–283 s (its
+    // steadiest stretch, 4 LU), cut below 50 Hz, a 40 s seamless loop at −26.7 LUFS. Steps:
+    // freesound 611277 by xkeril (CC0), six steps cut at their onsets, 0.38 s like the
+    // gravel ones, levelled to their RMS (−28 dB)
+    sound: { wind: 1.2, forest: .35, steps: 'snow' },
+    ambience: { file: 'winter', gain: .45 }
+  },
   spring: {},
   summer: {},
   autumn: {

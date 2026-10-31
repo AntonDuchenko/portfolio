@@ -26,7 +26,7 @@ interface Item { x: number; z: number; s: number; sy?: number }
  *  point goes to the ground at its centre. (The bushes reach 0.23 below their origin with
  *  1 % of their vertices: stood on that, they hovered 0.2–0.4 m.) Returns the placements. */
 function lay(name: string, items: Item[], material?: (m: Material) => Material, rooted = false) {
-  if (!items.length) return [];
+  if (!items.length || look.hide?.includes(name)) return [];   // the season has none (winter: ferns)
   const ps = parts('forest', name), b = bounds(ps), r = Math.max(b.max.x, -b.min.x, b.max.z, -b.min.z) * .6;
   ps.forEach(p => night(p.material));
   const meshes = instanced(ps, items.length), o = new Object3D();
@@ -95,7 +95,7 @@ export function buildUndergrowth(startZ: number) {
   const z0 = startZ + 10, z1 = GATE_Z + 2, len = z0 - z1;
   const n = (per: number) => Math.round(len * per * Q.forest);
   const bush: Item[] = [], bloom: Item[] = [], fern: Item[] = [], tall: Item[] = [], shroom: Item[] = [];
-  const shrub = (it: Item) => (random() < .3 ? bloom : bush).push(it);
+  const shrub = (it: Item) => (random() < .3 && !look.hide?.includes('flowers') ? bloom : bush).push(it);
   const along = (min: number, max: number) => { const z = rand(z1, z0); return { x: pathX(z) + side() * rand(min, max), z }; };
 
   for (let i = n(.45); i--;) shrub({ ...along(3, 15), s: rand(.9, 1.6) });

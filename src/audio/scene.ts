@@ -35,7 +35,8 @@ export function loadAudio(): Promise<Buffers | null> {
     let settled = false;
     const finish = (v: Buffers | null) => { if (settled) return; settled = true; clearTimeout(timer); done(v); };
     const timer = setTimeout(() => { console.warn('audio: timeout'); finish(null); }, LOAD_TIMEOUT);
-    Promise.all(SOUNDS.map(fetchDecode))
+    // the season's footsteps (winter: snow) replace the gravel ones, same names
+    Promise.all(SOUNDS.map(k => fetchDecode(sound.steps && k.startsWith('step') ? `${sound.steps}/${k}` : k)))
       .then(list => { const o = {} as Buffers; SOUNDS.forEach((k, i) => o[k] = list[i]); finish(o); })
       .catch((e: unknown) => { console.warn('audio: failed to load —', e); finish(null); });
   });
@@ -162,7 +163,7 @@ export function updateAudio(dt: number, camZ: number) {
   const { inside, t, doorAngle, phase } = state;
   const out = 1 - inside;
   // forest and wind die out inside
-  beds.forest.g.gain.value = .55 * out * mix.forest;
+  beds.forest.g.gain.value = .55 * (sound.forest ?? 1) * out * mix.forest;
   beds.forest.f.frequency.value = forestCut;
   for (const a of ambience) a.g.gain.value = a.gain * out * mix.forest;
   const gust = .55 + .45 * Math.sin(t * .13) * Math.sin(t * .041);

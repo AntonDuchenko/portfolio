@@ -6,7 +6,9 @@ import {
   D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, JETTY, MOD, STOREY, TAV_H, TAV_HW, WALL_IN, WING
 } from '../config';
 import { jitter, rand } from '../random';
-import { model } from './assets';
+import { kitMaterial, model } from './assets';
+import { snowy } from './snow';
+import { look } from '../theme/themes';
 import { night } from './forest';
 import { kitBox } from './kitbox';
 import { fires, RescaledPointLight } from './lights';
@@ -125,6 +127,7 @@ export function lantern(parent: Object3D, x: number, y: number, z: number, ry: n
 
 /* ── facade ──────────────────────────────────────────────────────── */
 export function buildFacade() {
+  snowy(kitMaterial('village', 'MI_RoundTiles'), .2);   // winter: snow on the roofs (outside only: no floors)
   const front = new Group(); front.position.z = GATE_Z; scene.add(front);
   const half = DOOR_W / 2;
 
@@ -209,7 +212,7 @@ export function buildFacade() {
   // leaves go into the box)
   for (const s of [-1, 1]) {
     front.add(kitBox(1.5, .2, .28, wood, s * MOD, .83, .16));
-    for (const dx of [-.48, 0, .48]) {
+    for (const dx of look.hide?.includes('flowers') ? [] : [-.48, 0, .48]) {   // no flowers in winter
       const f = model('forest', 'flowers'), k = rand(.3, .36);
       f.traverse(c => { if (c instanceof Mesh) night(c.material as Material); });
       f.scale.setScalar(k); f.position.set(s * MOD + dx, .93 - .03, .16); f.rotation.y = rand(0, 6.28);   // origin = its ground

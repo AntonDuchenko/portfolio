@@ -1,6 +1,7 @@
 import { Color, Mesh, MeshStandardMaterial, PlaneGeometry } from 'three';
 import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { look } from '../theme/themes';
+import { SNOW } from './snow';
 import { scene } from './stage';
 
 /* The ground: four 170 × 80 m strips along the route and past the tavern, a height field
@@ -67,7 +68,8 @@ export function pathX(z: number) {
    the ground gets broad light/dark patches, moss, and a trodden verge by the path. */
 const PATH_GLSL = /* glsl */`
 varying vec3 vTerrW;
-uniform float uGate, uLitter;
+uniform float uGate, uLitter, uSnow;
+uniform vec3 uSnowCol;
 uniform vec3 uLeafA, uLeafB, uLeafC;
 float th(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float tn(vec2 p) {
@@ -96,6 +98,14 @@ const PAINT_GLSL = /* glsl */`
   float verge = (1. - smoothstep(edge, edge + 1.2, ax)) * step(uGate, w.y);
   ground = mix(ground, dirt * .8, verge * .35);
   vec3 col = mix(ground, dirt, onPath);
+  // snow (the theme's, 0 = none): a blanket with a few thin patches, trodden on the track —
+  // grey-white, the ruts dark where the wheels cut through to the mud
+  if (uSnow > 0.) {
+    float cover = uSnow * smoothstep(.25, .55, tn(w * .09 + 2.) * .7 + tn(w * .6) * .3 + .3);
+    vec3 snow = uSnowCol * (.88 + .2 * tn(w * 1.7));
+    vec3 trodden = mix(snow * .78, dirt * 1.3, .25 + .65 * rut);
+    col = mix(mix(col, snow, cover), trodden, onPath * uSnow);
+  }
   // fallen leaves (the theme's litter, 0 = none): three layers of leaf shapes — in each cell
   // of a 0.3 m grid one leaf, an ellipse at a random spot and angle, kept with a chance that
   // follows slow drifts; thick off the track, thin on it, none in the ruts
@@ -129,6 +139,8 @@ earth.onBeforeCompile = sh => {
   // the theme's fallen leaves: their colours lit like the ground (×3, dimmed by night)
   const leaf = (i: number) => ({ value: new Color(look.leaves?.[i] ?? 0).multiplyScalar(.09) });
   sh.uniforms.uLitter = { value: look.litter ?? 0 };
+  sh.uniforms.uSnow = { value: look.snow ?? 0 };
+  sh.uniforms.uSnowCol = { value: SNOW };
   sh.uniforms.uLeafA = leaf(0); sh.uniforms.uLeafB = leaf(2); sh.uniforms.uLeafC = leaf(3);
   sh.vertexShader = sh.vertexShader
     .replace('#include <common>', '#include <common>\nvarying vec3 vTerrW;')

@@ -1,6 +1,9 @@
 import { ACESFilmicToneMapping, FogExp2, Scene, WebGLRenderer } from 'three';
 import { FOG_OUT, cfg } from '../config';
 import { Q } from '../quality';
+import { look } from '../theme/themes';
+
+if (look.fog) FOG_OUT.setRGB(...look.fog);           // the season's mist (winter: colder)
 
 export const renderer = new WebGLRenderer({ antialias: Q.antialias, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, Q.pixelRatio));

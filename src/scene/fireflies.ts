@@ -3,6 +3,7 @@ import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { fireflyTex, type GlowSprite, sprite } from './sprites';
 import { scene } from './stage';
+import { look } from '../theme/themes';
 import { pathX, surfaceY } from './terrain';
 
 /* Fireflies: small warm points drifting over the undergrowth along the walk and around the
@@ -14,6 +15,7 @@ interface Fly { sp: GlowSprite; x: number; y: number; z: number; a: number; b: n
 const flies: Fly[] = [];
 
 export function buildFireflies(startZ: number) {
+  if (look.noFireflies) return;                     // not in this season (winter)
   const n = Math.round(80 * Q.forest);
   for (let i = 0; i < n; i++) {
     // a quarter of them in the tavern's yard, the rest along the walk, off the camera line
