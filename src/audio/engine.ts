@@ -1,3 +1,4 @@
+import { asset } from '../version';
 import { AudioListener } from 'three';
 import { camera } from '../camera/camera';
 
@@ -57,7 +58,7 @@ export const bedInput = () => bedBus ??= (() => { const g = actx.createGain(); g
 export function duckBeds(v: number) { bedBus?.gain.setTargetAtTime(v, actx.currentTime, .25); }
 
 export async function fetchDecode(path: string) {
-  const res = await fetch(`${import.meta.env.BASE_URL}audio/${path}.mp3`);
+  const res = await fetch(asset(`audio/${path}.mp3`));
   if (!res.ok) throw new Error(`${path}.mp3: HTTP ${res.status}`);
   return actx.decodeAudioData(await res.arrayBuffer());
 }

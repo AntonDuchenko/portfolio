@@ -2,10 +2,12 @@ import './styles.css';
 import './site/site.css';
 import { initAnalytics } from './analytics';
 import { applyTheme } from './theme/theme';
+import { checkVersion } from './version';
 import { initSite, inkHero } from './site/site';
 import { showSiteOnly } from './ui/fallback';
 import { webglSupport } from './quality';
 
+checkVersion();
 applyTheme();
 initSite();
 initAnalytics();

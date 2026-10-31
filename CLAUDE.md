@@ -59,6 +59,12 @@ Repository:
   `?date=YYYY-MM-DD`, `?season=`, `?holiday=…|none`, `?fools=1|0`, `data-*` on `<html>`),
   `themes` (what each theme brings — scene and sound read it there, never the date; an
   optional `ambience` loop per theme). Branch flow: `claude/theme-<name>` → `staging` → `main`.
+- `version.ts` — stale caches after a deploy: GitHub Pages lets browsers keep every file 10
+  minutes (headers cannot be set), so a visitor got the old page, or new code with old models.
+  Model and sound URLs carry the build id (`asset()`, `?v=`; the id is defined in
+  `vite.config.ts`, which also writes `version.json`); on load the page fetches
+  `version.json` past the cache and reloads once if a newer build is live. New fetches of
+  files in `public/` go through `asset()`.
 - `state.ts` — the run state; `resetRun()` is the one place a replay resets it.
 - `random.ts` — the scene's own seeded generators; `?seed=<n>` pins them. `random`/`rand`/
   `side` for placement, `jitter` for per-frame variation (flicker, sounds) so frame count
