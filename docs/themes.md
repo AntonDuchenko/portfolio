@@ -78,6 +78,16 @@ onsets, levelled to the gravel ones' RMS) in `public/audio/snow/`. Cost: 55 draw
 684k tris high / 407k low (less than summer: no ferns, flowers or fireflies). Summer
 frames are pixel-identical to before.
 
+**Christmas and New Year** (`claude/theme-xmas`, over winter; `scene/xmas.ts`): a string of
+coloured bulbs under the jetty deck (hung at x ±3.15, ±2.05, ±1, 0 — it passes the lantern
+posts at its hanging points, above their arms), a wreath with berries and a bow on the
+upper storey, a decorated pine in the left yard (`pine_b` at 4.5 m, 46 bulbs on a golden-
+angle spiral over the measured crown, a star 8 cm into the tip); the undergrowth keeps 3 m
+clear round it. Bulbs: one instanced mesh; their glows one instanced mesh of camera-facing
+additive quads coloured per bulb, twinkling; the wire one line. No draw from the layout's
+random stream. Sound: a distant church peal (freesound 244517 by Cheeseheadburger, CC0;
+40 s seamless loop, −28 LUFS) over the winter storm. Cost: 63 draw calls, 691k / 413k.
+
 ## Per theme (scene first)
 
 | Theme | Scene | Sound |

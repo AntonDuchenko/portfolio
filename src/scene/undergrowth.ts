@@ -77,7 +77,8 @@ function contactShadows(items: Item[], radius: number) {
  *  cart and the view of it from the path) */
 const yard = (x: number, z: number) => (Math.abs(x) < TAV_HW + .6 && z > TAV_END - .6 && z < GATE_Z + 1.2)
   || (x > 0 && x < WING.x1 + .8 && z > WING.z1 - .8 && z < WING.z0 + .8)
-  || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 9);
+  || (x > WING.x0 && x < WING.x1 + 4 && z > WING.z0 && z < GATE_Z + 9)
+  || (look.decor?.tree !== undefined && Math.hypot(x - look.decor.tree[0], z - GATE_Z - look.decor.tree[1]) < 3);   // the yard tree
 
 // the plain bush wears the twisted tree's red leaves: keep their pattern (the texture's
 // brightness) in a dark night green, a little darker than the ferns (lit from above, the

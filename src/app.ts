@@ -16,6 +16,7 @@ import { buildGround } from './scene/ground';
 import { buildUndergrowth } from './scene/undergrowth';
 import { buildFireflies, updateFireflies } from './scene/fireflies';
 import { buildLeaves, updateLeaves } from './scene/leaves';
+import { buildXmas, updateXmas } from './scene/xmas';
 import { addGlobalLights, LEGACY, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
 import { buildSky, updateSky } from './scene/sky';
 import { buildPost, noticeGlow } from './scene/post';
@@ -166,6 +167,7 @@ function frame() {
   updateSky(t, inside);
   updateFireflies(t, inside);
   updateLeaves(t, camZ, inside);
+  updateXmas(t, inside);
   updateMists(dt, t, camZ, inside);
   updateSmoke(dt);
   updateForest(camZ);
@@ -196,6 +198,7 @@ void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
   buildFireflies(state.startZ);
   buildLeaves();
   const front = buildFacade();
+  buildXmas(front);
   const hall = buildHall();
   buildPost(hall);
   // static batching: one draw call per material for the building and its props

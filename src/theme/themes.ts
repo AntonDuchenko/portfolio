@@ -37,6 +37,9 @@ export interface Look {
   hide?: string[];
   /** no fireflies (winter) */
   noFireflies?: boolean;
+  /** holiday decorations (scene/xmas.ts): garland under the jetty, wreath, a tree in the
+   *  yard at [x, z] (facade coordinates) */
+  decor?: { garland?: boolean; wreath?: boolean; tree?: [number, number] };
   /** the outside mist, linear (default: config FOG_OUT) */
   fog?: RGB;
   /** leaf colours (sRGB) for the litter and the falling leaves */
@@ -96,7 +99,13 @@ export const SEASON_DATA: Record<Season, ThemeData> = {
   }
 };
 export const HOLIDAY_DATA: Record<Holiday, ThemeData> = {
-  xmas: {}, valentine: {}, easter: {}, midsummer: {}, halloween: {}
+  // laid over winter (18 December – 6 January is all winter). Bells: freesound 244517 by
+  // Cheeseheadburger (CC0), a distant church peal, 40 s seamless loop
+  xmas: {
+    look: { decor: { garland: true, wreath: true, tree: [-6.3, 3.4] } },
+    ambience: { file: 'xmas', gain: .5 }
+  },
+  valentine: {}, easter: {}, midsummer: {}, halloween: {}
 };
 
 /** the data in force for this visit: the season's, then the holiday's */
