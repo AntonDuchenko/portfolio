@@ -1,3 +1,4 @@
+import { asset } from '../version';
 import {
   AnimationMixer, Box3, type Bone, DirectionalLight, HemisphereLight, type Object3D,
   PerspectiveCamera, Scene, Vector3, WebGLRenderer
@@ -18,7 +19,7 @@ let model: ReturnType<typeof loadGLTF> | null = null;
 /** Fetches and decodes the character; called early (during the walk) so landing only has
  *  to create the renderer. */
 export function loadAvatar() {
-  return model ??= loadGLTF(`${import.meta.env.BASE_URL}models/narrator.glb`);
+  return model ??= loadGLTF(asset('models/narrator.glb'));
 }
 
 export async function mountAvatar(slot: HTMLElement): Promise<Avatar> {

@@ -1,6 +1,7 @@
 import {
   Box3, BufferAttribute, type BufferGeometry, InstancedMesh, type Material, Matrix4, Mesh, type Object3D
 } from 'three';
+import { asset } from '../version';
 import { loadGLTF } from '../loaders/gltf';
 import { Q } from '../quality';
 
@@ -13,7 +14,7 @@ type Kit = typeof KITS[number];
 const roots = {} as Record<Kit, Object3D>;
 
 export async function loadKits() {
-  const loaded = await Promise.all(KITS.map(k => loadGLTF(`${import.meta.env.BASE_URL}${Q.models}${k}.glb`)));
+  const loaded = await Promise.all(KITS.map(k => loadGLTF(asset(`${Q.models}${k}.glb`))));
   KITS.forEach((k, i) => { roots[k] = loaded[i].scene; roots[k].updateMatrixWorld(true); });
 }
 
