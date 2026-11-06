@@ -23,8 +23,9 @@ export interface Look {
   /** extra linear multipliers on kit materials by name, after the night tint — e.g. Grass
    *  (above 1 to lighten: the night tint has darkened them) */
   tint?: Record<string, RGB>;
-  /** kit materials by name repainted: the texture's brightness × this linear colour (for a
-   *  change of hue a multiplier cannot make, e.g. green ferns to brown bracken) */
+  /** kit materials by name repainted: the texture's value (its brightest channel) × this
+   *  linear colour, in place of the night tint (for a change of hue a multiplier cannot
+   *  make, e.g. green ferns to brown bracken, purple flowers to orange chrysanthemums) */
   recolor?: Record<string, RGB>;
   /** fallen leaves on the ground, 0…1 (terrain shader) */
   litter?: number;
@@ -37,9 +38,22 @@ export interface Look {
   hide?: string[];
   /** no fireflies (winter) */
   noFireflies?: boolean;
+  /** lanterns on posts along the walk (scene/waylights.ts): the warm points instead of the
+   *  fireflies */
+  wayLights?: boolean;
   /** holiday decorations (scene/xmas.ts): garland under the jetty, wreath, a tree in the
-   *  yard at [x, z] (facade coordinates) */
-  decor?: { garland?: boolean; wreath?: boolean; tree?: [number, number] };
+   *  yard at [x, z] (facade coordinates); `hall`: inside too (the mantel, the chimney
+   *  breast, a small tree by the bar) */
+  decor?: { garland?: boolean; wreath?: boolean; tree?: [number, number]; hall?: boolean };
+  /** the brook frozen (scene/brook.ts): snow on the ice, an open run down the middle */
+  brook?: 'ice';
+  /** the window boxes hold fir sprigs instead of flowers (scene/evergreen.ts), with red
+   *  berries among them */
+  boxes?: { berries?: boolean };
+  /** the harvest in the yard and on the bar (scene/harvest.ts): apples and carrots */
+  harvest?: boolean;
+  /** chimney smoke, × today's opacity */
+  smoke?: number;
   /** the outside mist, linear (default: config FOG_OUT) */
   fog?: RGB;
   /** leaf colours (sRGB) for the litter and the falling leaves */
@@ -59,7 +73,9 @@ export interface ThemeData {
   ambience?: Ambience;
 }
 
-const AUTUMN_LEAVES = [0xb5541c, 0x9c2f1c, 0xc8861f, 0x6e4426, 0xa8661e];
+// orange and gold first: at night, in the blue mist, the deep reds turned mauve and the
+// crowns read as cherry blossom
+const AUTUMN_LEAVES = [0xc8701e, 0xd9a22e, 0xa8401a, 0x7a4a22, 0xb8581c];
 
 export const SEASON_DATA: Record<Season, ThemeData> = {
   winter: {
@@ -67,9 +83,16 @@ export const SEASON_DATA: Record<Season, ThemeData> = {
       snow: 1,
       hide: ['fern', 'mushroom', 'flowers'],         // flowers: the bushes and the window boxes
       noFireflies: true,
+      wayLights: true,
+      brook: 'ice',
       falling: 260,
       fall: 'snow',
       bush: [.035, .045, .04],                      // the few leaves left: dark, under snow
+      // dead grass, bleached: the summer green under the night tint stood out of the snow
+      // as black spikes
+      recolor: { Grass: [.14, .115, .08] },
+      boxes: {},                                    // fir sprigs where the flowers were
+      smoke: 1.7,                                   // every hearth is lit
       fog: [.042, .05, .072]                        // colder, a touch lighter: snow light
     },
     // the forest bed's insects have no place in winter; a storm far off in the pines and
@@ -87,10 +110,12 @@ export const SEASON_DATA: Record<Season, ThemeData> = {
       broadleaf: AUTUMN_LEAVES,
       bush: [.075, .04, .018],                      // rust
       bloomLeaves: 0x3a2a1c,
-      recolor: { Leaves: [.11, .05, .018], Grass: [.12, .09, .04] },   // bracken ferns, straw grass
+      // bracken ferns, straw grass, chrysanthemums for the summer's violet flowers
+      recolor: { Leaves: [.2, .085, .028], Grass: [.12, .09, .04], Flowers: [.42, .16, .035] },
       litter: .8,
       falling: 140,
-      leaves: AUTUMN_LEAVES
+      leaves: AUTUMN_LEAVES,
+      harvest: true
     },
     sound: { wind: 1.3 },
     // wind through dry leaves: freesound 457318 by Stek59 (CC0), cut below 250 Hz (wind on
@@ -102,7 +127,7 @@ export const HOLIDAY_DATA: Record<Holiday, ThemeData> = {
   // laid over winter (18 December – 6 January is all winter). Bells: freesound 244517 by
   // Cheeseheadburger (CC0), a distant church peal, 40 s seamless loop
   xmas: {
-    look: { decor: { garland: true, wreath: true, tree: [-6.3, 3.4] } },
+    look: { decor: { garland: true, wreath: true, tree: [-6.3, 3.4], hall: true }, boxes: { berries: true } },
     ambience: { file: 'xmas', gain: .5 }
   },
   valentine: {}, easter: {}, midsummer: {}, halloween: {}

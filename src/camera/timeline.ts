@@ -1,5 +1,6 @@
 import { cfg, EYE, MAX_ANGLE, POSTER_Z, reduceMotion, SHEET_Y, SPEED, STOP_AT, T_HOLD, T_OPEN } from '../config';
 import { endSc, fitDist } from '../portal/portal';
+import { walkRise, walkSlope } from '../scene/brookShape';
 import { state } from '../state';
 import { camera } from './camera';
 import { ease, easeOut, flyEase } from './easing';
@@ -72,9 +73,11 @@ export function stepDue() {
 /** Head bob: vertical at 2× stride frequency, lateral at 1×. */
 export function placeCamera({ camZ, pitch, bob }: Pose) {
   const stride = state.walked * 1.9, rm = reduceMotion ? .25 : 1, t = state.t;
-  camera.position.set(Math.sin(stride) * .085 * bob * rm, state.camY + Math.sin(stride * 2) * .052 * bob * rm, camZ);
+  // over the humpback bridge the walk climbs the deck and the eyes follow the slope a little
+  const climb = Math.atan(-walkSlope(camZ)) * .2;
+  camera.position.set(Math.sin(stride) * .085 * bob * rm, state.camY + walkRise(camZ) + Math.sin(stride * 2) * .052 * bob * rm, camZ);
   camera.rotation.set(
-    pitch + Math.sin(stride * 2 + 1) * .004 * bob,
+    pitch + climb + Math.sin(stride * 2 + 1) * .004 * bob,
     Math.sin(t * .31) * .02 * bob + Math.sin(stride) * .006 * bob,
     Math.sin(stride) * .007 * bob
   );

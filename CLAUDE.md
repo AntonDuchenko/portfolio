@@ -29,9 +29,9 @@ Repository:
 - `scene/` — `stage` (renderer, scene, fog), `lights` (global lights, flickering fires,
   legacy → physical conversion), `assets` (kit loading, cloning, instancing),
   `kitbox` (boxes wearing kit materials), `sky` (dome: gradient, stars, moon), `terrain`
-  (ground + the path painted in its shader, `pathX` meander), `forest` (walk trees + the
+  (ground + the path painted in its shader, `pathX` meander, the windows' and the open door's light painted on it), `forest` (walk trees + the
   static grove around the tavern; broadleaf trees where a theme colours them), `ground` (path
-  dressing), `foliage` (leaf-card materials lit from above), `leaves` (a theme's falling leaves or snow), `snow` (snow on up-facing surfaces), `xmas` (garland, wreath, yard tree), `undergrowth` (bushes,
+  dressing), `foliage` (leaf-card materials lit from above), `leaves` (a theme's falling leaves or snow), `snow` (snow on up-facing surfaces; `outdoors` for the materials the facade shares with the hall), `evergreen` (fir sprigs, bows, parcels: two materials), `xmas` (garland, wreath, yard tree; the hall's dressing, hidden until the door opens), `harvest` (autumn's crates, set on their supports by rays), `waylights` (winter's lantern posts along the walk, in the facade's batch), `grade` (the building kits' night colours, fading out inside), `windows` (the curtained window shader), `shadows` (every contact shadow, one instanced mesh), `wind` (plants sway on the audible gusts), `hearth` (the fire, hidden until the door opens), `frost` (winter's icicles and snow banks), `brookShape` (the brook's course: pure functions the terrain, the dressing and the water share) and `brook` (its water, humpback footbridge — the walk climbs it — and banks; ice with open windows and steam in winter, leaves in autumn), `undergrowth` (bushes,
   ferns, tall grass, mushrooms), `fireflies`, `tavern` (facade with the jettied upper
   storey, the side wing on the right — `JETTY`/`WING` in `config.ts` — yard), `hall` (the
   room behind the door: timber bays, lanterns over the front tables, hearth, bar), `post`.
@@ -108,7 +108,7 @@ Repository:
   night retune (sky, undergrowth, fireflies, grove, yard): walk 58 calls, 722k tris high /
   427k low (was 49, 539k / 333k); with the exterior rework (jetty, side wing, boards),
   whole (unsimplified) bushes with contact shadows, KayKit path rocks and 30 dead trees
-  (was 80): 61 calls, 706k / 420k; autumn theme 66 calls, 842k / 496k; winter 55, 684k / 407k; Christmas 63, 691k / 413k — check FPS on a phone.
+  (was 80): 61 calls, 706k / 420k; autumn theme 66 calls, 842k / 496k; winter 55, 684k / 407k; Christmas 63, 691k / 413k; after the theme polish (`docs/themes.md`) autumn 67, winter 56–57, Christmas 62 / 720k / 423k; after the scene pass summer 64 (the swinging sign +3), autumn 70, winter 61, Christmas 67; with the brook (+3: water, reeds, stones) summer 67, autumn 73, winter 64 — check FPS on a phone.
 - FPS guard (`app.ts`): below 28 fps in 2 s windows lowers the pixel ratio (−25 %/step,
   floor 0.5); below 12 fps at the floor lands on the site. `?noguard` for tests.
 - Dev only: `window.__tavern` exposes scene/camera/renderer/state for numeric checks.
@@ -247,6 +247,11 @@ Decisions (keep them unless the look is retuned on purpose):
    Loading is kept off the landing frames: the glb and the lines are fetched and decoded
    4 s into the walk (`preloadNarrator`), the avatar's renderer is created on idle after
    landing. Lines to record for a real voice: `docs/voice-script.md`.
+
+Ideas for later (not scheduled): patrons in the hall (Character pack, idle at the back
+tables; skinned meshes — measure the cost first). Tried and dropped: Poly Haven's realistic
+trees, rocks and grass (a look test, `docs/themes.md`): another style, and a fir realized
+from its geometry nodes is ~12M triangles — the scene stays low-poly.
 
 ## Open decisions
 

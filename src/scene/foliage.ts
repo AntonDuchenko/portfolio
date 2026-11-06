@@ -1,5 +1,6 @@
 import type { Material, MeshStandardMaterial } from 'three';
 import { snowy } from './snow';
+import { windy } from './wind';
 
 /* Foliage materials for leaf-card models (bushes, broadleaf crowns). Lit by their own
    normals, the cards facing away from the moon went black and the plants read as paper
@@ -9,9 +10,10 @@ import { snowy } from './snow';
    plant sat on the ground like a cut-out laid over it. Matte: facing up, a gloss caught the
    moon as a grey haze. `recolor` is GLSL run on diffuseColor after the texture. */
 
-const LIT_FROM_ABOVE = '#include <normal_fragment_maps>\nnormal = normalize(mix(normal, (viewMatrix * vec4(0., 1., 0., 0.)).xyz, .85));';
+export const LIT_FROM_ABOVE = '#include <normal_fragment_maps>\nnormal = normalize(mix(normal, (viewMatrix * vec4(0., 1., 0., 0.)).xyz, .85));';
 
-export function foliage(m: Material, recolor = '', fade = .8) {
+/** `wind`: the model's height and its tip's swing, m (wind.ts) */
+export function foliage(m: Material, recolor = '', fade = .8, wind: [number, number] = [1.2, .04]) {
   const g = (m as MeshStandardMaterial).clone();
   g.roughness = 1;
   g.metalness = 0;
@@ -25,6 +27,7 @@ export function foliage(m: Material, recolor = '', fade = .8) {
       .replace('#include <normal_fragment_maps>', LIT_FROM_ABOVE);
   };
   snowy(g);                                          // winter: snow on the crowns
+  windy(g, ...wind);
   return g;
 }
 
@@ -32,3 +35,9 @@ export function foliage(m: Material, recolor = '', fade = .8) {
  *  times a linear colour */
 export const tinted = (r: number, g: number, b: number) =>
   `diffuseColor.rgb = vec3(dot(diffuseColor.rgb, vec3(.75, .2, .05))) * vec3(${r}, ${g}, ${b});`;
+
+/** GLSL: the texture's value (its brightest channel) times a linear colour — a new hue on
+ *  any texture's pattern (the red-weighted brightness above left green ferns and violet
+ *  flowers nearly black) */
+export const repainted = (r: number, g: number, b: number) =>
+  `diffuseColor.rgb = vec3(max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b))) * vec3(${r}, ${g}, ${b});`;

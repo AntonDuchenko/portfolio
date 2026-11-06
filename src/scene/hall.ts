@@ -3,6 +3,8 @@ import { D, FLOOR_Y, GATE_Z, JETTY, MOD, STOREY, TAV_END, TAV_H, TAV_HW, TAV_LEN
 import { rand } from '../random';
 import { kitBox } from './kitbox';
 import { fires, RescaledPointLight } from './lights';
+import { buildHearthFire } from './hearth';
+import { addShadow } from './shadows';
 import { fireTex, sprite } from './sprites';
 import { scene } from './stage';
 import { HEARTH_D, lantern, prop, village } from './tavern';
@@ -15,6 +17,13 @@ const WALL_X = TAV_HW - WALL_IN;                    // inside face of the side w
 const RAIL_Y = 2.9;                                 // underside of the walls' storey rail (raycast)
 const HEARTH_W = 2.4;
 const wood = { mat: 'MI_WoodTrim', strip: 'dark' } as const;
+// the hearth's recess: back slab 0.1 m into the left wall, the chimney breast's face 0.9 m out
+const HEARTH_BACK = -WALL_X - .1, HEARTH_FACE = HEARTH_BACK + .9, HEARTH_OPEN = { w: 1.4, h: 1.1 };
+/** the mantel shelf (its front edge, top, length, centre) and the chimney breast's face
+ *  above it, for what the seasons hang there (scene/xmas.ts) */
+export const MANTEL = {
+  front: HEARTH_FACE + .28, top: FLOOR_Y + HEARTH_OPEN.h + .35, len: HEARTH_W + .3, z: D(HEARTH_D), breast: HEARTH_FACE
+};
 
 /** Returns the hall group; its floor top is at FLOOR_Y, flush with the sill. */
 export function buildHall() {
@@ -92,7 +101,7 @@ function timberFrame(tav: Group) {
    inside the stone, none is exposed coplanar (hard rule 1). */
 function hearth(tav: Group) {
   const stone = { mat: 'MI_UnevenBrick', tile: 1.6 } as const, hz = D(HEARTH_D), w = HEARTH_W;
-  const back = -WALL_X - .1, face = back + .9, open = { w: 1.4, h: 1.1 };
+  const back = HEARTH_BACK, face = HEARTH_FACE, open = HEARTH_OPEN;
   tav.add(kitBox(.5, 3.4, w, stone, back + .25, FLOOR_Y + 1.7, hz));                           // back slab
   for (const s of [-1, 1])                                                                      // jambs
     tav.add(kitBox(.4, open.h, (w - open.w) / 2, stone, face - .2, FLOOR_Y + open.h / 2, hz + s * (open.w / 2 + (w - open.w) / 4)));
@@ -101,9 +110,10 @@ function hearth(tav: Group) {
   // front faces only get grazing light (a lit face this close blew out to white)
   const fire = new RescaledPointLight(0xff8a3c, 18, 2);
   fire.position.set(face + .1, .7, hz); tav.add(fire);
-  const flame = sprite(fireTex, .7, .9);
+  const flame = sprite(fireTex, .42, .9);             // a glow behind the flames (hearth.ts), not the fire itself
   flame.position.set(face - .22, .45, hz); tav.add(flame);
   fires.push({ light: fire, sp: flame, phase: rand(0, 10), power: 2.4 });
+  buildHearthFire({ x: face - .24, y: FLOOR_Y, z: hz }, { back: back + .5, face, w: open.w, h: open.h });   // hearth.ts
 
   // timber mantel shelf over the opening, wider than the breast, back 2 cm into the
   // stone; a candle and two bottles on it
@@ -130,6 +140,13 @@ function bar(tav: Group) {
   // and of the first post (the crate's corner reaches x 2.63)
   for (const s of [-1, 1]) prop('Barrel', s * 2.3, FLOOR_Y, D(1), rand(0, 6.28), tav);
   prop('Crate_Wooden', 2.1, FLOOR_Y, D(1.9), .3, tav);
+
+  // contact shadows on the floor (shadows.ts): the counter, kegs, stools, barrels, the crate
+  const floor = (x: number, d: number, rx: number, rz: number, k: number, ry = 0) => addShadow({ x, z: D(d), rx, rz, ry, k, y: FLOOR_Y });
+  floor(0, BAR_D, 2.25, .42, .5);
+  for (const s of [-1, 1]) { floor(s * 2.1, 13.2, .5, .5, .5); floor(s * 2.3, 1, .42, .42, .55); }
+  for (const x of [-1.5, -.5, .5, 1.5]) floor(x, BAR_D - .7, .22, .22, .4);
+  floor(2.1, 1.9, .55, .6, .55, .3);
 }
 
 /* Long tables along the walls, benches on the aisle side; the aisle (|x| < 0.83) stays
@@ -145,6 +162,8 @@ function tables(tav: Group) {
     const x = s * 2.0, z = D(d), top = FLOOR_Y + .81;
     prop('Table_Large', x, FLOOR_Y, z, Math.PI / 2, tav);
     prop('Bench', s * 1.15, FLOOR_Y, z, Math.PI / 2, tav);
+    addShadow({ x, z, rx: .62, rz: 1.5, k: .5, y: FLOOR_Y });                    // under the table (shadows.ts)
+    addShadow({ x: s * 1.15, z, rx: .3, rz: 1.45, k: .4, y: FLOOR_Y });
     prop('CandleStick', x, top, z, rand(0, 6.28), tav);
     prop('Candle_1', x, top + .1, z, 0, tav);
     candleFlame(tav, x, top + .27, z);

@@ -71,6 +71,15 @@ export function instanced(ps: Part[], count: number) {
   return ps.map(p => new InstancedMesh(p.geometry, p.material, count));
 }
 
+/** every material of a kit, once each */
+export function kitMaterials(kit: Kit): Material[] {
+  const found = new Set<Material>();
+  roots[kit].traverse(o => {
+    if (o instanceof Mesh) for (const m of (Array.isArray(o.material) ? o.material : [o.material]) as Material[]) found.add(m);
+  });
+  return [...found];
+}
+
 /** A kit material by name (shared, not a copy). */
 export function kitMaterial(kit: Kit, name: string): Material {
   let found: Material | undefined;

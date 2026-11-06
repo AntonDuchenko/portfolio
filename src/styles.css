@@ -37,6 +37,10 @@ body.scene-locked{overflow:hidden;height:100%}
 #line p{margin:0 auto;max-width:34em;color:#cbd4e6;font-size:clamp(15px,2.1vw,19px);
   line-height:1.65;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 20px #000}   /* a tight edge too: the lines sit on the pale path */
 #line.on{opacity:1}
+/* winter: the lines sit on near-white snow, where the shadow alone left them faint — a soft
+   dark band behind them, darkest under the words, gone at the sides */
+html[data-season=winter] #line{background:radial-gradient(ellipse 46% 50% at 50% 50%,rgba(6,9,16,.5),rgba(6,9,16,0))}
+html[data-season=winter] #line p{color:#dde4f2;text-shadow:0 1px 2px #000,0 0 10px rgba(0,0,0,.8),0 2px 22px #000}
 
 /* sound control, shared by the scene corner (#volume) and the site nav (#sound):
    the speaker mutes and unmutes, the slider sets the level (src/ui/sound.ts) */

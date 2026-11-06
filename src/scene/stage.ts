@@ -15,3 +15,7 @@ export const scene = new Scene();
 export const fog = new FogExp2(FOG_OUT.getHex(), cfg.fog);
 scene.fog = fog;
 renderer.setClearColor(FOG_OUT, 1);
+
+/** the scene's clock for shaders (windows, wind, the hearth's flames): seconds, set once a
+ *  frame by app.ts from the run's time, so a virtual clock drives them too */
+export const time = { value: 0 };

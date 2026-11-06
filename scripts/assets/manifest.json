@@ -885,6 +885,48 @@
     0.813,
     0.472
    ]
+  },
+  "Barrel_Apples": {
+   "src": "Barrel_Apples",
+   "tris": 1324,
+   "min": [
+    -0.349,
+    0.003,
+    -0.349
+   ],
+   "max": [
+    0.349,
+    0.901,
+    0.349
+   ]
+  },
+  "FarmCrate_Apple": {
+   "src": "FarmCrate_Apple",
+   "tris": 1692,
+   "min": [
+    -0.357,
+    -0.016,
+    -0.207
+   ],
+   "max": [
+    0.357,
+    0.228,
+    0.207
+   ]
+  },
+  "FarmCrate_Carrot": {
+   "src": "FarmCrate_Carrot",
+   "tris": 1692,
+   "min": [
+    -0.357,
+    -0.016,
+    -0.36
+   ],
+   "max": [
+    0.357,
+    0.395,
+    0.207
+   ]
   }
  },
  "narrator": {

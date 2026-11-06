@@ -3,6 +3,7 @@ import { FLOOR_Y, POST_W, POST_Z, POSTER_Z, SHEET_Y } from '../config';
 import { kitBox } from './kitbox';
 import { RescaledPointLight } from './lights';
 import { box, M } from './materials';
+import { addShadow } from './shadows';
 import { scene } from './stage';
 import { lantern } from './tavern';
 
@@ -16,6 +17,7 @@ export function buildPost({ tav, beamBottom }: { tav: Group; beamBottom: number 
   const h = beamBottom - FLOOR_Y;
   tav.add(kitBox(POST_W, h, POST_W, dark, 0, FLOOR_Y + h / 2, POST_Z));
   tav.add(kitBox(POST_W + .2, .25, POST_W + .2, dark, 0, FLOOR_Y + .125, POST_Z));           // base
+  addShadow({ x: 0, z: POST_Z, rx: .9, k: .5, y: FLOOR_Y });                                   // its contact shadow
   tav.add(kitBox(POST_W + .2, .2, POST_W + .2, dark, 0, beamBottom - .08, POST_Z));          // capital, 2 cm into the beam
   // other notices pinned to the sides and back: back face 5 mm off the post
   const off = POST_W / 2 + .02;

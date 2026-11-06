@@ -4,6 +4,7 @@ import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
 import { night } from './forest';
+import { addShadow } from './shadows';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
 
@@ -34,7 +35,8 @@ function lay(name: string, items: Item[], buried = false) {
   for (const m of meshes) { m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere(); scene.add(m); }
 }
 
-export function buildGround(startZ: number) {
+/** `clear`: false where nothing may lie (winter's lantern posts) */
+export function buildGround(startZ: number, clear: (x: number, z: number) => boolean) {
   const z0 = startZ + 12, z1 = GATE_Z + 1.4;               // the path ends at GATE_Z + 1
   const pebbles: Item[] = [], rocks: Item[] = [], slabs: Item[] = [], grass: Item[] = [];
   const len = z0 - z1, n = (per: number) => Math.round(len * per * Q.forest);
@@ -49,5 +51,9 @@ export function buildGround(startZ: number) {
     const z = rand(z1 + .5, z0), x = pathX(z) + side() * rand(1.2, 5);
     grass.push({ x, z, s: rand(.35, .6), sy: rand(.2, .45) });
   }
-  lay('pebble', pebbles); lay('edge_rock', rocks, true); lay('edge_slab', slabs, true); lay('grass', grass);
+  const free = (it: Item) => clear(it.x, it.z);
+  lay('pebble', pebbles.filter(free)); lay('edge_rock', rocks.filter(free), true);
+  lay('edge_slab', slabs.filter(free), true); lay('grass', grass.filter(free));
+  // the boulders' contact shadows (shadows.ts): about their half-sunk width
+  for (const it of [...rocks, ...slabs].filter(free)) addShadow({ x: it.x, z: it.z, rx: .62 * it.s, k: .7 });
 }

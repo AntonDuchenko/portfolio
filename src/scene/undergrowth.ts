@@ -1,13 +1,11 @@
-import {
-  CanvasTexture, Color, InstancedMesh, type Material, MeshBasicMaterial, Object3D,
-  PlaneGeometry, Vector3
-} from 'three';
+import { Color, type Material, Object3D } from 'three';
 import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { Q } from '../quality';
 import { rand, random, side } from '../random';
 import { bounds, instanced, parts } from './assets';
-import { foliage, tinted } from './foliage';
+import { foliage, repainted, tinted } from './foliage';
 import { night } from './forest';
+import { addShadow } from './shadows';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
 import { look } from '../theme/themes';
@@ -45,32 +43,10 @@ function lay(name: string, items: Item[], material?: (m: Material) => Material, 
   return items;
 }
 
-/* Contact shadows: a soft dark disc on the ground under each bush. Lit from above (see
-   foliage) the bushes cast nothing, and with the ground under them as bright as anywhere
-   they sat on it like balls. Each disc is tilted to the ground (four samples) and lifted
-   2 cm; one draw call. */
-function shadowTexture() {
-  const c = document.createElement('canvas'); c.width = c.height = 64;
-  const x = c.getContext('2d')!, g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, 'rgba(0,0,0,.8)'); g.addColorStop(.6, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-  x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new CanvasTexture(c);
-}
+/* Contact shadows under the bushes (shadows.ts): lit from above (see foliage) they cast
+   nothing, and with the ground under them as bright as anywhere they sat on it like balls. */
 function contactShadows(items: Item[], radius: number) {
-  if (!items.length) return;
-  const disc = new InstancedMesh(new PlaneGeometry(2, 2).rotateX(-Math.PI / 2),
-    new MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, color: 0x000000,
-      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), items.length);
-  const o = new Object3D(), n = new Vector3(), up = new Vector3(0, 1, 0);
-  items.forEach((it, i) => {
-    const rr = radius * it.s, h = (dx: number, dz: number) => surfaceY(it.x + dx, it.z + dz);
-    n.set(h(-rr, 0) - h(rr, 0), 2 * rr, h(0, -rr) - h(0, rr)).normalize();
-    o.position.set(it.x, h(0, 0) + .02, it.z);
-    o.quaternion.setFromUnitVectors(up, n);
-    o.scale.setScalar(rr); o.updateMatrix();
-    disc.setMatrixAt(i, o.matrix);
-  });
-  disc.renderOrder = 1;                              // after the ground, before the leaves' cut-outs blend
-  disc.computeBoundingSphere(); scene.add(disc);
+  for (const it of items) addShadow({ x: it.x, z: it.z, rx: radius * it.s, k: 1 });
 }
 
 /** clear of the building and its doorstep, the side wing, and the yard in front of the wing (its
@@ -87,12 +63,15 @@ const greenBush = (m: Material) => foliage(m, tinted(...(look.bush ?? [.05, .07,
 // the flowering bush: leaves a shade darker than the ferns' night tint (a copy — the window
 // boxes keep the untinted leaves under their lanterns), the flowers dimmed and cooled
 const flowerBush = (m: Material) => {
-  const g = foliage(m);
-  g.color.multiply(new Color(m.name === 'Flowers' ? 0x606680 : look.bloomLeaves ?? 0x27322f));
+  const petals = m.name === 'Flowers' ? look.recolor?.Flowers : undefined;   // a season's own flowers (autumn)
+  const g = foliage(m, petals ? repainted(...petals) : '');
+  // repainted, they are dimmed without the cooling: blue on orange turned them to mud
+  g.color.multiply(new Color(m.name === 'Flowers' ? (petals ? 0x9a9a9a : 0x606680) : look.bloomLeaves ?? 0x27322f));
   return g;
 };
 
-export function buildUndergrowth(startZ: number) {
+/** `clear`: false where nothing may grow (winter's lantern posts) */
+export function buildUndergrowth(startZ: number, clear: (x: number, z: number) => boolean) {
   const z0 = startZ + 10, z1 = GATE_Z + 2, len = z0 - z1;
   const n = (per: number) => Math.round(len * per * Q.forest);
   const bush: Item[] = [], bloom: Item[] = [], fern: Item[] = [], tall: Item[] = [], shroom: Item[] = [];
@@ -122,9 +101,10 @@ export function buildUndergrowth(startZ: number) {
     for (let j = 0; j < k; j++) shroom.push({ x: cx + rand(-.3, .3), z: z + rand(-.3, .3), s: rand(.35, .6) });
   }
 
-  contactShadows([...lay('bush', bush.filter(p => !yard(p.x, p.z)), greenBush, true),
-    ...lay('flowers', bloom.filter(p => !yard(p.x, p.z)), flowerBush, true)], 1.6);
-  lay('fern', fern.filter(p => !yard(p.x, p.z)));
-  lay('tallgrass', tall);
+  const free = (p: Item) => !yard(p.x, p.z) && clear(p.x, p.z);
+  contactShadows([...lay('bush', bush.filter(free), greenBush, true),
+    ...lay('flowers', bloom.filter(free), flowerBush, true)], 1.6);
+  lay('fern', fern.filter(free));
+  lay('tallgrass', tall.filter(p => clear(p.x, p.z)));
   lay('mushroom', shroom);
 }

@@ -1,14 +1,18 @@
 import {
-  CanvasTexture, Color, FrontSide, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  type BufferGeometry, CanvasTexture, Color, Group, type Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   NormalBlending, type Object3D, PlaneGeometry
 } from 'three';
 import {
-  D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, JETTY, MOD, STOREY, TAV_H, TAV_HW, WALL_IN, WING
+  D, DOOR_H, DOOR_HINGE_Z, DOOR_W, FLOOR_Y, GATE_Z, JETTY, MAX_ANGLE, MOD, STOREY, TAV_END, TAV_H, TAV_HW, TAV_LEN, WALL_IN, WING
 } from '../config';
+import { doorSpill } from './terrain';
+import { evergreenBox } from './evergreen';
+import { addPane, windowGlass } from './windows';
+import { addShadow } from './shadows';
 import { jitter, rand } from '../random';
 import { kitMaterial, model } from './assets';
 import { snowy } from './snow';
-import { look } from '../theme/themes';
+import { look, sound } from '../theme/themes';
 import { night } from './forest';
 import { kitBox } from './kitbox';
 import { fires, RescaledPointLight } from './lights';
@@ -34,20 +38,31 @@ export const HEARTH_POS = { x: -2.1, y: .6, z: D(HEARTH_D) };        // inside t
 export const SIGN_POS = { x: SIGN_X, y: SIGN_Y, z: GATE_Z + SIGN_Z };
 export const DOOR_POS = { x: 0, y: 1.2, z: GATE_Z };
 
+/** the hanging sign's pivot: kept out of the static batch (it moves), like the door leaves */
+export const sign = new Group();
+/** the sign in the wind: a gentle swing on the gusts' curve (wind.ts, audio/scene.ts) */
+export function swingSign(t: number) {
+  const gust = .55 + .45 * Math.sin(t * .13) * Math.sin(t * .041);
+  sign.rotation.x = (Math.sin(t * 1.3) * .7 + Math.sin(t * 2.3 + 1) * .3) * .06 * gust * (sound.wind ?? 1);
+}
+
 /** door leaves; they open inward */
 export const leaves: { pivot: Group; dir: number }[] = [];
-export const setDoor = (angle: number) => leaves.forEach(l => l.pivot.rotation.y = -l.dir * angle);
+export const setDoor = (angle: number) => {
+  leaves.forEach(l => l.pivot.rotation.y = -l.dir * angle);
+  doorSpill.value = Math.min(1, angle / MAX_ANGLE);   // the hall's light on the ground outside
+};
 
 const smokes: { sp: GlowSprite; x: number; base: number; phase: number; speed: number; y: number }[] = [];
 
-// warm lit windows; front side only, so from inside the hall they show the night
-let glass: Material | null = null;
+// lit windows with their curtains (windows.ts); front side only, so from inside the hall
+// they show the night
 export function village(name: string, x: number, y: number, z: number, ry = 0, parent: Object3D = scene) {
   const o = model('village', name);
   o.position.set(x, y, z); o.rotation.y = ry;
-  glass ??= new MeshBasicMaterial({ color: 0xffb45e, side: FrontSide });
   o.traverse(c => {
-    if (c instanceof Mesh && (c.material as Material).name === 'MI_WindowGlass') c.material = glass;
+    if (!(c instanceof Mesh) || (c.material as Material).name !== 'MI_WindowGlass') return;
+    c.material = windowGlass(); addPane(c.geometry as BufferGeometry);
   });
   parent.add(o); return o;
 }
@@ -102,7 +117,7 @@ function board(region: readonly number[], w: number, h: number, x: number, y: nu
 // flame inside never showed through it and the lanterns read as unlit. Emission driven by
 // the texture lights the glass warm and leaves the dark iron dark. One shared copy.
 let litLantern: MeshStandardMaterial | null = null;
-function lightUp(o: Object3D) {
+export function lightUp(o: Object3D) {
   o.traverse(c => {
     if (!(c instanceof Mesh)) return;
     litLantern ??= (() => {
@@ -123,6 +138,16 @@ export function lantern(parent: Object3D, x: number, y: number, z: number, ry: n
   l.position.set(hx + worldOffset.x, hy + worldOffset.y, hz + worldOffset.z); scene.add(l);
   const sp = sprite(fireTex, .45, .85); sp.position.set(hx, hy, hz); parent.add(sp);
   fires.push({ light: l, sp, phase: rand(0, 10), power: light.power, outside: light.outside });
+}
+
+// the window boxes' plants: the kit's day colours, dimmed to sit with the graded facade
+// (grade.ts) — at full strength they glowed green and pink by the lanterns. The originals
+// are the boxes' alone (the undergrowth's flowering bushes are copies, foliage.ts).
+const dimmed = new WeakSet<Material>();
+function boxPlant(m: Material) {
+  night(m);
+  if (dimmed.has(m) || !(m instanceof MeshStandardMaterial)) return;
+  dimmed.add(m); m.color.multiplyScalar(.6);
 }
 
 /* ── facade ──────────────────────────────────────────────────────── */
@@ -212,9 +237,11 @@ export function buildFacade() {
   // leaves go into the box)
   for (const s of [-1, 1]) {
     front.add(kitBox(1.5, .2, .28, wood, s * MOD, .83, .16));
-    for (const dx of look.hide?.includes('flowers') ? [] : [-.48, 0, .48]) {   // no flowers in winter
+    // winter: fir sprigs where the flowers were (an empty box read as a missing prop)
+    if (look.boxes) evergreenBox(front, { x: s * MOD, top: .93, z: .16, w: 1.5, berries: !!look.boxes.berries, seed: s });
+    for (const dx of look.hide?.includes('flowers') || look.boxes ? [] : [-.48, 0, .48]) {
       const f = model('forest', 'flowers'), k = rand(.3, .36);
-      f.traverse(c => { if (c instanceof Mesh) night(c.material as Material); });
+      f.traverse(c => { if (c instanceof Mesh) boxPlant(c.material as Material); });
       f.scale.setScalar(k); f.position.set(s * MOD + dx, .93 - .03, .16); f.rotation.y = rand(0, 6.28);   // origin = its ground
       front.add(f);
     }
@@ -231,10 +258,22 @@ export function buildFacade() {
   prop('Barrel', -3.45, -.02, .58, .4, front);
   prop('Crate_Wooden', -3.55, -.02, 1.45, .25, front);
   prop('Barrel', 3.45, -.02, .58, 1.3, front);
-  prop('Barrel', 3.95, -.02, 1.3, 2.1, front);
+  prop(look.harvest ? 'Barrel_Apples' : 'Barrel', 3.95, -.02, 1.3, 2.1, front);   // autumn: apples (same barrel)
   const bench = prop('Bench', 2.1, -.01, .5, 0, front); bench.scale.x = .75;            // 1.06…3.14
 
   buildWing(front);
+
+  // contact shadows (shadows.ts): the yard's props, the cart, the foot of the walls
+  const g = GATE_Z;
+  for (const [x, z] of [[-3.45, .58], [3.45, .58], [3.95, 1.3]]) addShadow({ x, z: g + z, rx: .42, k: .6 });
+  addShadow({ x: -3.55, z: g + 1.45, rx: .55, rz: .6, ry: .25, k: .6 });                     // the crate
+  addShadow({ x: 2.1, z: g + .5, rx: 1.05, rz: .3, k: .45 });                                // the bench
+  addShadow({ x: WING.x0 + 3.5, z: g + .3, rx: 1.7, rz: .9, ry: .08, k: .45 });              // the cart
+  addShadow({ x: 0, z: g + .2, rx: 3.4, rz: .5, k: .45 });                                   // the facade's foot
+  addShadow({ x: (WING.x0 + WING.x1) / 2, z: WING.z0 + .2, rx: 2.2, rz: .4, k: .45 });       // the wing's front
+  addShadow({ x: WING.x1 + .2, z: (WING.z0 + WING.z1) / 2, rx: .4, rz: 2.2, k: .45 });       // and its outer side
+  addShadow({ x: -TAV_HW - .2, z: GATE_Z - TAV_LEN / 2, rx: .45, rz: TAV_LEN / 2 + .2, k: .45 });   // the hall's sides
+  addShadow({ x: TAV_HW + .2, z: (WING.z1 + TAV_END) / 2, rx: .45, rz: (WING.z1 - TAV_END) / 2, k: .45 });
 
   // sign, hung from the jetty: a bar out of the upper wall (4 cm into the plaster) →
   // crossbar resting on it → two hangers → the board. (A strut under the bar read as a
@@ -242,10 +281,13 @@ export function buildFacade() {
   const barY = STOREY + .3, signW = 1.1, signH = .55, bar0 = JETTY - .04, bar1 = SIGN_Z + .35;
   front.add(box(.06, .06, bar1 - bar0, M.iron, SIGN_X, barY, (bar0 + bar1) / 2));
   front.add(box(signW - .1, .05, .05, M.iron, SIGN_X, barY - .05, SIGN_Z));
-  const hangTop = barY - .075, signTop = SIGN_Y + signH / 2;
-  for (const s of [-1, 1]) front.add(box(.03, hangTop - signTop + .02, .03, M.iron,
-    SIGN_X + s * (signW / 2 - .1), (hangTop + signTop) / 2, SIGN_Z));
-  board(BOARD.sign, signW, signH, SIGN_X, SIGN_Y, SIGN_Z - .02, front);
+  // the hangers and the board swing about the crossbar in the wind (`swingSign`): their
+  // own pivot on the bar's axis, so the hangers' tops stay on it (hard rule 3)
+  const axis = barY - .05, hangTop = barY - .075, signTop = SIGN_Y + signH / 2;
+  sign.position.set(SIGN_X, axis, SIGN_Z); front.add(sign);
+  for (const s of [-1, 1]) sign.add(box(.03, hangTop - signTop + .02, .03, M.iron,
+    s * (signW / 2 - .1), (hangTop + signTop) / 2 - axis, 0));
+  board(BOARD.sign, signW, signH, 0, SIGN_Y - axis, -.02, sign);
 
   // door leaves: Door_8_Flat squeezed to half the opening, hinges mid-wall. The model
   // spans x −0.05…1.07 from its hinge, so the far edge (1.07) is what must reach the
@@ -259,6 +301,10 @@ export function buildFacade() {
     p.add(leaf);
     leaves.push({ pivot: p, dir: s });
   }
+
+  // winter: snow on what stands out in it — barrels, crate, cart, the sign, sills of the
+  // upper storey. The kit materials are the hall's too: `outdoors` keeps it out of there.
+  front.traverse(o => { if (o instanceof Mesh && o.material instanceof MeshStandardMaterial) snowy(o.material, .5, true); });
   return front;
 }
 
@@ -342,6 +388,6 @@ export function updateSmoke(dt: number) {
     s.y += s.speed * dt;
     if (s.y > 12) { s.y = 0; s.sp.position.x = s.x + jitter() * .6 - .3; }
     s.sp.position.y = s.base + s.y;
-    s.sp.material.opacity = Math.max(0, .26 * (1 - s.y / 12));
+    s.sp.material.opacity = Math.max(0, .26 * (look.smoke ?? 1) * (1 - s.y / 12));
   }
 }

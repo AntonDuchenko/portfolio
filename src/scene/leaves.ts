@@ -3,7 +3,7 @@ import {
   PlaneGeometry
 } from 'three';
 import { camera } from '../camera/camera';
-import { GATE_Z } from '../config';
+import { GATE_Z, TAV_END, TAV_HW, WING } from '../config';
 import { Q } from '../quality';
 import { rand } from '../random';
 import { look } from '../theme/themes';
@@ -62,9 +62,18 @@ export function buildLeaves() {
   scene.add(mesh);
 }
 
+/** under a roof: the hall (the band follows the camera in, and flakes drifted between the
+ *  tables) or the side wing */
+const roofed = (x: number, z: number) => (Math.abs(x) < TAV_HW + .1 && z < GATE_Z + .1 && z > TAV_END)
+  || (x > WING.x0 - .1 && x < WING.x1 + .1 && z < WING.z0 + .1 && z > WING.z1 - .1);
+// closer than this to the eye a flake or a leaf is a blurred blob filling a corner of the
+// frame (snow: a bright orb): it shrinks away instead
+const NEAR = 1.4;
+
 export function updateLeaves(t: number, camZ: number, inside: number) {
   if (!mesh) return;
   mesh.visible = inside < .99;
+  const eye = camera.position;
   leaves.forEach((l, i) => {
     const z = camZ + 2 - ((camZ + 2 - l.z) % BAND + BAND) % BAND;     // wraps ahead of the camera
     const drop = (l.y - t * l.fall) % HIGH, h = drop < 0 ? drop + HIGH : drop;
@@ -73,7 +82,8 @@ export function updateLeaves(t: number, camZ: number, inside: number) {
     o.position.set(x, ground + .05 + h, z);
     if (snow) o.quaternion.copy(camera.quaternion);  // flakes face the camera
     else o.rotation.set(Math.sin(t * l.spin + l.ph) * 1.2, t * l.spin * .7 + l.ph, Math.cos(t * l.spin * .8 + l.ph));
-    o.scale.setScalar(l.size * (h < .1 ? h * 10 : 1));   // melt into the ground instead of popping
+    const near = Math.min(1, o.position.distanceTo(eye) / NEAR);
+    o.scale.setScalar(roofed(x, z) ? 0 : l.size * (h < .1 ? h * 10 : 1) * near * near);   // melt into the ground instead of popping
     o.updateMatrix(); mesh!.setMatrixAt(i, o.matrix);
   });
   mesh.instanceMatrix.needsUpdate = true;

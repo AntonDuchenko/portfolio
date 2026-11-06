@@ -14,6 +14,6 @@ Raw material the build is made from. Kept in the repo, never shipped: Vite only 
   Theme loops (`docs/themes.md`) come from freesound previews (`<id>__<author>__<name>.mp3`),
   e.g. `457318__stek59__*` → `public/audio/autumn.mp3`, `505999__dblover__*` →
   `public/audio/winter.mp3`, `611277__xkeril__*` → `public/audio/snow/step0–5.mp3`,
-  `244517__cheeseheadburger__*` → `public/audio/xmas.mp3`.
+  `244517__cheeseheadburger__*` → `public/audio/xmas.mp3`, `363120__thewoodlandnomad__*` → `public/audio/brook.mp3`.
 
 The behavioural spec of the scene (the original prototype) is `docs/prototype/`.

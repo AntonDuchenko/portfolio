@@ -9,10 +9,11 @@ import { fog, scene } from './stage';
      dark zenith;
    - stars: one hashed point per lit cell of a 3D grid on the view direction, twinkling;
    - moon: a crisp disc with soft maria and a cool halo, in a fixed direction ahead-right of
-     the walk (it moves with the camera, as a moon does). One draw call. */
+     the walk (it moves with the camera, as a moon does);
+   - now and then a shooting star. One draw call. */
 
 // ahead and to the right: the carried torch glows top-left, the two must not overlap
-const MOON_DIR = new Vector3(60, 62, -170).normalize();
+export const MOON_DIR = new Vector3(60, 62, -170).normalize();
 
 const vertexShader = /* glsl */`
 varying vec3 vDir;
@@ -44,6 +45,20 @@ void main() {
     float tw = .55 + .45 * sin(uTime * (.8 + 2.4 * k) + r * 61.);
     col += vec3(.7, .8, 1.) * smoothstep(.26, .02, length(f)) * (.35 + 1.4 * k * k) * tw
       * smoothstep(.06, .35, h) * uNight;
+  }
+  // now and then a shooting star: in about half of the 11 s periods, a streak 0.9 s long
+  // across the forward sky, heading down at an angle, brightest at its head
+  float period = floor(uTime / 11.), tt = uTime - period * 11.;
+  if (tt < .9 && hash2(vec2(period, 3.)) < .55) {
+    float az = (hash2(vec2(period, 1.)) - .5) * 2.2, el = .42 + .45 * hash2(vec2(period, 2.));
+    vec3 s0 = vec3(sin(az) * cos(el), sin(el), -cos(az) * cos(el));
+    vec3 v = normalize(cross(s0, vec3(0., 1., 0.)) * (hash2(vec2(period, 4.)) < .5 ? 1. : -1.) - vec3(0., .55, 0.));
+    float u = tt / .9;
+    vec3 head = normalize(s0 + v * u * .3), tail = normalize(s0 + v * max(u - .22, 0.) * .3), ab = head - tail;
+    float along = clamp(dot(d - tail, ab) / max(dot(ab, ab), 1e-6), 0., 1.);
+    float off = length(d - tail - ab * along);
+    col += vec3(.85, .92, 1.) * (1. - smoothstep(.0004, .0022, off)) * along * sin(u * 3.14159) * 1.6 * uNight
+      * smoothstep(.08, .3, h);
   }
   // the moon: halo first, then the disc over it
   float c = dot(d, uMoonDir);

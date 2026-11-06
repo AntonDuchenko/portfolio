@@ -8,9 +8,12 @@ import { bounds, instanced, parts } from './assets';
 import { type GlowSprite, mistTex, sprite } from './sprites';
 import { scene } from './stage';
 import { pathX, surfaceY } from './terrain';
+import { brookZ, dry, waterEdge } from './brookShape';
 import { look } from '../theme/themes';
-import { foliage, tinted as tintedLeaves } from './foliage';
+import { foliage, LIT_FROM_ABOVE, repainted, tinted as tintedLeaves } from './foliage';
+import { addShadow, moveShadow } from './shadows';
 import { snowy } from './snow';
+import { windy } from './wind';
 
 // The forest is finite (route 0 → GATE_Z): instances behind the camera are
 // re-placed ahead of it, never past GATE_Z + 4.
@@ -18,7 +21,13 @@ import { snowy } from './snow';
 const SPREAD = 122, AHEAD = 190, BEHIND = 14;
 
 interface Placement { x: number; y: number; z: number; h: number; w: number; rx?: number; ry?: number; rz?: number }
-interface Field { meshes: InstancedMesh[]; count: number; place: (z: number) => Placement; data: Placement[] }
+interface Field {
+  meshes: InstancedMesh[]; count: number; place: (z: number) => Placement; data: Placement[];
+  /** contact shadows (shadows.ts): the first patch's index, the radius per unit of scale */
+  shade?: { first: number; r: number };
+}
+/** a field's contact shadow: `r` × the model's reach, `k` deep */
+interface Shade { r: number; k: number }
 
 const dummy = new Object3D(), fields: Field[] = [];
 const mists: { sp: GlowSprite; drift: number; phase: number }[] = [];
@@ -28,6 +37,7 @@ function write(f: Field, i: number) {
   dummy.position.set(d.x, d.y, d.z); dummy.rotation.set(d.rx || 0, d.ry || 0, d.rz || 0);
   dummy.scale.set(d.w, d.h, d.w); dummy.updateMatrix();
   for (const m of f.meshes) m.setMatrixAt(i, dummy.matrix);
+  if (f.shade) moveShadow(f.shade.first + i, d.x, d.z, f.shade.r * d.w);
 }
 // The Nature kit is painted for daylight; the prototype's forest was near-black
 // (bark 0x1d1f26). Multiply the kit colours down into a cold night tone.
@@ -36,37 +46,60 @@ const NIGHT_TINT: Record<string, number> = {
   PathRocks: 0x6c6a70, Grass: 0x3f4d4a, Leaves: 0x4a5c58, Mushrooms: 0x50555e,
   forest: 0x4c4e52            // KayKit's one atlas material (the path-edge rocks)
 };
+// the kit's plants that sway (wind.ts): the model's height and the tip's swing, m
+const SWAY: Record<string, [number, number]> = { Leaves_Pine: [7, .07], Grass: [.8, .07], Leaves: [.8, .05] };
 const tinted = new Set<Material>();
 export function night(m: Material) {
-  const tint = NIGHT_TINT[m.name];
-  if (tint === undefined || tinted.has(m) || !(m instanceof MeshStandardMaterial)) return;
-  m.color.multiply(new Color(tint)); tinted.add(m);
-  const season = look.tint?.[m.name];               // the theme's colour (src/theme/themes.ts)
-  if (season !== undefined) m.color.multiply(new Color(...season));
-  const recolor = look.recolor?.[m.name];           // or a new colour on the texture's pattern
+  const tint = NIGHT_TINT[m.name], recolor = look.recolor?.[m.name];   // the theme's (src/theme/themes.ts)
+  if ((tint === undefined && !recolor) || tinted.has(m) || !(m instanceof MeshStandardMaterial)) return;
+  tinted.add(m);
+  // a new colour on the texture's pattern stands in for the night tint: multiplied by the
+  // tint as well, autumn's bracken and straw went black. Lit from above like the bushes
+  // (foliage.ts): the blades turned from the moon read as black spikes on the snow.
   if (recolor) {
     m.customProgramCacheKey = () => `recolor${recolor.join()}`;
     m.onBeforeCompile = sh => {
-      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + tintedLeaves(...recolor));
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <map_fragment>', '#include <map_fragment>\n' + repainted(...recolor))
+        .replace('#include <normal_fragment_maps>', LIT_FROM_ABOVE);
     };
-  }
+  } else if (tint !== undefined) m.color.multiply(new Color(tint));
+  const season = look.tint?.[m.name];
+  if (season !== undefined) m.color.multiply(new Color(...season));
   snowy(m);
+  const sway = SWAY[m.name];
+  if (sway) windy(m, ...sway);
   if (m.name === 'forest') m.roughness = 1;          // KayKit's atlas is semi-gloss (0.6): wet-looking rocks
 }
 
 let startZ = 0;
 
+/** a tree whose trunk would stand in the brook steps out of it, along z, onto the bank
+ *  (after its random draws, so the rest of the layout is unchanged) */
+function ashore(p: Placement): Placement {
+  if (dry(p.x, p.z, .7)) return p;
+  const c = brookZ(p.x), z = c + Math.sign(p.z - c || 1) * (waterEdge(p.x) + .7);
+  return { ...p, z, y: p.y + surfaceY(p.x, z) - surfaceY(p.x, p.z) };
+}
+
 /** `count` instances recycled along the walk, plus `fixed` ones that never move (the grove
  *  around the tavern) in the same draw call. */
 function field(name: string, count: number, place: (z: number, size: Size) => Placement,
-  fixed: (size: Size) => Placement[] = () => []) {
+  fixed: (size: Size) => Placement[] = () => [], shade?: Shade) {
   const ps = parts('forest', name), b = bounds(ps);
   ps.forEach(p => night(p.material));
   // horizontal reach from the trunk and height of the unscaled model
   const size = { reach: Math.max(-b.min.x, b.max.x, -b.min.z, b.max.z), height: b.max.y };
   const still = fixed(size);
   const meshes = instanced(ps, count + still.length);
-  const f: Field = { meshes, count, place: z => place(z, size), data: new Array<Placement>(count + still.length) };
+  const f: Field = { meshes, count, place: z => name === 'rock' ? place(z, size) : ashore(place(z, size)), data: new Array<Placement>(count + still.length) };
+  if (shade) {
+    f.shade = { first: -1, r: shade.r * size.reach };
+    for (let i = 0; i < count + still.length; i++) {
+      const at = addShadow({ x: 0, z: 0, rx: 0, k: shade.k });
+      if (i === 0) f.shade.first = at;
+    }
+  }
   still.forEach((p, k) => { f.data[count + k] = p; write(f, count + k); });
   for (const m of meshes) { m.frustumCulled = false; m.instanceMatrix.setUsage(DynamicDrawUsage); scene.add(m); }
   for (let i = 0; i < count; i++) {
@@ -112,26 +145,26 @@ export function buildForest(start: number) {
     // by the yard, right-hand crowns stay beyond the side wing and the cart in front of it
     if (x > 0 && z - r < GATE_Z + 6) x = Math.max(x, WING.x1 + 2.5 + r);
     return { x, z, y: surfaceY(x, z), h: s, w: s, ry: rand(0, 6.28), rz: rand(-.05, .05) };
-  }, m => grove(n(45), m, 7, 15));
+  }, m => grove(n(45), m, 7, 15), { r: .45, k: .5 });        // under the crown: the sky is half hidden
   // bare snags: branches only from ~2/3 of their height, so near the path all one saw was a
   // thick bare trunk cut by the frame — a broken pole (review). A few, 10–24 m off the
   // camera line, where the whole dead silhouette shows in the mist.
   field('snag', n(30), (z, m) => {
     const x = side() * rand(10, 24), s = rand(6, 12) / m.height;
     return { x, z, y: surfaceY(x, z) - .1, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.07, .07) };
-  }, m => grove(n(20), m, 7, 13, .1));
+  }, m => grove(n(20), m, 7, 13, .1), { r: .3, k: .45 });
   // broadleaf trees, where the season colours them (autumn): among the pines, each crown
   // in one of the season's leaf colours. Laid only then — the other seasons' layout (the
   // random sequence) stays as it is.
   if (look.broadleaf) {
-    const cols = look.broadleaf.map(c => new Color(c)), leaf = foliage(parts('forest', 'oak_a').find(p => p.material.name.startsWith('Leaves'))!.material, tintedLeaves(.9, .9, .9), 3.5);
+    const cols = look.broadleaf.map(c => new Color(c)), leaf = foliage(parts('forest', 'oak_a').find(p => p.material.name.startsWith('Leaves'))!.material, tintedLeaves(.9, .9, .9), 3.5, [6, .12]);
     for (const name of ['oak_a', 'oak_b']) {
       const f = field(name, n(24), (z, m) => {
         const h = rand(6, 10), s = h / m.height, r = m.reach * s;
         let x = side() * (r + CLEAR + rand(.5, 10));   // near the path: they are the season
         if (x > 0 && z - r < GATE_Z + 6) x = Math.max(x, WING.x1 + 2.5 + r);
         return { x, z, y: surfaceY(x, z) - .05, h: s, w: s, ry: rand(0, 6.28), rz: rand(-.04, .04) };
-      }, m => grove(n(5), m, 6, 10, .05));
+      }, m => grove(n(5), m, 6, 10, .05), { r: .5, k: .45 });
       for (const mesh of f.meshes) if ((mesh.material as Material).name.startsWith('Leaves')) {
         mesh.material = leaf;
         for (let i = 0; i < mesh.count; i++) mesh.setColorAt(i, cols[(i * 7 + name.length) % cols.length]);
@@ -141,7 +174,7 @@ export function buildForest(start: number) {
   field('rock', n(170), (z, m) => {
     const x = pathX(z) + side() * rand(1.4, 7), w = rand(.15, .5), s = w / m.reach;   // off the trodden track
     return { x, z, y: surfaceY(x, z) - w * .4, h: s * rand(.6, 1), w: s, rx: rand(-.3, .3), ry: rand(0, 6.28), rz: rand(-.3, .3) };
-  });
+  }, () => [], { r: 1.3, k: .7 });
 
   for (let i = 0; i < Q.mist; i++) {
     const sp = sprite(mistTex, rand(14, 26), rand(.1, .22));

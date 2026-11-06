@@ -17,14 +17,22 @@ import { buildUndergrowth } from './scene/undergrowth';
 import { buildFireflies, updateFireflies } from './scene/fireflies';
 import { buildLeaves, updateLeaves } from './scene/leaves';
 import { buildXmas, updateXmas } from './scene/xmas';
+import { buildHarvest } from './scene/harvest';
+import { buildShadows } from './scene/shadows';
+import { buildFrost } from './scene/frost';
+import { buildWayLights, clearOf, wayLightSpots } from './scene/waylights';
+import { buildBrook, updateBrook } from './scene/brook';
+import { dry } from './scene/brookShape';
 import { addGlobalLights, LEGACY, setMoon, torch, updateFires, updateTorch, warmAmb } from './scene/lights';
 import { buildSky, updateSky } from './scene/sky';
 import { buildPost, noticeGlow } from './scene/post';
-import { fog, renderer, scene } from './scene/stage';
+import { fog, renderer, scene, time } from './scene/stage';
+import { gradeBuildingKits, nightGrade } from './scene/grade';
 import { mergeStatic } from './scene/merge';
 import { batchSprites, updateSpriteBatches } from './scene/spriteBatch';
-import { buildFacade, leaves, setDoor, updateSmoke } from './scene/tavern';
+import { buildFacade, leaves, setDoor, sign, swingSign, updateSmoke } from './scene/tavern';
 import { buildHall } from './scene/hall';
+import { updateHearth } from './scene/hearth';
 import { buildTerrain, surfaceY } from './scene/terrain';
 import { resetRun, state } from './state';
 import { el } from './ui/dom';
@@ -138,6 +146,8 @@ function frame() {
   const { inside, t } = state;
   setDoor(state.doorAngle);
 
+  time.value = t;                                     // the shaders' clock (windows, wind, the hearth)
+  nightGrade.value = 1 - inside;
   // fog and background shift from night blue to the warm interior
   fog.density = cfg.fog * (1 - inside) + .005 * inside;
   fogC.copy(FOG_OUT).lerp(FOG_IN, inside);
@@ -167,9 +177,12 @@ function frame() {
   updateSky(t, inside);
   updateFireflies(t, inside);
   updateLeaves(t, camZ, inside);
-  updateXmas(t, inside);
+  updateXmas(t, state.doorAngle > 0);
   updateMists(dt, t, camZ, inside);
   updateSmoke(dt);
+  updateBrook(dt);
+  swingSign(t);
+  updateHearth(t, state.doorAngle > 0);
   updateForest(camZ);
 
   // the last ~second of the flight is all parchment: skip the 3D frame, it cannot show,
@@ -188,21 +201,30 @@ addEventListener('resize', () => {
 // A failure here surfaces on the enter button through the unhandledrejection handler in
 // index.html (hard rule 8), so the chain is deliberately left without a catch.
 void Promise.all([loadKits(), loadAudio()]).then(([, bufs]) => {
+  gradeBuildingKits();                                // the building's night colours, before anything is built
   // timeline inversion: the narration's length sets the walk's length
   const walkTime = buildSchedule(LINES.map((_, i) => bufs?.[voiceName(i)]?.duration ?? null));
   state.walkLen = SPEED * walkTime;
   state.startZ = STOP_AT + state.walkLen;
   buildForest(state.startZ);
-  buildGround(state.startZ);
-  buildUndergrowth(state.startZ);
+  // what is strewn along the walk keeps clear of winter's lanterns and out of the brook
+  const lamps = wayLightSpots(state.startZ), byLamps = clearOf(lamps), clear = (x: number, z: number) => byLamps(x, z) && dry(x, z, .3);
+  buildGround(state.startZ, clear);
+  buildUndergrowth(state.startZ, clear);
   buildFireflies(state.startZ);
   buildLeaves();
   const front = buildFacade();
-  buildXmas(front);
   const hall = buildHall();
   buildPost(hall);
+  buildWayLights(front, lamps);
+  buildBrook(front);                                  // the brook across the walk, its bridge and banks
+  buildXmas(front);                                   // the holiday's dressing, outside and in
+  buildHarvest(front, hall.tav);
+  buildFrost(front, state.startZ);                    // winter: icicles, snow banks
+  buildShadows();                                     // every contact shadow added above, one draw call
   // static batching: one draw call per material for the building and its props
-  const mf = mergeStatic(front, leaves.map(l => l.pivot)), mh = mergeStatic(hall.tav);
+  const mf = mergeStatic(front, [...leaves.map(l => l.pivot), sign]), mh = mergeStatic(hall.tav);
+  mergeStatic(sign);                                  // the swinging sign batched on its own pivot
   console.info(`merged meshes: facade ${mf.before} → ${mf.after}, hall ${mh.before} → ${mh.after}`);
   batchSprites(scene);                                // glow sprites: one draw call per kind
   // dev hook for the numeric checks (hard rules 1–4), stripped from production builds

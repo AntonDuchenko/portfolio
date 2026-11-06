@@ -5,7 +5,8 @@ import { torch } from '../scene/lights';
 import { scene } from '../scene/stage';
 import { DOOR_POS, HEARTH_POS, SIGN_POS } from '../scene/tavern';
 import { state } from '../state';
-import { active, sound } from '../theme/themes';
+import { BROOK } from '../scene/brookShape';
+import { active, look, sound } from '../theme/themes';
 import voiceLines from '../ui/voice-lines.json';
 import { actx, bedInput, fetchDecode, listener, markStarted, oneShot, voice } from './engine';
 
@@ -109,6 +110,25 @@ function start(bufs: Buffers | null) {
   };
   markStarted();
   startAmbience();
+  startBrook();
+}
+
+/* The brook under the bridge (scene/brook.ts): a positional loop at the crossing, heard from
+   ~15 m off and passing from ahead to behind as one walks over. Optional like the ambience.
+   Trickle: freesound 363120 by TheWoodlandNomad (CC0), "a small burn trickling through a
+   wooded area" — mono, cut below 140 Hz, 30 s seamless loop, −29 LUFS. In winter the water
+   under the bridge stays open (brook.ts) but the ice round it takes the top off and the
+   rest of the brook is silent: duller, slower, quieter. */
+let brook: PositionalAudio | null = null;
+function startBrook() {
+  fetchDecode('brook').then(buf => {
+    const a = placed(buf, { x: 0, y: BROOK.water, z: BROOK.z }, 2.2, 1.5, 0, true);
+    if (look.brook === 'ice') {
+      const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600;
+      a.setFilter(lp); a.setPlaybackRate(.85);
+    }
+    a.play(); brook = a;
+  }).catch((e: unknown) => console.warn('audio: brook —', e));
 }
 
 /* The theme's ambience (src/theme/themes.ts): extra loops for the season and the holiday,
@@ -174,8 +194,9 @@ export function updateAudio(dt: number, camZ: number) {
   const open = Math.max(doorAngle / MAX_ANGLE, inside);
   beds.music.g.gain.value = near * (.3 + .5 * open) * mix.music;
   beds.music.f.frequency.value = 380 * Math.pow(14000 / 380, open);
-  // hearth inside
+  // hearth inside; the brook outside
   snd.hearth.setVolume(1.4 * inside);
+  brook?.setVolume((look.brook === 'ice' ? .65 : 1.1) * out * mix.forest);
   torchObj.position.copy(torch.position);
   snd.torch.setVolume(.8 * mix.torch);
   // the sign creaks while we are outside

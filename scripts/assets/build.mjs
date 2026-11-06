@@ -94,7 +94,14 @@ const KITS = {
       'Table_Large', 'Bench', 'Stool', 'Chair_1', 'Barrel', 'Barrel_Holder', 'Cabinet',
       'Shelf_Small_Bottles', 'Shelf_Simple', 'Mug', 'Candle_1', 'CandleStick', 'Chandelier',
       'Lantern_Wall', 'Bottle_1', 'Crate_Wooden', 'Table_Plate', 'Peg_Rack', 'Cauldron'
-    ].map(n => [n, { src: n }]))
+    ].map(n => [n, { src: n }]).concat([
+      // autumn's harvest in the yard and by the bar (src/scene/seasonal.ts). The fruit is
+      // the vertex-coloured part, 1.7–4.3k tris of round apples and carrots seen from
+      // metres away: cut to a few hundred (the whole set was +160 KB for every visitor)
+      ['Barrel_Apples', { src: 'Barrel_Apples', tris: { MI_Trim_Props_Vertex: 500 }, budget: 1350 }],
+      ['FarmCrate_Apple', { src: 'FarmCrate_Apple', tris: { MI_Trim_Props_Vertex: 700 }, budget: 1700 }],
+      ['FarmCrate_Carrot', { src: 'FarmCrate_Carrot', tris: { MI_Trim_Props_Vertex: 700 }, budget: 1700 }]
+    ]))
   }
 };
 
